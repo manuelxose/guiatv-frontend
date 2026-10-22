@@ -17,7 +17,7 @@ import {
   EditorialPost,
 } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
-import { generateCollectionPageSchema } from '../../../utils/utils';
+import { generateCollectionPageSchema, serializeJsonLd } from '../../../utils/utils';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
 import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
@@ -206,7 +206,7 @@ export class BlogHomeComponent implements OnInit, OnDestroy {
       baseUrl
     );
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`
     );
   }
 }

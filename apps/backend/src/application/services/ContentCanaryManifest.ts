@@ -184,6 +184,10 @@ export interface BuildOptions {
   allowIndexedLegacy?: boolean;
   /** Evidence older than this many days is refused at execution (the owner re-runs the replay). */
   maxEvidenceAgeDays?: number;
+  /** `YYYYMMDD` the evidence replay actually ran; anchors `freshUntil` (default: the latest replay day, capped at today). */
+  evidenceProducedDay?: string;
+  /** Extra warnings the builder cannot know (what a partial refresh did not cover); they are part of the document, not of the digest. */
+  extraWarnings?: string[];
 }
 
 /** The admit file: the exact verdict lines of the approved batch, in manifest order. A write run is given this file and nothing else. */
@@ -218,7 +222,9 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
   const chosen = scored.filter(eligible).slice(0, size);
   const evidenceDay = o.days.map((d) => d.day).sort().pop() ?? '';
   // Replays include future schedule days; the evidence was produced no later than now.
-  const anchor = evidenceDay > today ? today : evidenceDay;
+  // `evidenceProducedDay` pins freshness to the day the replay really ran, so a manifest rebuilt later from the same
+  // replay (a legacy-status refresh) cannot make that evidence look younger than it is.
+  const anchor = o.evidenceProducedDay ?? (evidenceDay > today ? today : evidenceDay);
   const evidenceStart = new Date(`${anchor.slice(0, 4)}-${anchor.slice(4, 6)}-${anchor.slice(6, 8)}T00:00:00Z`);
   const verdicts = new Map(chosen.map((s) => [s.item.verdict.candidateId, s.item.verdict] as const));
   const entities: ManifestEntity[] = chosen.map((s, i) => ({
@@ -244,7 +250,7 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
       candidateId: s.item.verdict.candidateId, title: s.item.verdict.title,
       reasons: s.content !== 'ready' ? s.needs : eligible(s) ? ['beyond_ceiling'] : ['replaces_indexed_legacy_page'],
     })),
-    warnings: WARNINGS, digest: '', admitSha256: '',
+    warnings: [...WARNINGS, ...(o.extraWarnings ?? [])], digest: '', admitSha256: '',
   };
   manifest.digest = manifestDigest(manifest);
   manifest.admitSha256 = sha256(admitLines(entities, verdicts));

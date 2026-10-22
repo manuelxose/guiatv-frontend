@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MetaService } from '../../services/meta.service';
-import { generateOrganizationSchema } from '../../utils/utils';
+import { generateOrganizationSchema, serializeJsonLd } from '../../utils/utils';
 import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-section.component';
 
 @Component({
@@ -150,7 +150,7 @@ export class AboutComponent implements OnInit {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schema = generateOrganizationSchema(baseUrl);
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`
     );
   }
 }

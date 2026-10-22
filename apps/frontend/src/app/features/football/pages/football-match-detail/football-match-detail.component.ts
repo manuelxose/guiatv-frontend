@@ -31,6 +31,7 @@ import {
 import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballMatchSchema } from '@app/features/football/football-seo';
+import { serializeJsonLd } from '../../../../utils/utils';
 
 type MatchDetailState =
   | { status: 'loading' }
@@ -160,7 +161,7 @@ export class FootballMatchDetailComponent implements AfterViewInit, OnDestroy {
     const schemas = [generateFootballMatchSchema(match, baseUrl)];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

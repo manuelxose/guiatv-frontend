@@ -49,7 +49,10 @@ export interface PublicationSignals {
   epgDescription?: string;
   genres?: string[];
   runtimeMinutes?: number;
+  /** Broadcasts joined to this entity on evidence (`EntityBroadcastService`), not on the title. */
   upcomingAirings?: number;
+  /** Phase 3D: the page names the source of the copied facts and images (TMDB's required notice) and the stored values carry provenance. */
+  attributed?: boolean;
   /** Internal links to this page from indexable pages. */
   inboundLinks?: number;
   /** What the existing legacy page for the same work does once the entity page exists. */
@@ -133,6 +136,17 @@ export function assessPublicationQuality(s: PublicationSignals) {
   const useful = substantial && (s.upcomingAirings ?? 0) >= 1;
   c.push(useful ? ok('user_useful', 'a substantial description and at least one upcoming broadcast')
     : s.upcomingAirings === undefined ? unknown('user_useful', 'upcoming broadcasts not measured') : no('user_useful', substantial ? 'no upcoming broadcast to point to' : 'no description beyond the listing'));
+
+  // Phase 3D. Copied facts must say where they come from; a long TMDB synopsis alone is third-party text on thousands
+  // of sites, so the page's own value is the evidence-joined schedule (or text a person wrote).
+  const copied = chars > 0 || Boolean(s.genres?.length);
+  c.push(!copied ? unknown('source_attributed', 'no copied facts to attribute')
+    : s.attributed === undefined || !s.synopsisSource ? unknown('source_attributed', 'source or on-page attribution not recorded')
+      : s.attributed ? ok('source_attributed', `facts from ${s.synopsisSource}, attribution shown`) : no('source_attributed', 'copied facts without a visible source'));
+  c.push(s.synopsisSource === 'manual' && chars >= T.synopsisMinChars ? ok('original_value', 'text written by a person')
+    : (s.upcomingAirings ?? 0) >= 1 ? ok('original_value', `${s.upcomingAirings} evidence-joined upcoming broadcast(s) with channel links, beyond the TMDB text`)
+      : s.upcomingAirings === undefined ? unknown('original_value', 'upcoming broadcasts not measured')
+        : no('original_value', 'TMDB text only: no scheduled broadcast and no editorial text'));
 
   // AdSense / helpful-content risk. High: thin or a copy of the listing. Medium: short, or third-party text
   // (TMDB is on thousands of sites) with nothing of ours beside it. Low: substantial text plus manual

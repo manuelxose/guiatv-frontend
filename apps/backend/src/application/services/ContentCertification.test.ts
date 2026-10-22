@@ -172,7 +172,7 @@ test('chain: contiguous, linked, unmodified and about this entity only', () => {
 test('quality: an AI-attested identity may reach the noindex canary tier but never index_candidate', () => {
   const full = {
     kind: 'movie' as const, title: 'La isla', year: 2001, yearProvenance: 'independent' as const, synopsis: 'x'.repeat(400), synopsisSource: 'manual' as const,
-    genres: ['Drama'], runtimeMinutes: 100, epgDescription: 'Programa de la tarde', upcomingAirings: 2, inboundLinks: 5, legacyPage: 'none' as const, registryClean: true, ssr: { ok: 25, total: 25 },
+    genres: ['Drama'], runtimeMinutes: 100, epgDescription: 'Programa de la tarde', upcomingAirings: 2, inboundLinks: 5, legacyPage: 'none' as const, registryClean: true, ssr: { ok: 25, total: 25 }, attributed: true,
   };
   assert.equal(assessPublicationQuality({ ...full, verified: true }).tier, 'index_candidate');
   const ai = assessPublicationQuality({ ...full, verified: false, aiAttested: true });

@@ -1,0 +1,362 @@
+[
+ {
+  "path": "/peliculas/la-cura-del-bienestar",
+  "tmdbId": 340837,
+  "title": "La cura del bienestar",
+  "measuredAt": "2026-10-21T23:15:54Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 491,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 2,
+   "releaseYear": 2017
+  }
+ },
+ {
+  "path": "/peliculas/venganza-en-las-vegas",
+  "tmdbId": 1081620,
+  "title": "Venganza en Las Vegas",
+  "measuredAt": "2026-10-21T23:15:54Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 350,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 2,
+   "releaseYear": 2023
+  }
+ },
+ {
+  "path": "/peliculas/dobles-vidas",
+  "tmdbId": 471856,
+  "title": "Dobles vidas",
+  "measuredAt": "2026-10-21T23:15:55Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 474,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 2018
+  }
+ },
+ {
+  "path": "/peliculas/los-subdesarrollados",
+  "tmdbId": 221650,
+  "title": "Los subdesarrollados",
+  "measuredAt": "2026-10-21T23:15:55Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 431,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 1968
+  }
+ },
+ {
+  "path": "/peliculas/la-galaxia-del-terror",
+  "tmdbId": 28893,
+  "title": "La galaxia del terror",
+  "measuredAt": "2026-10-21T23:15:55Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 420,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 1981
+  }
+ },
+ {
+  "path": "/peliculas/jinetes-de-la-justicia",
+  "tmdbId": 663870,
+  "title": "Jinetes de la justicia",
+  "measuredAt": "2026-10-21T23:15:56Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 377,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 2020
+  }
+ },
+ {
+  "path": "/peliculas/el-exorcista-iii",
+  "tmdbId": 11587,
+  "title": "El exorcista III",
+  "measuredAt": "2026-10-21T23:15:56Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 371,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 1990
+  }
+ },
+ {
+  "path": "/peliculas/22-balas",
+  "tmdbId": 37645,
+  "title": "22 balas",
+  "measuredAt": "2026-10-21T23:15:56Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 362,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 2010
+  }
+ },
+ {
+  "path": "/peliculas/jurassic-world-dominion",
+  "tmdbId": 507086,
+  "title": "Jurassic World: Dominion",
+  "measuredAt": "2026-10-21T23:15:57Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 344,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 1,
+   "releaseYear": 2022
+  }
+ },
+ {
+  "path": "/peliculas/como-se-escribe-amor",
+  "tmdbId": 289727,
+  "title": "¿Cómo se escribe amor?",
+  "measuredAt": "2026-10-21T23:15:57Z",
+  "status": 200,
+  "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 324,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 2,
+   "releaseYear": 2014
+  }
+ },
+ {
+  "path": "/peliculas/bano-de-sangre-al-salir-el-sol",
+  "tmdbId": 143747,
+  "title": "Baño de sangre al salir el sol",
+  "measuredAt": "2026-10-21T23:15:57Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 449,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 1966
+  }
+ },
+ {
+  "path": "/peliculas/amerigeddon",
+  "tmdbId": 395938,
+  "title": "AmeriGeddon",
+  "measuredAt": "2026-10-21T23:15:57Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "measured",
+  "facts": {
+   "synopsisChars": 418,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 2016
+  }
+ },
+ {
+  "path": "/peliculas/las-catadoras-de-hitler",
+  "tmdbId": 1291712,
+  "title": "Las catadoras de Hitler",
+  "measuredAt": "2026-10-21T23:15:58Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 418,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 2025
+  }
+ },
+ {
+  "path": "/peliculas/morir-no-siempre-sale-bien",
+  "tmdbId": 1447881,
+  "title": "Morir no siempre sale bien",
+  "measuredAt": "2026-10-21T23:15:58Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 376,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 2026
+  }
+ },
+ {
+  "path": "/peliculas/el-valle-de-la-furia",
+  "tmdbId": 75552,
+  "title": "El valle de la furia",
+  "measuredAt": "2026-10-21T23:15:58Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 353,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 1980
+  }
+ },
+ {
+  "path": "/peliculas/bats-murcielagos",
+  "tmdbId": 10496,
+  "title": "Bats (Murciélagos)",
+  "measuredAt": "2026-10-21T23:15:58Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 337,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 1999
+  }
+ },
+ {
+  "path": "/peliculas/suzhou-river",
+  "tmdbId": 11599,
+  "title": "Suzhou River",
+  "measuredAt": "2026-10-21T23:15:59Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 315,
+   "castCount": 5,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 2000
+  }
+ },
+ {
+  "path": "/peliculas/pecados-del-pasado",
+  "tmdbId": 157079,
+  "title": "Pecados del pasado",
+  "measuredAt": "2026-10-21T23:15:59Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 314,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": false,
+   "upcomingAirings": 0,
+   "releaseYear": 2006
+  }
+ },
+ {
+  "path": "/peliculas/tres-tejanos",
+  "tmdbId": 154091,
+  "title": "Tres tejanos",
+  "measuredAt": "2026-10-21T23:15:59Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 312,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 1949
+  }
+ },
+ {
+  "path": "/peliculas/el-desafio-de-pancho-villa",
+  "tmdbId": 74064,
+  "title": "El desafío de Pancho Villa",
+  "measuredAt": "2026-10-21T23:16:04Z",
+  "status": 200,
+  "robots": "noindex, follow",
+  "robotsBasis": "predicted_from_airings",
+  "facts": {
+   "synopsisChars": 301,
+   "castCount": 10,
+   "hasDirector": true,
+   "hasPoster": true,
+   "hasBackdrop": true,
+   "upcomingAirings": 0,
+   "releaseYear": 1972
+  }
+ }
+]

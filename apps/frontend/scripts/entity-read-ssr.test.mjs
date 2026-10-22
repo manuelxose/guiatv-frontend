@@ -2,9 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { setTimeout as delay } from 'node:timers/promises';
+import { entityFixture, launchSsr, startBackend } from './entity-ssr-harness.mjs';
+
 
 test('entity SSR renders safe HTML, status, canonical, robots and disabled legacy fallback', { timeout: 90000 }, async () => {
   const canonicalPath = '/peliculas/phase3a-fixture';
@@ -36,29 +36,7 @@ test('entity SSR renders safe HTML, status, canonical, robots and disabled legac
   backend.listen(0, '127.0.0.1');
   await once(backend, 'listening');
   const backendOrigin = `http://127.0.0.1:${backend.address().port}`;
-  const launch = async () => {
-    // Obtain a free loopback port before starting the existing production SSR entrypoint.
-    const reservation = createServer();
-    reservation.listen(0, '127.0.0.1');
-    await once(reservation, 'listening');
-    const port = reservation.address().port;
-    await new Promise(resolve => reservation.close(resolve));
-    const proc = spawn(process.execPath, ['scripts/ssr-server.mjs'], {
-      cwd: new URL('..', import.meta.url),
-      env: { ...process.env, PORT: String(port), API_ORIGIN: backendOrigin, SSR_API_BASE_URL: backendOrigin },
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    let output = '';
-    proc.stdout.on('data', chunk => { output = (output + chunk).slice(-8000); });
-    proc.stderr.on('data', chunk => { output = (output + chunk).slice(-8000); });
-    const where = `http://127.0.0.1:${port}`;
-    for (let attempt = 0; attempt < 120; attempt++) {
-      if (proc.exitCode !== null) throw new Error(`SSR exited ${proc.exitCode}: ${output}`);
-      try { if ((await fetch(`${where}/healthz`)).ok) break; } catch { /* Startup only. */ }
-      await delay(100);
-    }
-    return { origin: where, proc, logs: () => output, stop: async () => { if (proc.exitCode === null) { proc.kill('SIGTERM'); await once(proc, 'exit'); } } };
-  };
+  const launch = () => launchSsr(backendOrigin);
   const main = await launch();
   const origin = main.origin;
   try {
@@ -111,5 +89,58 @@ test('entity SSR renders safe HTML, status, canonical, robots and disabled legac
     await main.stop();
     backend.closeAllConnections();
     await new Promise(resolve => backend.close(resolve));
+  }
+});
+
+// Phase 3D: the enriched movie page, rendered by the real SSR bundle from the API's real response shape
+// (apps/backend `entities.enriched.test` pins that shape).
+test('entity SSR: enriched movie page has the facts, broadcasts, attribution, one canonical and inert structured data', { timeout: 90000 }, async () => {
+  const entity = entityFixture;
+  const pages = {
+    '/peliculas/la-cura-del-bienestar': entity(),
+    '/peliculas/sin-emisiones': entity({ title: 'Sin emisiones', canonicalPath: '/peliculas/sin-emisiones', broadcasts: { status: 'none', items: [], generatedAt: new Date().toISOString(), timeZone: 'Europe/Madrid' } }),
+    '/peliculas/agenda-caida': entity({ title: 'Agenda caída', canonicalPath: '/peliculas/agenda-caida', broadcasts: { status: 'unavailable', items: [], generatedAt: new Date().toISOString(), timeZone: 'Europe/Madrid' } }),
+    '/peliculas/hostil': entity({ title: 'Peli </script><img src=x onerror=alert(1)>', canonicalPath: '/peliculas/hostil' }),
+  };
+  const backend = await startBackend(pages);
+  const ssr = await launchSsr(backend.origin);
+  const ld = (html) => [...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) => JSON.parse(m[1]));
+  try {
+    const res = await fetch(`${ssr.origin}/peliculas/la-cura-del-bienestar`);
+    const html = await res.text();
+    assert.equal(res.status, 200, ssr.logs());
+    assert.equal(res.headers.get('x-robots-tag'), 'noindex, follow');
+    assert.equal(res.headers.get('cache-control'), 'no-store');
+    assert.equal((html.match(/<h1[ >]/g) || []).length, 1);
+    assert.equal((html.match(/rel="canonical"/g) || []).length, 1);
+    assert.match(html, /<link rel="canonical" href="https:\/\/guiaprogramaciontv.com\/peliculas\/la-cura-del-bienestar"/);
+    assert.match(html, /<meta name="robots" content="noindex, follow"/);
+    for (const text of ['La cura del bienestar', 'A Cure for Wellness', '2 h 27 min', 'Terror', 'Alpes suizos', 'Próximas emisiones', 'AMC', '02:30', 'Dirección:', 'Gore Verbinski', 'Datos e imágenes de TMDB.', 'Horario peninsular']) {
+      assert.ok(html.includes(text), `SSR HTML is missing "${text}"`);
+    }
+    assert.match(html, /href="\/canales\/amc"/);
+    assert.match(html, /<time[^>]*datetime="2026-10-25T02:30:00\+01:00"/);
+    assert.match(html, /aria-label="[^"]*CET/);
+    const poster = (html.match(/<img[^>]*>/g) || []).find((tag) => tag.includes('alt="Cartel de La cura del bienestar"'));
+    assert.ok(poster && poster.includes('src="' + entityFixture().images.poster + '"'), `the poster is a TMDB URL with a text alternative: ${JSON.stringify((html.match(/<img[^>]*>/g) || []))}`);
+    const movie = ld(html).flat().find((j) => j['@type'] === 'Movie');
+    assert.equal(movie.name, 'La cura del bienestar');
+    assert.equal(movie.duration, 'PT2H27M');
+    assert.equal(movie.publication[0].startDate, '2026-10-25T02:30:00+01:00');
+    assert.ok(!('aggregateRating' in movie) && !('inLanguage' in movie));
+    assert.ok(ld(html).flat().some((j) => j['@type'] === 'BreadcrumbList'));
+
+    const empty = await (await fetch(`${ssr.origin}/peliculas/sin-emisiones`)).text();
+    assert.match(empty, /No hay emisiones programadas en los próximos 7 días/);
+    const down = await (await fetch(`${ssr.origin}/peliculas/agenda-caida`)).text();
+    assert.match(down, /No hemos podido comprobar la programación/);
+    assert.doesNotMatch(down, /No hay emisiones programadas/);
+
+    const hostile = await (await fetch(`${ssr.origin}/peliculas/hostil`)).text();
+    assert.doesNotMatch(hostile, /<img src=x onerror/, 'a hostile title is escaped, not rendered');
+    assert.equal(ld(hostile).flat().find((j) => j['@type'] === 'Movie').name, 'Peli </script><img src=x onerror=alert(1)>', 'and reads back intact from the JSON');
+  } finally {
+    await ssr.stop();
+    await backend.stop();
   }
 });

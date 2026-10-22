@@ -19,6 +19,7 @@ import { MetaService } from '@app/services/meta.service';
 import { environment } from 'src/environments/environment';
 import { generateFootballTeamSchema } from '@app/features/football/football-seo';
 import { FilterChipBarComponent, FilterChipItem } from '@app/components/filter-chip-bar/filter-chip-bar.component';
+import { serializeJsonLd } from '../../../../utils/utils';
 
 type TeamTab = 'resumen' | 'partidos';
 
@@ -148,7 +149,7 @@ export class FootballTeamDetailComponent {
     const schemas = [generateFootballTeamSchema(detail.team, baseUrl)];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

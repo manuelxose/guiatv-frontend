@@ -9,8 +9,10 @@
  * Checks: plain HTTP redirects to HTTPS, the TLS certificate has at least 14 days left, home (SSR), API health, robots.txt, sitemap index, a hub page, and the entity read invariant:
  * with ENTITY_EXPECTATION=off (default) `/v2/entities/resolve` must answer ENTITY_PUBLIC_READ_DISABLED, so an
  * accidental activation of the public entity read is an alert, not a surprise. Exit 1 on any failure;
- * UPTIME_WEBHOOK_URL (optional) also receives a JSON message.
+ * UPTIME_WEBHOOK_URL (optional) also receives a JSON message. Webhook-independent visibility: when GITHUB_STEP_SUMMARY is set
+ * (GitHub Actions) every run writes its result table there, and uptime.yml opens, updates and closes an issue from the outcome.
  */
+import fs from 'node:fs';
 import https from 'node:https';
 import tls from 'node:tls';
 
@@ -112,6 +114,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     entityExpectation: process.env.ENTITY_EXPECTATION || 'off',
   });
   for (const r of results) console.log(`${r.ok ? 'ok  ' : 'FAIL'} ${r.name.padEnd(24)} ${String(r.status).padStart(3)} ${String(r.ms).padStart(6)} ms${r.slow ? ' (slow)' : ''}${r.error ? ` ${r.error}` : ''}`);
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    const rows = results.map((r) => `| ${r.ok ? 'ok' : '**FAIL**'} | ${r.name} | ${r.status || r.error || ''} | ${r.ms} ms${r.slow ? ' (slow)' : ''} |`);
+    const summary = `### External probe of ${origin}\n\n${failures.length ? `**${failures.length} check(s) failing**` : 'All checks passing'} at ${new Date().toISOString()}\n\n| | Check | Status | Time |\n|---|---|---|---|\n${rows.join('\n')}\n`;
+    try { fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary); } catch { /* the summary is a convenience, never a reason to fail */ }
+  }
   if (failures.length) {
     const text = `GuiaTV external probe: ${failures.map((f) => `${f.name} -> ${f.status || f.error} (expected ${f.expected})`).join('; ')}`;
     console.error(text);

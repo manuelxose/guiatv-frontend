@@ -30,7 +30,15 @@ export interface ContentEntityRecord {
   externalIds: { tmdb?: TmdbRef };
   /** Denormalised from the entity's `canonical` row in `content_slugs`, which is the source of truth. */
   canonicalPath?: string;
-  metadata: { synopsis?: ProvenancedValue<string>; genres?: ProvenancedValue<string[]>; images?: ProvenancedValue };
+  /** `synopsis`, `genres`, `images`, `runtimeMinutes`, `credits` and `enrichment` are the Phase 3D source-backed copy (`entityEnrichment.ts`). */
+  metadata: {
+    synopsis?: ProvenancedValue<string>;
+    genres?: ProvenancedValue<string[]>;
+    images?: ProvenancedValue<{ posterPath?: string; backdropPath?: string }>;
+    runtimeMinutes?: ProvenancedValue<number>;
+    credits?: ProvenancedValue<{ directors: string[]; cast: Array<{ name: string; character?: string }> }>;
+    enrichment?: { version: number; mediaId: string; tmdb: TmdbRef; hash: string; checkedAt: Date; sourceUpdatedAt?: Date };
+  };
   matching: { method: EntityMatchMethod; confidence: number; decidedAt: Date; decidedBy: string; assurance?: AssuranceLevel };
   /** Phase 3C: points at the entity's live attestation in `content_attestations` (the record is the source of truth). */
   certification?: { attestationId: string; seq: number; hash: string; certifiedAt: Date };
@@ -81,6 +89,12 @@ export interface IContentEntityRepository {
   certify(entityId: string, change: { expectedVersion: number; matching: ContentEntityRecord['matching']; certification: NonNullable<ContentEntityRecord['certification']>; by: string; reason: string }): Promise<ContentEntityRecord | null>;
   /** Undoes `certify`: back to `candidate` with the pre-certification `matching` and no pin. Only while the pin is still `attestationId`. */
   revokeCertification(entityId: string, change: { expectedVersion: number; attestationId: string; matching: ContentEntityRecord['matching']; by: string; reason: string }): Promise<ContentEntityRecord | null>;
+  /**
+   * Phase 3D: replaces `metadata` (and sets `originalTitle` only while the entity has none). Optimistic on
+   * `version`, live entities only; never touches identity, status, certification or the canonical path.
+   * Null on a lost race or a no-longer-live entity.
+   */
+  replaceMetadata(entityId: string, change: { expectedVersion: number; metadata: ContentEntityRecord['metadata']; originalTitle?: string }): Promise<ContentEntityRecord | null>;
   /** Collapses merge chains: entities merged into `fromEntityId` now point at `toEntityId`. */
   repointMergedInto(fromEntityId: string, toEntityId: string): Promise<number>;
   /** Partial-write recovery: entities created before `createdBefore` that still have no canonical path. */

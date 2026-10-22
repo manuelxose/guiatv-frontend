@@ -32,6 +32,18 @@ test('the uptime probe is off-host, read-only and scheduled; the artifact deploy
   assert.match(artifact, /group: deploy-prod/);
 });
 
+test('3D: outage visibility needs no webhook: the run summary and one self-closing issue, with write access limited to issues', () => {
+  const uptime = read('.github/workflows/uptime.yml');
+  const [probe, report] = uptime.split(/\n  report:\n/);
+  assert.ok(report, 'a report job exists');
+  assert.doesNotMatch(probe, /issues:\s*write/, 'the probe job itself stays read-only');
+  assert.match(report, /permissions:\s*\n\s+contents: read\s*\n\s+issues: write/);
+  assert.match(report, /needs: probe/);
+  assert.match(report, /gh issue close/);
+  assert.doesNotMatch(report, /secrets\.|ssh|checkout/, 'it touches issues only');
+  assert.match(read('scripts/uptime-probe.mjs'), /GITHUB_STEP_SUMMARY/);
+});
+
 test('actions are pinned to a version', () => {
   for (const f of workflows) for (const m of read(`.github/workflows/${f}`).matchAll(/uses:\s*(\S+)/g)) assert.match(m[1], /@v?\d/, `${f}: ${m[1]}`);
 });

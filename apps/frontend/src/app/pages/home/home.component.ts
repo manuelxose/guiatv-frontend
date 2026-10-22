@@ -22,7 +22,7 @@ import { APP_PATHS } from '../../config/route-map';
 import { PortalHomeFacade } from '../../state/portal-home.facade';
 import { MetaService } from '../../services/meta.service';
 import { normalizeToCard } from '../../utils/tv-normalizers';
-import { generateOrganizationSchema, generateWebApplicationSchema } from '../../utils/utils';
+import { generateOrganizationSchema, generateWebApplicationSchema, serializeJsonLd } from '../../utils/utils';
 import { UnifiedPortalRailSection } from '../../models/portal-shell.models';
 import { FootballMatchCardComponent } from '../../features/football/components/football-match-card/football-match-card.component';
 
@@ -297,7 +297,7 @@ export class HomeComponent {
 
     return this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

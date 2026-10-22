@@ -44,3 +44,13 @@ test('--expect-off passes only when no allowlisted path is an entity page any mo
   assert.deepEqual(await failing(legacy, { expectOff: true }), []);
   assert.deepEqual(await failing(clean, { expectOff: true }), ['not_served_as_entity', 'not_served_as_entity']);
 });
+
+test('3D: an indexable legacy page at an allowlisted path is the guard working; a noindex non-entity page is still a failure', async () => {
+  const legacyIndexable = { status: 200, headers: { 'x-robots-tag': 'index, follow, max-image-preview:large', 'cache-control': 'public' }, body: `<meta name="robots" content="index, follow"><link rel="canonical" href="${ORIGIN}/peliculas/alpha">` };
+  const result = await verifyCanary({ fetch: fakeFetch({ ...clean, '/peliculas/alpha': legacyIndexable }), origin: ORIGIN, entries });
+  assert.equal(result.ok, true);
+  assert.ok(result.checks.some((c) => c.check === 'legacy_guard_fallback' && c.path === '/peliculas/alpha'));
+  const notEntityButNoindex = { status: 200, headers: { 'x-robots-tag': 'noindex, follow' }, body: '<meta name="robots" content="noindex, follow">' };
+  assert.ok((await failing({ ...clean, '/peliculas/alpha': notEntityButNoindex })).includes('entity_marker'));
+  assert.ok((await failing({ ...clean, '/peliculas/alpha': { status: 503, headers: {}, body: '' } })).includes('status_200'));
+});

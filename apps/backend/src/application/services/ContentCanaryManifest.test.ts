@@ -132,3 +132,36 @@ test('the committed real manifest is reproducible from the committed inputs and 
 });
 
 const sha = (text: string) => require('node:crypto').createHash('sha256').update(text).digest('hex') as string;
+
+test('3D: a manifest rebuilt later from the same replay does not make that evidence younger', () => {
+  // The replay covers days up to the 22nd but ran on the 21st (it reads tomorrow's guide). Rebuilt on the 22nd, the
+  // default anchor (today, because the latest replay day is in the future) would add a day of freshness.
+  const s = scenario(3);
+  const rebuilt = new Date('2026-10-22T10:00:00Z');
+  const naive = buildCanaryManifest({ ...s, now: rebuilt, size: 3 }).manifest;
+  const pinned = buildCanaryManifest({ ...s, now: rebuilt, size: 3, evidenceProducedDay: '20261021' }).manifest;
+  assert.equal(naive.freshUntil, '2026-10-26T00:00:00.000Z');
+  assert.equal(pinned.freshUntil, '2026-10-25T00:00:00.000Z', 'the replay ran on 21 October: fresh through the 24th');
+  assert.equal(naive.digest, pinned.digest, 'freshness is not part of what the owner signs');
+  assert.ok(manifestProblems(pinned, new Date('2026-10-25T12:00:00Z')).includes('evidence_stale'));
+});
+
+test('3D: the refreshed manifest is reproducible, keeps nothing whose legacy page became indexable, and needs a new grant', { skip: !have && 'docs not present' }, () => {
+  const inputs = loadRealInputs();
+  const refreshed = JSON.parse(fs.readFileSync(path.join(root, 'phase-3d/canary-manifest.json'), 'utf8')) as CanaryManifest;
+  const previous = JSON.parse(fs.readFileSync(path.join(root, 'phase-3c/canary-manifest.json'), 'utf8')) as CanaryManifest;
+  const probes = JSON.parse(fs.readFileSync(path.join(root, 'phase-3d/canary-legacy-probes.json'), 'utf8')) as LegacyProbe[];
+  const { manifest } = buildCanaryManifest({ ...inputs, probes, now: new Date(refreshed.generatedAt), size: 25, evidenceProducedDay: '20261021' });
+  assert.equal(manifest.digest, refreshed.digest, 'regenerating from the committed inputs gives the committed digest');
+  assert.equal(sha(fs.readFileSync(path.join(root, 'phase-3d/canary-admit.jsonl'), 'utf8')), refreshed.admitSha256);
+  assert.deepEqual(manifestProblems(refreshed, new Date(refreshed.generatedAt)), []);
+  assert.ok(refreshed.entities.every((e) => e.legacy.indexableToday === false), 'no legacy page that Google can index today is replaced');
+  const kept = new Set(refreshed.entities.map((e) => e.candidateId));
+  const dropped = previous.entities.filter((e) => !kept.has(e.candidateId));
+  assert.ok(dropped.length > 0, 'the evidence changed: some of the previous batch left');
+  const probeOf = new Map(probes.map((p) => [p.candidateId, p] as const));
+  assert.ok(dropped.every((e) => /\bindex\b/.test(probeOf.get(e.candidateId)!.robots!) && !/noindex/.test(probeOf.get(e.candidateId)!.robots!)), 'every one left because its legacy page is now indexable');
+  assert.ok(refreshed.entities.every((e) => previous.entities.some((p) => p.candidateId === e.candidateId)), 'nothing new entered on partial evidence');
+  assert.notEqual(refreshed.digest, previous.digest, 'a different batch is a different digest: the old grant covers nothing here');
+  assert.equal(refreshed.freshUntil, previous.freshUntil, 'the replay was not re-run, so its freshness did not move');
+});

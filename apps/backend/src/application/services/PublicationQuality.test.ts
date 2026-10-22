@@ -6,7 +6,7 @@ const long = 'Un ladrón de guante blanco prepara el golpe definitivo mientras u
 const good: PublicationSignals = {
   verified: true, kind: 'movie', title: 'Heat', year: 1995, yearProvenance: 'independent', synopsis: long, synopsisSource: 'tmdb',
   epgDescription: 'Película de acción.', genres: ['Crimen'], runtimeMinutes: 170, upcomingAirings: 2, inboundLinks: 5,
-  legacyPage: 'redirects_to_entity', registryClean: true, ssr: { ok: 40, total: 40 },
+  legacyPage: 'redirects_to_entity', registryClean: true, ssr: { ok: 40, total: 40 }, attributed: true,
 };
 const ids = (r: ReturnType<typeof assessPublicationQuality>, status: string) => r.criteria.filter((c) => c.status === status).map((c) => c.id);
 
@@ -32,6 +32,7 @@ test('quality is separate from identity: a verified identity with thin content i
   assert.equal(thin.tier, 'canary');
   assert.equal(thin.adsenseRisk, 'high');
   assert.deepEqual(ids(thin, 'fail').sort(), ['adsense_risk', 'description_reliable', 'internal_links_ready', 'legacy_consolidated', 'user_useful'].sort());
+  assert.equal(thin.criteria.find((c) => c.id === 'original_value')!.status, 'pass', 'the schedule is original value even when the text is short');
   assert.deepEqual(ids(thin, 'unknown'), ['year_reliable']);
   // An unverified identity can never be shown, however good the text is.
   const unverified = assessPublicationQuality({ ...good, verified: false });
@@ -75,4 +76,21 @@ test('AdSense risk: third-party text alone is medium, with a schedule or editori
   assert.equal(flaky.criteria.find((c) => c.id === 'ssr_reliable')!.status, 'fail');
   assert.equal(flaky.tier, 'blocked');
   assert.equal(assessPublicationQuality({ ...good, ssr: { ok: 5, total: 5 } }).tier, 'blocked', 'too few SSR checks to trust');
+});
+
+test('3D: attribution and original value are separate from text length, and never weaken a threshold', () => {
+  const only = (r: ReturnType<typeof assessPublicationQuality>, id: string) => r.criteria.find((c) => c.id === id)!;
+  // A long TMDB synopsis with nothing of ours beside it: no original value, so never an index candidate.
+  const tmdbOnly = assessPublicationQuality({ ...good, upcomingAirings: 0 });
+  assert.equal(only(tmdbOnly, 'original_value').status, 'fail');
+  assert.equal(tmdbOnly.indexable, false);
+  assert.equal(tmdbOnly.adsenseRisk, 'medium');
+  // A person's text counts; a schedule counts; neither measured is unknown, not a pass.
+  assert.equal(only(assessPublicationQuality({ ...good, upcomingAirings: 0, synopsisSource: 'manual' }), 'original_value').status, 'pass');
+  assert.equal(only(assessPublicationQuality({ ...good, upcomingAirings: undefined }), 'original_value').status, 'unknown');
+  // Copied facts without a visible source fail; unstated is unknown.
+  assert.equal(only(assessPublicationQuality({ ...good, attributed: false }), 'source_attributed').status, 'fail');
+  assert.equal(only(assessPublicationQuality({ ...good, attributed: undefined }), 'source_attributed').status, 'unknown');
+  assert.equal(only(assessPublicationQuality({ verified: true, kind: 'movie', title: 'Heat' }), 'source_attributed').status, 'unknown');
+  assert.equal(assessPublicationQuality({ ...good, attributed: undefined }).indexable, false);
 });

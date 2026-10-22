@@ -2,7 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { generateBreadcrumbSchema } from '../../utils/utils';
+import { generateBreadcrumbSchema, serializeJsonLd } from '../../utils/utils';
 
 export interface BreadcrumbItem {
   name: string;
@@ -94,6 +94,11 @@ export interface BreadcrumbItem {
       flex: 0 0 auto;
       color: var(--portal-text-faint);
     }
+    /* Embedded breadcrumbs sit on a constant-dark hero, so they use the hero tokens (the portal ones are for light and dark page surfaces). */
+    .breadcrumb--embedded a { color: var(--hero-text-muted); }
+    .breadcrumb--embedded a:hover { background: var(--hero-bg-soft); color: var(--hero-text); }
+    .breadcrumb--embedded .breadcrumb__current { color: var(--hero-text); }
+    .breadcrumb--embedded .breadcrumb__separator { color: var(--hero-text-muted); }
     @media (max-width: 639px) {
       .breadcrumb { font-size: .72rem; }
       .breadcrumb__current { max-width: 45vw; }
@@ -126,7 +131,7 @@ export class BreadcrumbComponent implements OnChanges {
     }
     const schema = generateBreadcrumbSchema(this.items, BreadcrumbComponent.BASE_URL);
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`
     );
   }
 }

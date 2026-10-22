@@ -315,6 +315,15 @@ export function generateEditorialArticleSchema(post: {
 }
 
 /**
+ * Serialises structured data for a `<script type="application/ld+json">` element. Titles and names come from
+ * third-party feeds (EPG, TMDB), so `<` is escaped: no field value can close the script element or open markup.
+ * The JSON is otherwise identical, and `JSON.parse` reads it back unchanged.
+ */
+export function serializeJsonLd(schema: unknown): string {
+  return JSON.stringify(schema).replace(/</g, '\\u003c');
+}
+
+/**
  * Genera breadcrumbs para Schema.org
  * @param items - Array de items del breadcrumb
  * @param baseUrl - URL base del sitio

@@ -5,7 +5,7 @@
  * Offline (no database):
  *   node dist/scripts/content-certify.js owner-keygen <dir>                  the OWNER runs this on their own machine; the private key never leaves it
  *   node dist/scripts/content-certify.js manifest --day <traces>:<verdicts> [--day …] --ledger <ledger.jsonl> --sheet <sheet.csv>
- *       [--probe <probes.json>] [--tmdb <tmdb-checks.json> …] [--size N] [--allow-indexed-legacy] [--out manifest.json] [--admit-out admit.jsonl] [--pool-out pool.json] [--now ISO]
+ *       [--probe <probes.json>] [--tmdb <tmdb-checks.json> …] [--size N] [--allow-indexed-legacy] [--evidence-produced YYYYMMDD] [--warning <text> …] [--out manifest.json] [--admit-out admit.jsonl] [--pool-out pool.json] [--now ISO]
  *                                                                           builds the bounded canary manifest (≤ 25) and the admit file
  *   node dist/scripts/content-certify.js authorize --manifest <m.json> --private-key <owner-private.pem> --owner <name> --statement <text>
  *       [--id oa_…] [--execute-days 7] [--valid-days 30] --out <authorization.json>        OWNER ONLY: signs exactly this manifest
@@ -24,6 +24,15 @@
  *   node dist/scripts/content-certify.js allowlist --manifest <m.json> --approved-by <person> --out <canary.json>
  *                                                                           the CONTENT_ENTITY_CANARY_FILE for a fully certified batch (reads only; all or nothing). Writing flags stays a separate approval
  *   node dist/scripts/content-certify.js rehearse --manifest … --day … --ledger … --sheet …   SCRATCH database only (guiatv_scratch_*): the full lifecycle, measured
+ *       [--phase3d <fixtures dir> [--phase3d-out <dir>]]                    also enriches the batch from fixtures, joins broadcasts and writes the per-film quality report
+ *
+ * Phase 3D (metadata enrichment and the per-film report; the copy is validated against the media catalogue, never invented):
+ *   node dist/scripts/content-certify.js enrich --manifest <m.json> [--apply] [--refresh-catalogue] [--force] [--invalidate]   (--invalidate is also a dry run until --apply)
+ *                                                                           dry run by default: the plan or refusal reason per film, nothing written. --apply copies the catalogue's TMDB facts
+ *                                                                           onto the stored entities (needs the write flags; identity and attestations are untouched). --refresh-catalogue first
+ *                                                                           calls TMDB through MediaCatalogService for rows never fully fetched (needs --apply and TMDB_API_KEY). --invalidate withdraws the copy
+ *   node dist/scripts/content-certify.js quality-report --manifest <m.json> --legacy <legacy-snapshot.json> [--out <dir>]
+ *                                                                           reads only: per film, enrichment, evidence-joined broadcasts, legacy consolidation decision and publication quality
  *
  * `certify --apply` and `revoke*` need CONTENT_ENTITIES_ENABLED and CONTENT_IDENTITY_WRITES=<database name>.
  * `certify` needs CONTENT_OWNER_PUBLIC_KEY_FILE. Everything else runs under the read-only guard.
@@ -44,6 +53,11 @@ import {
 import { PublicContentEntityService } from '../application/services/PublicContentEntityService';
 import { ContentIdentityService } from '../application/services/ContentIdentityService';
 import { captureBaseline, diffBaselines, rehearseWriteCanary } from '../application/services/ContentCanaryRehearsal';
+import { ContentEntityEnrichment, MediaCatalogEnrichmentSource } from '../application/services/ContentEntityEnrichment';
+import { enrichmentRehearsal, type EnrichmentFixtures } from '../application/services/ContentEnrichmentRehearsal';
+import { EntityBroadcastService } from '../application/services/EntityBroadcastService';
+import { filmReport, renderFilmReportMarkdown, summarizeFilmReports, type LegacySnapshot } from '../application/services/ContentEntityReport';
+import { MongoMediaCatalogRepository } from '../infrastructure/repositories/MongoMediaCatalogRepository';
 import { rollbackProvisional } from '../application/services/ContentIdentityRollback';
 import type { EvidenceVerdict, TmdbSearchCheck } from '../application/services/ContentIdentityEvidence';
 import type { IdentityTrace } from '../application/services/ContentIdentityIngestion';
@@ -101,7 +115,7 @@ function offline(command: string, args: string[]): boolean {
     const now = option(args, '--now') ? new Date(option(args, '--now') as string) : new Date();
     const days = loadDays(args);
     if (!days.length) throw new Error('usage: manifest --day <traces.jsonl>:<verdicts-YYYYMMDD.jsonl> [--day …] --ledger … --sheet …');
-    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || CERTIFICATION_HARD_CAP, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy') });
+    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || CERTIFICATION_HARD_CAP, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy'), evidenceProducedDay: option(args, '--evidence-produced'), extraWarnings: options(args, '--warning') });
     const out = option(args, '--out');
     if (out) fs.writeFileSync(out, JSON.stringify(built.manifest, null, 2) + '\n');
     const admit = option(args, '--admit-out');
@@ -143,7 +157,8 @@ function offline(command: string, args: string[]): boolean {
 }
 
 async function database(command: string, args: string[]) {
-  const writes = command === 'revoke' || command === 'revoke-batch' || ((command === 'certify' || command === 'rollback-batch') && args.includes('--apply'));
+  const writes = command === 'revoke' || command === 'revoke-batch' || ((command === 'certify' || command === 'rollback-batch' || command === 'enrich') && args.includes('--apply'));
+  if (command === 'enrich' && args.includes('--refresh-catalogue') && !args.includes('--apply')) throw new Error('--refresh-catalogue calls TMDB and writes the catalogue: it needs --apply');
   const guard = writes || command === 'rehearse' ? null : installReadOnlyGuard();
   await connectMongoDB();
   try {
@@ -200,13 +215,72 @@ async function database(command: string, args: string[]) {
       const ids = (await idsOf()).flatMap(({ entity }) => (entity ? [entity.entityId] : []));
       return console.log(JSON.stringify(await rollbackProvisional({ apply: writes, entityIds: ids }), null, 2));
     }
+    if (command === 'enrich') {
+      const apply = args.includes('--apply');
+      const invalidate = args.includes('--invalidate');
+      let refresher: ConstructorParameters<typeof MediaCatalogEnrichmentSource>[1];
+      if (args.includes('--refresh-catalogue')) {
+        if (!process.env.TMDB_API_KEY) throw new Error('--refresh-catalogue needs TMDB_API_KEY');
+        const { TMDBService } = await import('../infrastructure/external/TMDBService');
+        const { MediaCatalogService } = await import('../application/services/MediaCatalogService');
+        refresher = new MediaCatalogService(new MongoMediaCatalogRepository(), new TMDBService(process.env.TMDB_API_KEY, null), null);
+      }
+      const enrichment = new ContentEntityEnrichment(entities, new MediaCatalogEnrichmentSource(new MongoMediaCatalogRepository(), refresher));
+      const rows: Array<Record<string, unknown>> = [];
+      for (const { e, entity } of await idsOf()) {
+        if (!entity) { rows.push({ candidateId: e.candidateId, outcome: 'entity_not_written' }); continue; }
+        if (invalidate) { rows.push({ candidateId: e.candidateId, entityId: entity.entityId, outcome: apply ? await enrichment.invalidate(entity.entityId) : entity.metadata?.enrichment ? 'would_clear' : 'nothing_to_clear' }); continue; }
+        const r = await enrichment.enrich(entity.entityId, new Date(), { apply, force: args.includes('--force') });
+        rows.push({
+          candidateId: e.candidateId, entityId: entity.entityId, outcome: r.outcome,
+          ...(r.outcome === 'refused' ? { reasons: r.plan.reasons } : {}),
+          ...((r.outcome === 'written' || r.outcome === 'would_write') ? { warnings: r.plan.warnings, kept: r.plan.kept } : {}),
+        });
+      }
+      const refused = rows.filter((r) => ['refused', 'entity_not_written', 'concurrent_modification'].includes(String(r.outcome))).length;
+      console.log(JSON.stringify({ dryRun: !writes, digest: manifest.digest, batch: manifest.entities.length, refused, rows }, null, 2));
+      process.exitCode = refused ? 2 : 0;
+      return;
+    }
+    if (command === 'quality-report') {
+      const legacy = readJson<LegacySnapshot[]>(need(option(args, '--legacy'), '--legacy <legacy-snapshot.json>'));
+      const broadcasts = new EntityBroadcastService();
+      const films = [];
+      for (const { e, entity } of await idsOf()) {
+        const found = entity ? await broadcasts.forEntity(entity) : undefined;
+        films.push(filmReport({
+          candidateId: e.candidateId, title: e.title, canonicalPath: e.canonicalPath, entity,
+          enrichment: entity ? { outcome: entity.metadata?.enrichment ? 'enriched' : 'not_enriched' } : { outcome: 'entity_not_written' },
+          selection: found?.selection, legacy: legacy.find((l) => l.path === e.canonicalPath), registryClean: entity ? entity.canonicalPath === e.canonicalPath : undefined,
+        }));
+      }
+      const report = { generatedAt: new Date().toISOString(), digest: manifest.digest, summary: summarizeFilmReports(films), films };
+      const out = option(args, '--out');
+      if (out) {
+        fs.mkdirSync(out, { recursive: true });
+        fs.writeFileSync(path.join(out, 'film-quality-report.json'), JSON.stringify(report, null, 2) + '\n');
+        fs.writeFileSync(path.join(out, 'film-quality-report.md'), renderFilmReportMarkdown(films, `Film quality report (${report.generatedAt})`));
+      }
+      return console.log(JSON.stringify({ digest: report.digest, summary: report.summary }, null, 2));
+    }
     if (command === 'rehearse') {
       const days = loadDays(args);
       const review = loadReview(args);
       const verdicts = new Map(manifest.entities.map((e) => [e.candidateId, days.flatMap((d) => d.verdicts).find((v) => v.candidateId === e.candidateId)!] as const));
       const noise = manifest.notSelected.slice(0, 20).map((n) => ({ candidateId: n.candidateId, title: n.title }));
-      const report = await rehearseWriteCanary({ manifest, verdicts, review, noise });
-      console.log(JSON.stringify(report, null, 2));
+      const fixturesDir = option(args, '--phase3d');
+      const fixtures: EnrichmentFixtures | undefined = fixturesDir ? {
+        catalog: readJson(path.join(fixturesDir, 'catalog.json')), airings: readJson(path.join(fixturesDir, 'airings.json')), legacy: readJson(path.join(fixturesDir, 'legacy-snapshot.json')),
+      } : undefined;
+      const report = await rehearseWriteCanary({ manifest, verdicts, review, noise, afterServed: fixtures ? enrichmentRehearsal(fixtures) : undefined });
+      const outDir = option(args, '--phase3d-out');
+      const artefact = (report as { phase3d?: { films: Parameters<typeof renderFilmReportMarkdown>[0]; summary: unknown; evaluatedAt: string } }).phase3d;
+      if (outDir && artefact) {
+        fs.mkdirSync(outDir, { recursive: true });
+        fs.writeFileSync(path.join(outDir, 'film-quality-report.json'), JSON.stringify({ basis: 'scratch rehearsal on fixtures (committed TMDB checks + public API snapshot); no production database read', digest: manifest.digest, ...artefact }, null, 2) + '\n');
+        fs.writeFileSync(path.join(outDir, 'film-quality-report.md'), renderFilmReportMarkdown(artefact.films, `Film quality report: scratch rehearsal at ${artefact.evaluatedAt}`));
+      }
+      console.log(JSON.stringify({ ...report, phase3d: artefact ? { summary: artefact.summary, evaluatedAt: artefact.evaluatedAt } : undefined }, null, 2));
       process.exitCode = report.ok ? 0 : 2;
       return;
     }
@@ -244,5 +318,6 @@ async function main() {
 
 main().catch((error) => {
   console.error(String(error?.message || error));
+  if (process.env.CERTIFY_STACK) console.error(error?.stack);
   process.exit(1);
 });

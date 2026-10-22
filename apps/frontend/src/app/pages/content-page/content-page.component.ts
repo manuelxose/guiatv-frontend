@@ -19,6 +19,7 @@ import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb
 import { FaqSectionComponent, FaqItem } from '../../components/faq-section/faq-section.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DiscoveryService } from '../../services/discovery.service';
+import { serializeJsonLd } from '../../utils/utils';
 
 type ContentPageType = 'series' | 'movies';
 
@@ -285,7 +286,7 @@ export class ContentPageComponent implements OnInit, OnDestroy {
       },
     };
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`
     );
   }
 }

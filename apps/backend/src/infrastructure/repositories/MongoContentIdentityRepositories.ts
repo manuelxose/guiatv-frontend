@@ -206,6 +206,24 @@ export class MongoContentEntityRepository implements IContentEntityRepository {
     return stripMongo(doc);
   }
 
+  async replaceMetadata(
+    entityId: string,
+    change: { expectedVersion: number; metadata: ContentEntityRecord['metadata']; originalTitle?: string }
+  ): Promise<ContentEntityRecord | null> {
+    await assertIndexed(ContentEntityModel);
+    // Query update: schema validators do not run (like `certify`/`transition`); `planEnrichment` is what validates the copy (type, id, title, year, image path shape).
+    const now = new Date();
+    const filter = { entityId, status: { $in: ['candidate', 'active'] }, version: change.expectedVersion };
+    const set: Record<string, unknown> = { metadata: change.metadata, contentChangedAt: now };
+    // The identity's original title is only ever filled in, never rewritten.
+    const apply = (extra: Record<string, unknown>, query: Record<string, unknown>) =>
+      ContentEntityModel.findOneAndUpdate(query, { $set: { ...set, ...extra }, $inc: { version: 1 } }, { new: true }).lean().exec();
+    const doc = change.originalTitle
+      ? (await apply({ originalTitle: change.originalTitle }, { ...filter, originalTitle: { $exists: false } })) ?? (await apply({}, filter))
+      : await apply({}, filter);
+    return stripMongo(doc);
+  }
+
   async repointMergedInto(fromEntityId: string, toEntityId: string): Promise<number> {
     await assertIndexed(ContentEntityModel);
     const res = await ContentEntityModel.updateMany(

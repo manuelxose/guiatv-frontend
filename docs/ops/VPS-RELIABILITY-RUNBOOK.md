@@ -4,6 +4,8 @@
 
 2026-10-20 and 2026-10-21: the host stopped answering (Cloudflare 522, SSH timeout, 100 % ping loss). On 21 Oct the previous boot's journal ends abruptly at 18:58:47 UTC, mid-service, with **no shutdown sequence, OOM kill, kernel panic, hung task or I/O error**; the build that had just run peaked at 2.7 GB of 11.9 GB. The owner restarted the machine (booted 19:18, serving by 19:19). **The cause is not established.** A provider-side hard stop (or power loss) is what the missing evidence points to; nothing in the application or the deployed code explains it. Do not write a root cause until Contabo answers.
 
+**Status at Phase 3D (2026-10-22): still unresolved.** No provider answer has been received, no new evidence was gathered (no production access was used for it), and no hypothesis is promoted to a cause. The ticket is the owner's to file; this document stays the record.
+
 Ask Contabo: was the VPS live-migrated, reset or hard-stopped on 2026-10-20 and 2026-10-21 (times above, UTC)? Is there host maintenance, a node failure or a resource-limit action in the ticket history? Can the host-side console log be attached to the ticket?
 
 ## Safeguards and where they live
@@ -11,6 +13,7 @@ Ask Contabo: was the VPS live-migrated, reset or hard-stopped on 2026-10-20 and 
 | Need | Mechanism | Status |
 |---|---|---|
 | Outside view of the site | `.github/workflows/uptime.yml` every 15 min from GitHub; `scripts/uptime-probe.mjs` (home, API health, robots, sitemap index, hub page, entity-reads-off invariant; each failure retried 3× 20 s apart before it counts). A failed run emails the repository's notification recipients; optional `UPTIME_WEBHOOK_URL` secret | active once merged to `main` |
+| Outage visibility without a webhook | each probe run writes its per-check table to the run summary (`GITHUB_STEP_SUMMARY`); the `report` job in `uptime.yml` opens one issue titled "Production uptime alert" on failure, comments on every further failing run and closes it on recovery (permissions: `issues: write` on that job only; the probe job stays read-only) | active once merged to `main` |
 | HTTP/HTTPS, API and SSR health | the same probe goes through Cloudflare → nginx → SSR/API; the in-host watchdog (`health-watchdog.timer`) keeps checking units, OOM and EPG freshness | probe active on merge; watchdog already installed |
 | Deployment concurrency | workflow group `deploy-prod` + `flock` on `/var/lock/guiatv-deploy.lock` in `deploy-guiatv.sh` and `guiatv-ops.sh` (exit 75, nothing changed) | in the script |
 | Memory-aware builds | pre-flight `MemAvailable` ≥ `BUILD_MIN_AVAILABLE_MB` (3500), `--max-old-space-size=${BUILD_HEAP_MB:-3072}`, `nice -n 10`, `ionice -c 3`, optional `BUILD_MEMORY_MAX=5G` (cgroup via `systemd-run --scope`), `npm install` only when `package-lock.json` changed | in the script (cgroup cap opt-in) |
@@ -19,6 +22,10 @@ Ask Contabo: was the VPS live-migrated, reset or hard-stopped on 2026-10-20 and 
 | Cold start after reboot | `infra/systemd/guiatv-post-boot.service` → `scripts/post-boot-check.mjs --warm`: waits ≤ 5 min for API/SSR, records whether the previous boot ended without a shutdown sequence, checks units/release/flag names, warms ten hubs sequentially; writes `/var/log/guiatv/post-boot.json`, alerts to `health-alerts.log` | **needs installing** (below) |
 | Fast rollback, safe restart | `scripts/guiatv-ops.sh` with `rollback [id]`, `restart`, `warm`, `status` | in the repo; copy is the checkout |
 | No automatic reboot or redeploy | nothing here reboots, redeploys or restarts on a schedule; the deploy workflow stays push/dispatch only | by design |
+
+## Preferred release path: the artifact deploy
+
+`deploy-artifact.yml` (manual dispatch, runs on `main`) is the preferred way to release: CI builds off the host with the Angular budgets and the server only verifies, unpacks, publishes and smoke-tests. `deploy.yml` (push to `main`) still compiles **on the VPS**; it is the path that was running when the 2026-10-20/21 outages happened (not shown to be the cause). Until the owner approves switching `deploy.yml` to artifacts, a merge that changes code deploys on the host. Mitigations in place: docs-only pushes do not deploy, the memory pre-flight, the lock. To release with no on-host build: disable `deploy.yml`, merge, dispatch `deploy-artifact.yml`, re-enable `deploy.yml` (the Phase 3C bootstrap; needs a one-time `git reset --hard origin/main` of the server checkout so the artifact script matches). **Documentation-only changes never need a deploy**: merge them with `deploy.yml`'s `paths-ignore` list covering the touched paths (`docs/**`, `*.md`, `tasks/**`, `.github/workflows/uptime.yml`, `scripts/uptime-probe*`).
 
 ## One-time installation (needs root and the owner's approval)
 

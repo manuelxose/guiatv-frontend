@@ -65,6 +65,23 @@ export interface RehearsalInput {
   /** Admission-eligible films outside the batch: present in the day's airings, never written. */
   noise: Array<{ candidateId: string; title: string }>;
   now?: Date;
+  /**
+   * Phase 3D: runs against the certified, served batch before it is revoked (catalogue enrichment, broadcasts,
+   * quality). It adds its own checks and artefact, and must leave the scratch database as it found it, apart
+   * from changes the rollback removes, so the closing baseline comparison still holds.
+   */
+  afterServed?: (ctx: RehearsalContext) => Promise<{ checks: RehearsalCheck[]; artefact: unknown }>;
+}
+
+export interface RehearsalContext {
+  db: mongoose.mongo.Db;
+  manifest: CanaryManifest;
+  now: Date;
+  entities: MongoContentEntityRepository;
+  certify: ContentCertificationService;
+  /** `movie:<id>` to the stored entity id. */
+  entityIds: ReadonlyMap<string, string>;
+  baseline: () => Promise<Baseline>;
 }
 
 function observation(candidateId: string, title: string, seq: number, mediaId: string): IdentityObservation {
@@ -178,6 +195,15 @@ export async function rehearseWriteCanary(input: RehearsalInput) {
     const stranger = input.noise[0] ? `/peliculas/${input.noise[0].title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}` : '/peliculas/no-existe';
     check('a path outside the batch is not served', policy.decide(stranger).action === 'legacy' && (await reader.resolve(stranger)).status === 'not_found', stranger);
 
+    // 5b. Phase 3D (optional): enrichment, broadcasts and quality on the served batch.
+    let phase3d: { checks: RehearsalCheck[]; artefact: unknown } | undefined;
+    if (input.afterServed) {
+      const beforeHook = await captureBaseline(db);
+      phase3d = await input.afterServed({ db, manifest: input.manifest, now, entities, certify, entityIds: byTmdb, baseline: () => captureBaseline(db) });
+      checks.push(...phase3d.checks);
+      check('the phase 3D step leaves the database as it found it', (await captureBaseline(db)).digest === beforeHook.digest, 'baseline unchanged');
+    }
+
     // 6. Revocation and rollback.
     for (const e of input.manifest.entities) await certify.revoke(byTmdb.get(`${e.tmdb.type}:${e.tmdb.id}`)!, 'Rehearsal Operator', 'rehearsal rollback');
     const unserved = (await Promise.all(input.manifest.entities.map((e) => reader.resolve(e.canonicalPath)))).filter((r) => r.status !== 'not_found').length;
@@ -187,7 +213,7 @@ export async function rehearseWriteCanary(input: RehearsalInput) {
     const rest = diffBaselines(seeded, final);
     check('rollback removes the batch', rolled.removed.entities === N && final.collections.content_entities.documents === 0 && final.collections.content_slugs.documents === 0 && final.collections.content_title_keys.documents === 0, JSON.stringify(rolled.removed));
     check('rollback leaves only the audit trail', Object.keys(rest).length === 1 && rest.content_attestations?.documents[1] === 2 * N, `content_attestations ${final.collections.content_attestations.documents} (${N} attestations + ${N} revocations)`);
-    return { database: db.databaseName, batch: N, ok: checks.every((c) => c.ok), checks, baselines: { empty: empty.digest, seeded: seeded.digest, afterWrite: afterWrite.digest, certified: certified.digest, final: final.digest }, bootCreates: boot };
+    return { database: db.databaseName, batch: N, ok: checks.every((c) => c.ok), checks, baselines: { empty: empty.digest, seeded: seeded.digest, afterWrite: afterWrite.digest, certified: certified.digest, final: final.digest }, bootCreates: boot, ...(phase3d ? { phase3d: phase3d.artefact } : {}) };
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
     for (const [k, v] of Object.entries(before)) if (v === undefined) delete process.env[k]; else process.env[k] = v;
