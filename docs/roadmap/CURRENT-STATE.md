@@ -317,6 +317,6 @@ To check, re-run `scripts/m03l2-cross-type.cjs`. `crossType.airings` should be 0
 - (b) EPG `Series` category on films.
 - (c) `source=program` detail pages list the channel's adjacent programmes among airings, which the page should label as "en el canal" (UX, M05).
 
-## M05 addendum — implementation and CI (2026-10-23)
+## M05 addendum — released and verified (2026-10-23)
 
-The resumed M05 implementation is in PR #66 (`fd2304d`) with backend broadcast partitioning, safe known-airing routes, SSR noindex alias handling, and shared movie/series detail UX. Local evidence is in `docs/roadmap/M05-DELIVERY.md` and `artifacts/m05/before/`. GitHub `verify` and `ssr-resilience` passed for the backend/navigation commit; the final UX/e2e evidence is included in the follow-up commit and must be rechecked before merge. Production remains release `20261022182542`; no deployment or activation has occurred.
+M05 is live after PR #66 (backend/navigation), PR #69 (detail UX, accessibility and QA) and PR #70 (the confirmed film/series classification redirect). The final production artifact is release 20261023010043, git SHA cb5a860d953d353b86ebc3966b004e67e6cde772; guiatv-api and guiatv-ssr are active with zero restarts. Public verification returned /series/camino-a-la-perdicion → 301 /peliculas/camino-a-la-perdicion, the target page 200, and /v2/health 200. CI erify and ssr-resilience are green. Full evidence and acceptance details are in docs/roadmap/M05-DELIVERY.md and rtifacts/m05/QA.md.
