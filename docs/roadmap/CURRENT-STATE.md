@@ -213,3 +213,17 @@ Evidence: `artifacts/m02-b/` (`measure-20261022.json`, `candidates-20261022.json
 
 **Activation**: `EPG_CATALOGUE_LINK_MODE` unset in production (= off).
 
+### M03-L1 deploy and post-resync re-measure (2026-10-22 ~13:40Z)
+
+**Merge/deploy**: PR #59 (head `a816e91`, verify + ssr-resilience green; independent review found 1 high — builder passed raw `Program` entities without `editorialCategory`, so the type rule never fired — fixed before merge with a regression test) squash-merged as **`bd98983`**. One `deploy-artifact.yml` dispatch, run **39783113649**, build + deploy success first attempt → release **`20261022150159`** (`gitSha bd98983`); rollback target `20261022140539`. Post-deploy: API/SSR active, `NRestarts` 0, health 200, `/v2/health/metrics` `catalogueLink.mode = off`, 0 runs; `EPG_CATALOGUE_LINK_MODE` absent from api.env; 9-URL surface (status, canonical, robots meta, X-Robots-Tag) identical before/after; robots.txt hash unchanged.
+
+**Owner-authorised resync**: one manual `syncEPG` CLI run (13:03–13:29Z, exit 0) then `precomputeSchedules` (4 dates rebuilt, 92–121 s each, exit 0), same commands and env as the cron. 3 catalogue upserts refused (CJK-only titles → empty `normalizedTitle`, existing guard working; no invalid rows written).
+
+**Coverage after resync** (`artifacts/m03-l1/measure-postsync.json`; same four dates as the baseline, so the change is the 3F copy path plus normal intra-day EPG revisions, not new days): airings with TMDB id 3 725 → 3 949; with `mediaId` 979 → **1 366**; **catalogueRowShare 26.3 % → 34.6 %** (per date 25.9→33.1, 27.4→35.3, 25.6→33.0, 26.0→37.1). Strictly *verified* airings (m02b: id + row + type + title key) 766 → 900 (20.6 % → 22.8 %).
+
+**New conflict introduced by the 3F copy path**: `Series` airings linked to a **movie** row 3 → **196** (m02b `wrong_content_type` 3 → 198; linker's `wrong_content_type` among unlinked fell 221 → 26 because those airings are now "linked"). These are the series whose TMDB id only has a movie row: the stored programme's `mediaId` points at a movie with the same numeric TMDB id — almost certainly a different work. Not user-visible (the joiner refuses type mismatches), but the raw 34.6 % overstates verified coverage. Fix belongs to the sync copy path (copy only when the row type matches the programme's TMDB kind) — separate milestone.
+
+**Shadow after resync** (`artifacts/m03-l1/shadow-postsync.json`): linkable **2 171 = m02b 2 171**, every category identical again (title key 298, shared id 66, wrong type 26, invalid rows 12, duplicates 6, no key 4, conflicting `mediaId` 4); per-date 460 / 606 / 684 / 464; 69–114 ms per date vs 92–121 s rebuilds (≈0.1 %).
+
+**Activation**: flag off; shadow not enabled persistently; nothing persisted.
+
