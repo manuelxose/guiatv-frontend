@@ -61,6 +61,12 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 - **Fix**: linker `cross_type_media_id`; a kind-aware, row-verified sync cache (Cine/Serie hits need an explicit matching kind; ambiguity or an unreadable catalogue copies no id); an always-on build guard `guardExistingMediaIds` that strips unverified ids from built airings only; the backfill now filters by kind. 8 regression tests fail on the old code.
 - **Status**: Eng ✔ · Tests ✔ (backend 640/1 skip, ops 29, CI green) · Merged `6efce56` (PR #61) · Deployed release `20261022161030` (rollback `20261022150159`) · Flags unchanged (all off). The post-sync rebuild is **pending** (next scheduled precompute). 201 stored programme docs remain; see `M03-L2-REMEDIATION-PROPOSAL.md`.
 
+### M03 — Content enrichment & quality (2026-10-22) — identity stream CLOSED
+- **Status**: Eng ✔ · CI ✔ · Merge ✔ (#62 `68b8523`, #63 `b0b0462`, #64 `ece2b03`) · Deploy ✔ (release `20261022182542`) · Act – (no flag changed). Evidence: CURRENT-STATE "M03 addendum", `artifacts/m03/`.
+- **M03.0**: cross-type airings 199 → 0 after the 18:15 rebuild; TMDB pages no longer list opposite-kind airings (#64). **The identity-only stream is closed.** Historical residue (~201 stored programme docs) is tracked as technical debt below, not as a milestone.
+- **M03.2/.4**: TMDB detail genres/runtime/original title (film genres and runtime 1/31 → 31/31), resolvable hub links (404s 3/95 → 1/79), Movie/TVSeries JSON-LD without third-party `aggregateRating` and invented `inLanguage`.
+- **Technical debt — historical remediation (TD-1)**: stored `programs` with cross-type `mediaId`/`tmdbId` (`M03-L2-REMEDIATION-PROPOSAL.md`). Not user-visible after M03 (build guard + read-time kind filter). Do only with owner write approval; never a blocker.
+
 ### M03-A — Candidate enrichment verification
 - **Objective**: final allowlist of 3–5 `/peliculas/` paths. **Scope**: pick candidates the preflight accepts with `verifiedBroadcasts > 0`; swap from the 25 reserves; re-take before-snapshots if > a few hours old. **Non-goals**: title-only matches, `scope=all`, series/programmes.
 - **Status**: Eng ✔ · CI – · Merge – · Deploy – · Act –
@@ -84,8 +90,8 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 | ID | Objective | Depends | Skills | Acceptance (summary) | Blockers | Go |
 |---|---|---|---|---|---|---|
-| M05 | Movie detail page: show verified genres/runtime/schedule well, a11y, no SEO-contract change | M02-A | frontend-design, UI-UX-Pro-Max, angular-component | Karma + axe + Playwright pass; meta/canonical/robots unchanged | do not deploy during M04-B | NO-GO (dep) |
-| M06 | Series and episodes pages | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO |
+| M05 | Movie detail page UX: genres/runtime/original title now present on 31/31 sampled films (M03); next: label the channel-adjacent airings on programme-sourced pages, broadcast section hierarchy, a11y (axe), mobile | M02-A ✔ | frontend-design, UI-UX-Pro-Max, angular-component | Karma + axe + Playwright pass; meta/canonical/robots unchanged | do not deploy during M04-B | **GO** (data ready) |
+| M06 | Series and episodes pages (incl. frontend episode-titled links, EPG films classed as `Series`) | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO |
 | M07 | Programme and channel pages (now/next; fix "7-day" assumptions) | M05 | same | no copy promises more than the 3-day guide | EPG horizon | NO-GO |
 | M08 | Shared UX/UI consistency (tokens, cards, empty states) | M05, M06, M07 | web-design-guidelines, UI-UX-Pro-Max | one component set; bundle budgets hold | — | NO-GO |
 

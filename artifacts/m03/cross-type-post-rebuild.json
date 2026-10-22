@@ -1,0 +1,72 @@
+{
+ "generatedAt": "2026-10-22T16:23:41.376Z",
+ "dates": [
+  "20261021",
+  "20261022",
+  "20261023",
+  "20261024",
+  "20261025",
+  "20261026",
+  "20261027",
+  "20261028",
+  "20261029"
+ ],
+ "airingsWithMediaId": 1162,
+ "crossType": {
+  "airings": 0,
+  "byCategoryRowType": {},
+  "byDate": {},
+  "airingVsRowTmdbId": {},
+  "rowSource": {},
+  "rowTitleKeyMatchesAiring": {},
+  "tmdbIdAlsoHasRowOfExpectedType": {},
+  "stored": {
+   "programmesFound": 0,
+   "programmesMissing": 0,
+   "storedMediaIdEqualsAiring": 0,
+   "storedMediaIdDiffers": 0,
+   "storedMediaIdAbsent": 0,
+   "storedCategory": {},
+   "tmdbKind": {},
+   "tmdbSource": {},
+   "programmeCreatedBeforeDeploy": 0,
+   "programmeCreatedAfterDeploy": 0
+  },
+  "distinctBadMediaIds": 0,
+  "distinctTmdbIds": 0
+ },
+ "storedProgrammes": {
+  "withMediaId": 4338,
+  "danglingRow": 0,
+  "kindMatchesRow": 4116,
+  "kindMismatchesRow": 0,
+  "noKind": 222,
+  "noKindBySource": {
+   "db_cache": 222
+  },
+  "mismatchBySource": {}
+ },
+ "guardProjection": {
+  "withTmdb": 3952,
+  "rawMediaIdNow": 1162,
+  "mediaIdAfterGuard": 1162,
+  "crossTypeAfterGuard": 0,
+  "guard": {
+   "runs": 1,
+   "errors": 0,
+   "checked": 1162,
+   "kept": 1162,
+   "dropped": {}
+  },
+  "airingsBuiltAfterDeploy": 3952
+ },
+ "readOnlyGuard": {
+  "total": 25,
+  "counts": {
+   "find:tv_read_airings": 2,
+   "getMore:": 16,
+   "find:media_catalog": 5,
+   "find:programs": 2
+  }
+ }
+}
