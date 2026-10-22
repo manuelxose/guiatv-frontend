@@ -227,3 +227,50 @@ Evidence: `artifacts/m02-b/` (`measure-20261022.json`, `candidates-20261022.json
 
 **Activation**: flag off; shadow not enabled persistently; nothing persisted.
 
+## M03-L2 addendum — type-safe mediaId propagation (2026-10-22 ~14:30Z)
+
+**Git**: PR #60 (M03-L1 docs) squash-merged as `bdbd8fa`. PR #61 (head `ed3bb21`; verify and ssr-resilience green) squash-merged as **`6efce56`**. Independent review found no critical or high issues. Two mediums were addressed: Cine/Serie programmes no longer reuse untyped cache entries, and phase-2 hits prefer tagged entries. Phase 2 and other categories still have no kind check; there is no type evidence to check against (see risks).
+
+**Deploy**: one `deploy-artifact` run (39793188001) built `6efce56`. Release **20261022161030** is active; rollback target is 20261022150159. Health is `healthy`. Page heads, robots.txt and sitemap.xml are byte-identical to the pre-deploy baseline. Flags: none of `EPG_CATALOGUE_LINK_MODE` / `CONTENT_*` are set, so everything stays off. No sync was forced and nothing was written.
+
+**Root cause (read-only census `scripts/m03l2-cross-type.cjs`, `artifacts/m03-l2/cross-type-before.json`)**:
+- The title-keyed, kind-blind DB-enrichment cache in `SyncEPGData` caused the problem.
+- All 199 cross-type airings in the window are built from stored programmes with `tmdbSource: db_cache` and kind `series` that point at a movie row of the same title (`metadataSource: epg`).
+- `tmdbIdAlsoHasRowOfExpectedType` = no for 198 of them.
+- They are present **both** in stored `programs` (201 documents, all `db_cache`) and in the derived `tv_read_airings`.
+
+**Corrected paths**:
+- `catalogueLinker` existing-id branch (type check).
+- `SyncEPGData` cache load and selection.
+- `TvReadModelBuilder.rebuildDate`: the guard runs after the merge, before insert.
+- `backfill-media-catalog`: kind filter.
+
+`MongoProgramRepository.findEnrichedByTitles` now also returns `tmdbKind`.
+
+**Metrics** (`artifacts/m03-l2/measure-{before,after}.json`, same window; no rebuild has happened since the deploy yet):
+
+| | before | after deploy (read model not rebuilt) | projected next build (guard run in-memory on the live airings) |
+|---|---|---|---|
+| airings with TMDB id | 3 949 | 3 949 | 3 949 |
+| raw `mediaId` | 1 366 (34.6 %) | 1 366 | **1 164 (29.5 %)** |
+| verified (upcoming + ended + shared-id) | 900 (22.8 %) | 900 | 900 (guard drops none) |
+| cross-type (Series→movie / Cine→tv) | 196 / 2 | 196 / 2 | **0** |
+| row of another TMDB id | 4 | 4 | 0 |
+| title-key mismatch | 301 | 301 | unchanged (the read-time joiner still refuses these) |
+
+The guard projection drops `cross_type_media_id` 198 and `conflicting_media_id` 4. Raw `mediaId` share is not verified coverage. The headline remains **22.8 % verified**.
+
+**Pending evidence**: the first post-deploy scheduled sync and precompute (18:00 / 18:15 Madrid) will show three things:
+- (a) newly synced programmes get no cross-type id;
+- (b) rebuilt airings drop the 202 ids;
+- (c) the stored residue keeps 201 documents until they expire or are re-enriched.
+
+To check, re-run `scripts/m03l2-cross-type.cjs`. `crossType.airings` should be 0 and `guardProjection.airingsBuiltAfterDeploy` should be > 0. `/v2/health/metrics` `catalogueLink.mediaIdGuard` stays 0 in the API process, because precompute runs in a child job process.
+
+**Historical records**: 201 stored programme documents still carry a cross-type `mediaId` and a film `tmdbId`. They are excluded from every new read model and refused by the cache. Correcting them needs a production write, which is out of scope; see `M03-L2-REMEDIATION-PROPOSAL.md`.
+
+**Outstanding risks**:
+- Kind is enforced only for Cine/Series. Phase-2 cache hits and other categories (Documental, Infantil…) accept a single-kind entry's verified row, because they carry no type evidence.
+- The guard fails open on a catalogue read error. It is counted, and the read-time joiner still refuses type mismatches.
+- 127 `db_cache` documents carry a `mediaId` without a recorded kind. Their rows are verified, but their kind is not.
+
