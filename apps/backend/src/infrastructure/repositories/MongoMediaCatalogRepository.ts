@@ -23,6 +23,17 @@ const repoLogger = logger.child('MongoMediaCatalogRepository');
 const DUPLICATE_KEY_ERROR_CODE = 11000;
 
 export class MongoMediaCatalogRepository implements IMediaCatalogRepository {
+  /** One malformed row (e.g. empty title) must not hide the rest of the batch: skip it and say how many. */
+  private toEntities(docs: MediaCatalogDoc[]): MediaCatalogEntry[] {
+    const entries: MediaCatalogEntry[] = [];
+    let skipped = 0;
+    for (const doc of docs) {
+      try { entries.push(this.toEntity(doc)); } catch { skipped++; }
+    }
+    if (skipped) repoLogger.warn('skipped invalid catalogue rows', { skipped, of: docs.length });
+    return entries;
+  }
+
   async findById(id: string): Promise<MediaCatalogEntry | null> {
     try {
       const doc = await MediaCatalogModel.findById(id).lean().exec();
@@ -57,7 +68,7 @@ export class MongoMediaCatalogRepository implements IMediaCatalogRepository {
       const docs = await MediaCatalogModel.find({ tmdbType, tmdbId: { $in: ids } })
         .lean()
         .exec();
-      return (docs as MediaCatalogDoc[]).map((doc) => this.toEntity(doc));
+      return this.toEntities(docs as MediaCatalogDoc[]);
     } catch (error) {
       repoLogger.warn('findManyByTmdbIds failed', { tmdbType, count: ids.length, error: (error as Error).message });
       return [];
@@ -82,7 +93,7 @@ export class MongoMediaCatalogRepository implements IMediaCatalogRepository {
       const docs = await MediaCatalogModel.find({ normalizedTitle: { $in: titles } })
         .lean()
         .exec();
-      return (docs as MediaCatalogDoc[]).map((doc) => this.toEntity(doc));
+      return this.toEntities(docs as MediaCatalogDoc[]);
     } catch (error) {
       repoLogger.warn('findByNormalizedTitles failed', { count: titles.length, error: (error as Error).message });
       return [];
@@ -164,7 +175,7 @@ export class MongoMediaCatalogRepository implements IMediaCatalogRepository {
         .limit(Math.max(1, limit))
         .lean()
         .exec();
-      return (docs as MediaCatalogDoc[]).map((doc) => this.toEntity(doc));
+      return this.toEntities(docs as MediaCatalogDoc[]);
     } catch (error) {
       repoLogger.warn('findStale failed', { error: (error as Error).message });
       return [];
