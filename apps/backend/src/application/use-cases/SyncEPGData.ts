@@ -31,6 +31,8 @@ import { resolve as pathResolve } from 'path';
 import { l1Cache } from '../../infrastructure/cache/L1Cache';
 import { mapTmdbGenreIdsToTags } from '../../shared/utils/tmdbGenres';
 import { MediaCatalogService } from '../services/MediaCatalogService';
+import { CatalogueRowReader, readCatalogueRows, readCatalogueRowsFor } from '../services/CatalogueLinkShadow';
+import { buildLinkContext, linkCatalogueRow } from '../../domain/services/catalogueLinker';
 
 export interface SyncEPGDataRequest {
   sourceUrl: string;
@@ -49,11 +51,19 @@ export interface SyncEPGDataResult {
   duration: number;
 }
 
+/** A stored programme's enrichment offered for reuse; `kind` is known only from its tmdbKind flag or a verified catalogue row. */
+interface EnrichmentCacheEntry {
+  tmdbId: number; mediaId?: string; kind?: 'movie' | 'tv'; image: string; description?: string; year?: string; rating?: string; genreTags?: string[];
+}
+
 /**
  * Downloads, parses and persists EPG data from external XML sources.
  */
 export class SyncEPGData {
   private readonly syncLogger = logger.child('SyncEPGData');
+  private catalogueRowReader: CatalogueRowReader = readCatalogueRows;
+  /** M03-L2: reasons a stored enrichment (or its mediaId) was refused for reuse in the last enrichment pass. */
+  private cacheRefusals: Record<string, number> = {};
   private readonly deduplicator = new ProgramDeduplicator();
   private readonly channelTypeOverrides: Record<string, string>;
   private readonly normalizedChannelTypeOverrides: Record<string, string>;
@@ -855,37 +865,88 @@ export class SyncEPGData {
   /**
    * Loads TMDB enrichment data from existing DB records for the given programs.
    * Returns a map from normalized title → enriched fields, used to avoid redundant API calls.
+   * M03-L2: a stored `mediaId` is offered only when its catalogue row exists, carries the entry's TMDB id and agrees with
+   * the entry's tmdbKind; an entry whose flag and row disagree is not offered at all. A failed row read offers no mediaId.
    */
-  private async loadExistingEnrichment(programs: Program[]): Promise<Map<string, {
-    tmdbId: number; mediaId?: string; image: string; description?: string; year?: string; rating?: string; genreTags?: string[];
-  }>> {
-      const uniqueTitles = [...new Set(programs.map((p) => p.title))];
+  private async loadExistingEnrichment(programs: Program[]): Promise<Map<string, EnrichmentCacheEntry[]>> {
+    this.cacheRefusals = {};
+    const uniqueTitles = [...new Set(programs.map((p) => p.title))];
     if (!uniqueTitles.length) return new Map();
 
     try {
       const existing = await this.programRepository.findEnrichedByTitles(uniqueTitles);
-      const map = new Map<string, { tmdbId: number; mediaId?: string; image: string; description?: string; year?: string; rating?: string; genreTags?: string[] }>();
+      const linked = existing.filter((e) => e.mediaId);
+      const rows = linked.length
+        ? await readCatalogueRowsFor(linked.map((e) => e.tmdbId), this.catalogueRowReader).catch((err) => {
+            this.syncLogger.warn('DB enrichment cache: catalogue rows unreadable, no mediaId reused', { error: (err as Error).message });
+            return null;
+          })
+        : [];
+      const ctx = rows ? buildLinkContext([], rows) : null;
+      const map = new Map<string, EnrichmentCacheEntry[]>();
       for (const entry of existing) {
-        buildProgramTitleAliases(entry.title).forEach((alias) => {
-          if (alias && !map.has(alias)) {
-            map.set(alias, {
-              tmdbId: entry.tmdbId,
-              mediaId: entry.mediaId,
-              image: entry.image,
-              description: entry.description,
-              year: entry.year,
-              rating: entry.rating,
-              genreTags: entry.genreTags,
-            });
+        const flagged = entry.tmdbKind === 'movie' ? 'movie' : entry.tmdbKind === 'series' ? 'tv' : undefined;
+        const cached: EnrichmentCacheEntry = {
+          tmdbId: entry.tmdbId, kind: flagged, image: entry.image, description: entry.description, year: entry.year, rating: entry.rating, genreTags: entry.genreTags,
+        };
+        if (entry.mediaId) {
+          const d = ctx && linkCatalogueRow({ title: entry.title, tmdbId: entry.tmdbId, mediaId: entry.mediaId, editorialCategory: flagged === 'movie' ? 'Cine' : flagged === 'tv' ? 'Series' : null }, ctx);
+          if (d?.decision === 'ALREADY_LINKED') Object.assign(cached, { mediaId: entry.mediaId, kind: d.evidence.tmdbType });
+          else {
+            this.refuseCache(d ? d.reason : 'catalogue_unavailable');
+            if (d?.reason === 'cross_type_media_id') continue;
           }
+        }
+        buildProgramTitleAliases(entry.title).forEach((alias) => {
+          if (!alias) return;
+          const list = map.get(alias);
+          if (list) list.push(cached);
+          else map.set(alias, [cached]);
         });
       }
-      this.syncLogger.info('DB enrichment cache loaded', { titles: uniqueTitles.length, hits: map.size });
+      this.syncLogger.info('DB enrichment cache loaded', { titles: uniqueTitles.length, hits: map.size, refused: this.cacheRefusals });
       return map;
     } catch (err) {
       this.syncLogger.warn('Failed to load DB enrichment cache', { error: (err as Error).message });
       return new Map();
     }
+  }
+
+  private refuseCache(reason: string): void {
+    this.cacheRefusals[reason] = (this.cacheRefusals[reason] ?? 0) + 1;
+  }
+
+  /**
+   * M03-L2: the stored enrichment to reuse for a title. With an expected kind (Cine → movie, Serie → tv) only entries of that
+   * kind qualify; untyped entries only when no entry of the other kind shares the title. Without one, a title stored as both
+   * kinds is not reused. The mediaId survives only when every qualifying entry names the same TMDB id and row.
+   */
+  private pickCachedEnrichment(map: Map<string, EnrichmentCacheEntry[]>, aliases: string[], want?: 'movie' | 'tv'): EnrichmentCacheEntry | undefined {
+    for (const alias of aliases) {
+      const entries = map.get(alias);
+      if (!entries?.length) continue;
+      let pool = entries;
+      if (want) {
+        pool = entries.filter((e) => e.kind === want);
+        if (!pool.length) {
+          if (entries.some((e) => e.kind)) {
+            this.refuseCache('other_kind_only');
+            return undefined;
+          }
+          pool = entries;
+        }
+      } else if (new Set(entries.map((e) => e.kind).filter(Boolean)).size > 1) {
+        this.refuseCache('ambiguous_kind');
+        return undefined;
+      }
+      const hit = pool.find((e) => e.mediaId) ?? pool[0];
+      if (hit.mediaId && (new Set(pool.map((e) => e.tmdbId)).size > 1 || new Set(pool.map((e) => e.mediaId).filter(Boolean)).size > 1)) {
+        this.refuseCache('ambiguous_candidates');
+        return { ...hit, mediaId: undefined };
+      }
+      return hit;
+    }
+    return undefined;
   }
 
   /** Records a TMDB search match into the local media catalog and returns the
@@ -939,10 +1000,7 @@ export class SyncEPGData {
           // ---- Phase 1: existing cine/serie enrichment (no regression) ----
           if (isMovie || isSeries) {
             // Check DB enrichment cache before calling TMDB
-            const titleAliases = buildProgramTitleAliases(program.title);
-            const dbHit = titleAliases
-              .map((alias) => dbEnrichmentMap.get(alias))
-              .find(Boolean);
+            const dbHit = this.pickCachedEnrichment(dbEnrichmentMap, buildProgramTitleAliases(program.title), isMovie ? 'movie' : 'tv');
             if (dbHit?.genreTags?.length) {
               this.syncLogger.debug('TMDB DB cache hit (phase1)', { title: program.title });
               return this.cloneProgram(program, {
@@ -1011,9 +1069,7 @@ export class SyncEPGData {
           if (!cleanTitles.length) return program;
 
           // Check DB enrichment cache before calling TMDB
-          const dbHit2 = cleanTitles
-            .map((alias) => dbEnrichmentMap.get(alias))
-            .find(Boolean);
+          const dbHit2 = this.pickCachedEnrichment(dbEnrichmentMap, cleanTitles);
           if (dbHit2?.genreTags?.length) {
             this.syncLogger.debug('TMDB DB cache hit (phase2)', { title: program.title });
             return this.cloneProgram(program, {
@@ -1100,6 +1156,7 @@ export class SyncEPGData {
       enrichedPrograms.push(...results);
     }
 
+    if (Object.keys(this.cacheRefusals).length) this.syncLogger.info('DB enrichment cache refusals', { refused: this.cacheRefusals });
     return enrichedPrograms;
   }
 

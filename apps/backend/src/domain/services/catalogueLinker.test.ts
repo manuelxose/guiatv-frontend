@@ -63,3 +63,14 @@ test('idempotent and does not mutate inputs', () => {
   const ctx = buildLinkContext([p], rows);
   assert.deepEqual(linkCatalogueRow(p, ctx), linkCatalogueRow(p, ctx));
 });
+test('M03-L2: an existing mediaId on a row of the other kind is rejected as cross-type; the TMDB number alone proves nothing', () => {
+  const show: LinkRow = { ...heat, id: 'r2', tmdbType: 'tv' };
+  is(decide(prog({ editorialCategory: 'Series', mediaId: 'r1' }), [heat]), 'REJECTED', 'cross_type_media_id');
+  is(decide(prog({ editorialCategory: 'Cine', mediaId: 'r2' }), [show]), 'REJECTED', 'cross_type_media_id');
+  // Same numeric id 949 under both kinds: each category keeps only its own kind's row.
+  is(decide(prog({ editorialCategory: 'Series', mediaId: 'r2' }), [heat, show]), 'ALREADY_LINKED', 'existing_media_id_valid');
+  is(decide(prog({ editorialCategory: 'Series', mediaId: 'r1' }), [heat, show]), 'REJECTED', 'cross_type_media_id');
+  is(decide(prog({ editorialCategory: 'Cine', mediaId: 'r1' }), [heat, show]), 'ALREADY_LINKED', 'existing_media_id_valid');
+  // A category that names no kind keeps a valid row of either kind (no type evidence to contradict it).
+  is(decide(prog({ editorialCategory: 'Documental', mediaId: 'r2' }), [heat, show]), 'ALREADY_LINKED', 'existing_media_id_valid');
+});
