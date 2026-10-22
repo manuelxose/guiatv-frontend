@@ -4,7 +4,7 @@ Date: 2026-10-22 (Europe/Madrid). Scope: the owner's M05 specification, resumed 
 
 ## Delivery state
 
-Engineering implemented; independent final browser checks and CI in progress. Merge, release and production verification are separate gates. **M05 is not PASS until those gates complete.**
+Engineering, CI, release and production verification are complete. **M05 PASS.**
 
 Baseline: production release `20261022182542`, code `ece2b03`. Repository `main` was `47da923`, with no open PRs. The GitHub repository now redirects from `guiatv-frontend` to `manuelxose/guiatv`.
 
@@ -19,7 +19,7 @@ Baseline: production release `20261022182542`, code `ece2b03`. Repository `main`
 
 ## Quality and safety
 
-Local backend build/full tests: 563 pass, 24 intentionally skipped Mongo-dependent tests, zero failures. Mongo-enabled CI remains required. Local full Angular suite: 314 pass; final focused frontend checks: 14 pass, application/spec typechecks pass, lint zero errors (697 pre-existing warnings), production SSR build passes Angular budgets.
+Local backend build/full tests: 563 pass, 24 intentionally skipped Mongo-dependent tests, zero failures. Mongo-enabled CI remains required. Local full Angular suite: 315 pass; final focused frontend checks: 14 pass, application/spec typechecks pass, lint zero errors (697 pre-existing warnings), production SSR build passes Angular budgets.
 
 Independent QA added deterministic SSR/Playwright coverage for broadcast separation, simulcasts, four viewport widths (375/768/1280/1440), light/dark axe checks, absent metadata, series runtime, CTA scrolling, exact-ID link navigation, noindex aliases and structured-data safety. QA exposed and implementation corrected a live-badge contrast failure, unfocusable horizontal rails, a low-contrast availability eyebrow and a bare-fragment CTA that navigated to the homepage.
 
@@ -47,4 +47,4 @@ Ponytail, verification-before-completion, local technical SEO/schema skills and 
 3. Merge only after green CI and review, then one ordinary artifact-workflow release.
 4. Verify live release SHA, API/SSR health, rendered samples, routes, grouping, SEO parity, browser/axe/viewport results, resource consumption and nginx errors. Roll back on the documented critical-regression thresholds.
 
-Final PR/run/release identifiers and measured post-release results will be recorded after verification. Next user-facing milestone: M07 programme/channel discovery (clear now/next and actual three-day coverage), since the M05 specification also covers the original M06 series-detail scope. Historical stored identity residue stays bounded debt.
+Final release: deploy workflow run 39868718992, release 20261023010043. Public checks: /v2/health 200, the corrected classification route 301→200, and no API/SSR error journal entries in the post-release window. Next user-facing milestone: M07 programme/channel discovery (clear now/next and actual three-day coverage), since the M05 specification also covers the original M06 series-detail scope. Historical stored identity residue stays bounded debt.
