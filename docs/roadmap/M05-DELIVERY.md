@@ -14,7 +14,7 @@ Baseline: production release `20261022182542`, code `ece2b03`. Repository `main`
 - Work broadcasts and other channel programmes have separate API arrays, selection logic and Spanish sections. Explicit media/TMDB/type conflicts cannot be grouped as the same work. Unknown identity falls back to an exact normalized work-title comparison within the same inferred kind; this is scheduling presentation, not persistent identity linking.
 - Current and upcoming broadcasts are sorted and deduplicated by slot; simultaneous airings on different channels remain visible. Finished legacy slots are removed. Empty inventory has an explicit empty state.
 - Guide/card targets use known airing IDs under `/contenido/program:<id>` rather than invented episode/work slugs. These routes render SSR and remain noindex. Existing public movie/series/programme URLs retain their canonical and indexability rules. Older responses without a resolved target lead to the known channel.
-- An unmatched TMDB search result is never substituted for the requested slug. Wrong-kind EPG fallback is rejected. The old `/series/camino-a-la-perdicion` report is historical: the baseline route returned 200, so it was tested rather than treated as a current 404.
+- An unmatched TMDB search result is never substituted for the requested slug. Wrong-kind EPG fallback is rejected. The confirmed `/series/camino-a-la-perdicion` classification defect now 301-redirects to the verified movie route `/peliculas/camino-a-la-perdicion`.
 - No reliable episode collection exists in the current detail DTO. Episode-labelled EPG entries remain informative and use known airing destinations; no unsupported episode collection, episode URL, season, or number is fabricated.
 
 ## Quality and safety

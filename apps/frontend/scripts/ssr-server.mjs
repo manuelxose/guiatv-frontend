@@ -422,6 +422,10 @@ app.get('/contenido/:catalogId', async (req, res, next) => {
   return redirectLegacyCatalog(req, res, catalogId, next);
 });
 
+// Historical EPG classification exposed this film under the series prefix. Keep the old URL useful without
+// manufacturing a second catalogue identity; the movie route is the verified canonical target.
+app.get('/series/camino-a-la-perdicion', (_req, res) => res.redirect(301, '/peliculas/camino-a-la-perdicion'));
+
 app.get(['/programacion-tv/ver-canal/:id', '/ver-canal/:id'], (req, res) => {
   const slug = encodeURIComponent(String(req.params.id || '').trim());
   if (!slug) return res.status(404).send('Not found');

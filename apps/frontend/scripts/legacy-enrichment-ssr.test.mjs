@@ -115,3 +115,15 @@ test('known programme IDs render without guessed slugs or redirect loops and sta
     assert.equal(missing.status, 404);
   } finally { await ssr.stop(); await backend.stop(); }
 });
+
+test('the confirmed EPG film misclassified as a series redirects to its verified movie route', { timeout: 60000 }, async () => {
+  const backend = await startBackend({}, {
+    '/v2/catalog/slug/movie/camino-a-la-perdicion': legacy(),
+  });
+  const ssr = await launchSsr(backend.origin);
+  try {
+    const response = await fetch(`${ssr.origin}/series/camino-a-la-perdicion`, { redirect: 'manual' });
+    assert.equal(response.status, 301);
+    assert.equal(response.headers.get('location'), '/peliculas/camino-a-la-perdicion');
+  } finally { await ssr.stop(); await backend.stop(); }
+});
