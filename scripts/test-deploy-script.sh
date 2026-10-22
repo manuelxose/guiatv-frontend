@@ -158,4 +158,14 @@ set +e; bash "${ROOT}/scripts/guiatv-ops.sh" rollback not-a-release >"${T}/ops2.
 [ "${code}" != "0" ] || fail "rolling back to a release that does not exist must fail"
 bash "${ROOT}/scripts/guiatv-ops.sh" status >"${T}/ops3.log" 2>&1 || fail "ops status must work"
 
+# --- 7. rollback simulation with the production release ids (sandbox only, not evidence of a live rollback) ------------
+rm -rf "${SRV}/releases" && mkdir -p "${SRV}/releases"
+for r in 20261021190805 20261021195307 20261021205747 20261022010257 20261022103818; do mkdir -p "${SRV}/releases/${r}"; done
+ln -sfn "${SRV}/releases/20261022103818" "${SRV}/current"
+bash "${ROOT}/scripts/guiatv-ops.sh" rollback >"${T}/ops4.log" 2>&1 || { cat "${T}/ops4.log"; fail "production-shaped rollback must succeed"; }
+[ "$(basename "$(readlink -f "${SRV}/current")")" = "20261022010257" ] || fail "default rollback must pick the newest release older than the live one"
+[ ! -e "${SRV}/current.rollback" ] || fail "the temporary rollback link must not survive the atomic switch"
+set +e; bash "${ROOT}/scripts/guiatv-ops.sh" rollback 20261022010257 >"${T}/ops5.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] || fail "rolling back to the release that is already live must fail"
+
 echo "deploy script checks passed"
