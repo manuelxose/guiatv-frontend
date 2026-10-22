@@ -1,3 +1,5 @@
+import type { EntityBroadcast } from '../services/EntityBroadcastService';
+
 export type CatalogSource = 'program' | 'tmdb';
 export type CatalogContentType = 'movie' | 'series' | 'program';
 export type CatalogAvailability =
@@ -133,7 +135,28 @@ export interface CatalogItemDTO {
   userInteraction?: CatalogUserInteractionDTO;
 }
 
+/**
+ * Phase 3E: verified additions to a legacy detail page, present only while `CONTENT_LEGACY_ENRICHMENT_ENABLED` serves
+ * that page and only for the parts whose identity check passed. It never replaces a field of the legacy payload.
+ */
+export interface CatalogLegacyEnrichmentDTO {
+  version: 1;
+  /** Verified catalogue facts the legacy payload lacks (each present only when the legacy value is absent). */
+  metadata?: { originalTitle?: string; runtimeMinutes?: number; genres?: string[] };
+  /** Upcoming broadcasts of this work in the next days, on catalogue-row evidence. Absent when the schedule could not be read (nothing is claimed either way). */
+  broadcasts?: {
+    status: 'ok' | 'none';
+    windowDays: number;
+    generatedAt: string;
+    timeZone: 'Europe/Madrid';
+    items: EntityBroadcast[];
+  };
+  /** Required notice where TMDB-sourced metadata is shown, with the date the catalogue row was last filled from TMDB. */
+  attribution?: { notice: string; updatedAt: string };
+}
+
 export interface CatalogDetailDTO extends CatalogItemDTO {
+  enrichment?: CatalogLegacyEnrichmentDTO;
   cast?: Array<{ name: string; character?: string; profile?: string }>;
   director?: string;
   related?: CatalogItemDTO[];

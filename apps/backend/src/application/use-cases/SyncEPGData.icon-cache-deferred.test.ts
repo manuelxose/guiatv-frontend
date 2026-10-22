@@ -102,22 +102,24 @@ function delay(ms: number): Promise<void> {
 test('icon fetches for new channels run with bounded concurrency, not one at a time', async () => {
   const channelRepository = fakeChannelRepository();
   const channelCount = 16;
-  const perFetchDelayMs = 150;
-  // The old code awaited cacheChannelIcon() inline in the sequential
-  // identity-resolution loop — N channels meant N sequential fetches. The
-  // fix queues them and drains with a concurrency limit of 8, so total wall
-  // time should track ceil(N / 8) batches, not N.
-  const oldSequentialBoundMs = channelCount * perFetchDelayMs;
+  // The old code awaited cacheChannelIcon() inline in the sequential identity-resolution loop, so at most one
+  // fetch was ever in flight. The fix queues them and drains with a concurrency limit of 8. Peak in-flight fetches
+  // measure that directly; a wall-clock bound measured the same thing through scheduler noise and failed under load.
   const parsedChannels = Array.from({ length: channelCount }, (_, i) => ({
     id: `src-${i}`,
     displayName: `Canal Distinct ${i}`,
     icon: `https://example.test/icon-${i}.png`,
   }));
 
-  const startedAt = Date.now();
+  let inFlight = 0;
+  let peakInFlight = 0;
+  let fetches = 0;
   await withStubbedAxiosGet(
     async () => {
-      await delay(perFetchDelayMs);
+      fetches++;
+      peakInFlight = Math.max(peakInFlight, ++inFlight);
+      await delay(20);
+      inFlight--;
       return { data: new ArrayBuffer(4) };
     },
     async () => {
@@ -141,15 +143,11 @@ test('icon fetches for new channels run with bounded concurrency, not one at a t
       assert.equal(result.success, true);
     }
   );
-  const elapsedMs = Date.now() - startedAt;
 
   const uniqueChannelIds = new Set(channelRepository.saveLog.map((entry) => entry.id));
   assert.equal(uniqueChannelIds.size, channelCount);
-
-  assert.ok(
-    elapsedMs < oldSequentialBoundMs / 2,
-    `expected bounded-concurrency draining well under the ${oldSequentialBoundMs}ms serial bound, took ${elapsedMs}ms`
-  );
+  assert.equal(fetches, channelCount);
+  assert.equal(peakInFlight, 8, `expected the drain to run 8 fetches at once, peak was ${peakInFlight}`);
 
   // Every channel was saved immediately with its raw feed icon URL (visible
   // as the first save per channel) before any fetch had a chance to resolve.

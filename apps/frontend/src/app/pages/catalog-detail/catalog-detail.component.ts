@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { CommonModule, isPlatformServer } from '@angular/common';
+import { Component, ElementRef, Injector, OnDestroy, OnInit, PLATFORM_ID, ViewChild, afterNextRender, inject } from '@angular/core';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
@@ -7,6 +7,7 @@ import { catchError, map, startWith, switchMap, takeUntil } from 'rxjs/operators
 import { CatalogRailComponent } from '../../components/catalog-rail/catalog-rail.component';
 import { InteractionButtonsComponent } from '../../components/interaction-buttons/interaction-buttons.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
+import { EntityBroadcastListComponent } from '../../components/entity-broadcast-list/entity-broadcast-list.component';
 import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
 import { ShareButtonsComponent } from '../../components/share-buttons/share-buttons.component';
 import {
@@ -19,6 +20,8 @@ import {
 import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId, splitAiringsByTime } from '../../utils/catalog';
 import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
+import { fillLegacyGaps, scheduleView, ScheduleView } from '../../utils/legacy-enrichment';
+import { broadcastPublication, GUIDE_TIME_ZONE } from '../entity-detail/entity-detail.model';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema, serializeJsonLd } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
@@ -36,6 +39,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
     CatalogRailComponent,
     InteractionButtonsComponent,
     WhereToWatchComponent,
+    EntityBroadcastListComponent,
     BreadcrumbComponent,
     ShareButtonsComponent,
     UnifiedSkeletonBlockComponent,
@@ -118,6 +122,10 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               <h1 class="max-w-4xl text-3xl font-black tracking-tight text-[var(--hero-text)] md:text-5xl">
                 {{ content.title }}
               </h1>
+
+              <p *ngIf="content.enrichment?.metadata?.originalTitle as original" class="text-base text-[var(--hero-text-muted)]">
+                <span class="sr-only">Título original: </span><i>{{ original }}</i>
+              </p>
 
               <div class="tnum flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--hero-text-muted)]">
                 <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
@@ -217,7 +225,16 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             'program' so the canal-style day-tabs/full-timeline themselves
             are intentionally NOT ported here — this is copy/grouping only.
           -->
-          <div *ngIf="nowAiring(content) || nextAirings(content).length" class="mb-10 lg:mb-14">
+          <!-- Phase 3E: with a verified schedule (movies/series) the section is the shared broadcast list; the legacy airings it does not contain follow it, so nothing listed before is dropped. -->
+          <div *ngIf="schedule.verified as verified" class="mb-10 lg:mb-14">
+            <app-entity-broadcast-list [broadcasts]="verified" [now]="now" [entityTitle]="content.title"></app-entity-broadcast-list>
+            <div *ngIf="schedule.legacyOnly.length" class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <ng-container *ngFor="let airing of schedule.legacyOnly">
+                <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
+              </ng-container>
+            </div>
+          </div>
+          <div *ngIf="!schedule.verified && (nowAiring(content) || nextAirings(content).length)" class="mb-10 lg:mb-14">
             <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
               <ng-container *ngIf="nowAiring(content) as live">
                 <p class="eyebrow text-[var(--accent-live)]">En directo</p>
@@ -235,7 +252,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                       {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
                     </span>
                   </span>
-                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
+                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--portal-text)] underline underline-offset-4">Ver canal →</span>
                 </a>
               </ng-container>
 
@@ -280,7 +297,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                   {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
-                <span class="mt-2 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                <span class="mt-2 inline-block text-xs font-semibold text-[var(--portal-text)] underline underline-offset-4">
                   {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
                 </span>
               </span>
@@ -366,6 +383,10 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               </div>
             </div>
           </div>
+          <footer *ngIf="content.enrichment?.attribution as attribution" class="mt-10 border-t border-[var(--portal-border)] pt-6 text-xs leading-5 text-[var(--portal-text-muted)]">
+            <p>{{ attribution.notice }} <a href="https://www.themoviedb.org" rel="noopener noreferrer" class="underline underline-offset-4">themoviedb.org</a></p>
+            <p>Datos actualizados el <time [attr.datetime]="attribution.updatedAt">{{ updatedOn(attribution.updatedAt) }}</time>.</p>
+          </footer>
         </section>
 
         <!-- Related content: horizontal rail, same card pattern as catalog listings. -->
@@ -408,6 +429,12 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   public safeLdHtml: SafeHtml | null = null;
   public breadcrumbItems: BreadcrumbItem[] = [];
   public shareUrl = '';
+  /** Phase 3E: verified schedule for movies/series (`verified` null = the legacy schedule renders as before). */
+  public schedule: ScheduleView = { verified: null, legacyOnly: [] };
+  /** The clock relative times are measured against: the API's `generatedAt` while rendering on the server, the browser's after. */
+  public now = new Date();
+  private readonly server = isPlatformServer(inject(PLATFORM_ID));
+  private readonly injector = inject(Injector);
 
   @ViewChild('castScrollEl') private readonly castScrollEl?: ElementRef<HTMLElement>;
 
@@ -425,6 +452,13 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    if (!this.server) {
+      // Browser only: a repeating timer on the server would keep the render from ever settling.
+      afterNextRender(() => {
+        const id = setInterval(() => { this.now = new Date(); if (this.item) this.schedule = scheduleView(this.item); }, 30_000);
+        this.destroy$.subscribe(() => clearInterval(id));
+      }, { injector: this.injector });
+    }
     combineLatest([this.route.paramMap, this.route.data])
       .pipe(
         takeUntil(this.destroy$),
@@ -460,14 +494,17 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(({ item, related }) => {
-        this.item = item;
+        // Meta and robots come from the legacy payload as received; only the page body and structured data see the verified fill-ins.
+        const shown = item ? fillLegacyGaps(item) : item;
+        this.item = shown;
         this.relatedItems = related;
         this.loading = false;
+        this.presentSchedule(shown);
 
-        if (item) {
+        if (item && shown) {
           this.applyMeta(item);
           this.buildBreadcrumbs(item);
-          this.buildStructuredData(item);
+          this.buildStructuredData(shown);
           this.shareUrl = `https://guiaprogramaciontv.com${this.canonicalPath()}`;
           // The critical response intentionally left providers/social/user
           // interaction (and possibly related) out to stay fast — fetch them
@@ -766,6 +803,19 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     return segments.length ? segments.join(' · ') : '';
   }
 
+  private presentSchedule(item: CatalogItem | null): void {
+    const generated = item?.enrichment?.broadcasts?.generatedAt ? new Date(item.enrichment.broadcasts.generatedAt) : null;
+    this.now = this.server && generated && !Number.isNaN(generated.getTime()) ? generated : new Date();
+    this.schedule = item ? scheduleView(item, this.now.getTime()) : { verified: null, legacyOnly: [] };
+  }
+
+  updatedOn(iso: string): string {
+    const date = new Date(iso);
+    return Number.isNaN(date.getTime())
+      ? ''
+      : new Intl.DateTimeFormat('es-ES', { timeZone: GUIDE_TIME_ZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(date);
+  }
+
   private buildStructuredData(item: CatalogItem): void {
     const baseUrl = 'https://guiaprogramaciontv.com';
     const schemas: object[] = [generateBreadcrumbSchema(this.breadcrumbItems, baseUrl)];
@@ -775,7 +825,14 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     if (item.contentType === 'series') {
       schemas.unshift({ ...generateTVSeriesSchema(item, baseUrl), url });
     } else if (item.contentType === 'movie') {
-      schemas.unshift({ ...generateMovieSchema(item, baseUrl), url });
+      // One Movie per page: the verified original title and broadcasts extend it, they never add a second entity for the same work.
+      const original = item.enrichment?.metadata?.originalTitle;
+      const publication = broadcastPublication(item.enrichment?.broadcasts, baseUrl);
+      schemas.unshift({
+        ...generateMovieSchema(item, baseUrl), url,
+        ...(original ? { alternateName: original } : {}),
+        ...(publication.length ? { publication } : {}),
+      });
     }
 
     try {

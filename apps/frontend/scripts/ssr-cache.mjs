@@ -27,6 +27,10 @@ export function createSsrCache({ ttlMs, staleMs, maxEntries = 200, now = Date.no
       if (entries.size >= maxEntries) entries.delete(entries.keys().next().value);
       entries.set(path, { statusCode, html, ts: now() });
     },
+    /** Drops every rendered page (the rollout state of a server-side feature changed). */
+    clear() {
+      entries.clear();
+    },
     /** Starts `refresh()` unless one is already running for `path`; false when it was already running. */
     refreshOnce(path, refresh) {
       if (refreshing.has(path)) return false;

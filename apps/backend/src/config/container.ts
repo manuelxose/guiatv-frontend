@@ -1,3 +1,4 @@
+import { LegacyEnrichmentService } from '../application/services/LegacyEnrichmentService';
 import { logger } from '../shared/utils/logger';
 import { connectMongoDB, mongoose as mongooseInstance } from './mongodb';
 import { ensureMongoCollectionsAndIndexes } from '../infrastructure/database/initializeMongoCollections';
@@ -503,7 +504,8 @@ export class Container {
       streamingProvidersService,
       interactionRepository,
       this.get('tvReadQueryService'),
-      this.get('mediaCatalogService')
+      this.get('mediaCatalogService'),
+      new LegacyEnrichmentService({ catalog: this.get('mediaCatalogRepository') })
     );
     this.dependencies.set('catalogService', catalogService);
 
