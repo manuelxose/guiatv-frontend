@@ -116,8 +116,7 @@ export function normalizeToCard(item: TvReadItemDTO | CatalogItem): UnifiedCardD
     sport: '',
     // TMDB movie/series paths are derived from the title so a stale cached
     // detailPath (pre-transliteration) can never resurface; program paths and
-    // programme-sourced films/series keep the API-provided value, which is
-    // episode-safe ("Friends T3 E13 …" links to /series/friends).
+    // programme-sourced films/series keep the API's known airing destination.
     detailPath:
       contentType === 'program' || item.source === 'program'
         ? item.detailPath || (item.channel?.id ? channelPath(item.channel.id) : APP_PATHS.guide)

@@ -32,7 +32,7 @@ import { AffiliateImpressionDirective } from '../../directives/affiliate-impress
 
       <ng-container *ngIf="!isLoading && providers as data">
         <div *ngIf="data.flatrate?.length">
-          <p class="eyebrow mb-2 text-[var(--accent-streaming)]">Incluido en tu suscripción</p>
+          <p class="eyebrow mb-2 text-[var(--portal-text-soft)]">Incluido en tu suscripción</p>
           <div class="flex flex-wrap gap-2">
             <a
               *ngFor="let provider of data.flatrate"

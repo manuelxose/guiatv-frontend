@@ -23,11 +23,11 @@ describe('legacy enrichment view', () => {
   });
 
   it('shows the legacy schedule untouched without verified broadcasts, for programmes and for an unreadable schedule', () => {
-    expect(scheduleView(item(), NOW).verified).toBeNull();
+    expect(scheduleView(item(), NOW).broadcasts.items).toEqual([]);
     const unavailable = { status: 'unavailable' as const, items: [], generatedAt: '', timeZone: 'Europe/Madrid' };
-    expect(scheduleView(item({ enrichment: enrichment({ broadcasts: unavailable }) }), NOW).verified).toBeNull();
+    expect(scheduleView(item({ enrichment: enrichment({ broadcasts: unavailable }) }), NOW).broadcasts.status).toBe('unavailable');
     const ok = { status: 'ok' as const, items: [broadcast('amc', '2026-10-23T15:00:00Z', '2026-10-23T17:00:00Z')], generatedAt: '', timeZone: 'Europe/Madrid' };
-    expect(scheduleView(item({ contentType: 'program', enrichment: enrichment({ broadcasts: ok }) }), NOW).verified).toBeNull();
+    expect(scheduleView(item({ contentType: 'program', enrichment: enrichment({ broadcasts: ok }) }), NOW).broadcasts.items).toEqual([]);
   });
 
   it('lists verified broadcasts and keeps every legacy airing they do not contain', () => {
@@ -40,14 +40,24 @@ describe('legacy enrichment view', () => {
       ],
       enrichment: enrichment({ broadcasts: verified }),
     }), NOW);
-    expect(view.verified).toBe(verified);
-    expect(view.legacyOnly.map((a) => a.channelId)).toEqual(['tcm']);
+    expect(view.broadcasts.items.map((a) => a.channel.id)).toEqual(['amc', 'tcm']);
+  });
+
+  it('keeps simultaneous live airings and separates other channel programmes', () => {
+    const live = airing('amc', '2026-10-22T09:00:00Z', '2026-10-22T11:00:00Z');
+    const view = scheduleView(item({
+      airings: [live, { ...live, channelId: 'tcm' }],
+      channelAirings: [{ ...live, title: 'Otra película' }],
+    }), NOW);
+    expect(view.broadcasts.items.map((a) => a.channel.id)).toEqual(['amc', 'tcm']);
+    expect(view.channel.map((a) => a.title)).toEqual(['Otra película']);
+    expect(new Set(view.broadcasts.items.map((a) => a.airingId)).size).toBe(2);
   });
 
   it('an empty verified schedule is an empty state, not a missing section', () => {
     const none = { status: 'none' as const, items: [], generatedAt: '', timeZone: 'Europe/Madrid' };
     const view = scheduleView(item({ enrichment: enrichment({ broadcasts: none }) }), NOW);
-    expect(view.verified?.status).toBe('none');
-    expect(view.legacyOnly).toEqual([]);
+    expect(view.broadcasts.status).toBe('none');
+    expect(view.broadcasts.items).toEqual([]);
   });
 });

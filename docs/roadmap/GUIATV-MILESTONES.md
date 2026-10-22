@@ -90,7 +90,7 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 | ID | Objective | Depends | Skills | Acceptance (summary) | Blockers | Go |
 |---|---|---|---|---|---|---|
-| M05 | Movie detail page UX: genres/runtime/original title now present on 31/31 sampled films (M03); next: label the channel-adjacent airings on programme-sourced pages, broadcast section hierarchy, a11y (axe), mobile | M02-A ✔ | frontend-design, UI-UX-Pro-Max, angular-component | Karma + axe + Playwright pass; meta/canonical/robots unchanged | do not deploy during M04-B | **GO** (data ready) |
+| M05 | Movie and series detail experience: separate work broadcasts from channel recommendations, safe known airing routes, responsive/a11y/SEO polish | M02-A ✔ | frontend-design, UI-UX-Pro-Max, angular-component | Backend/Angular/SSR CI green; deterministic Playwright + axe; production verification required before PASS | release and post-release evidence pending | **IN PROGRESS** (PR #66) |
 | M06 | Series and episodes pages (incl. frontend episode-titled links, EPG films classed as `Series`) | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO |
 | M07 | Programme and channel pages (now/next; fix "7-day" assumptions) | M05 | same | no copy promises more than the 3-day guide | EPG horizon | NO-GO |
 | M08 | Shared UX/UI consistency (tokens, cards, empty states) | M05, M06, M07 | web-design-guidelines, UI-UX-Pro-Max | one component set; bundle budgets hold | — | NO-GO |

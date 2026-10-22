@@ -47,7 +47,7 @@ import { CatalogCardComponent } from '../catalog-card/catalog-card.component';
           </svg>
         </button>
 
-        <div #scrollEl class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
+        <div #scrollEl tabindex="0" role="region" [attr.aria-label]="title" class="scrollbar-hide flex gap-4 overflow-x-auto pb-2">
           <div *ngFor="let item of items" class="w-[280px] flex-shrink-0">
             <app-catalog-card [item]="item" [compact]="true"></app-catalog-card>
           </div>

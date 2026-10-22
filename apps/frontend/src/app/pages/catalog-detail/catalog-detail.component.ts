@@ -18,7 +18,7 @@ import {
   CatalogService,
 } from '../../services/catalog.service';
 import { MetaService } from '../../services/meta.service';
-import { buildProgramCatalogId, buildTmdbCatalogId, splitAiringsByTime } from '../../utils/catalog';
+import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
 import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
 import { fillLegacyGaps, scheduleView, ScheduleView } from '../../utils/legacy-enrichment';
 import { broadcastPublication, GUIDE_TIME_ZONE } from '../entity-detail/entity-detail.model';
@@ -28,7 +28,6 @@ import { UnifiedAsyncStateComponent } from '../../components/unified-async-state
 import { channelPath } from '../../config/route-map';
 
 type LegacyCatalogMode = 'program' | 'movie' | 'series';
-type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
 
 @Component({
   selector: 'app-catalog-detail',
@@ -56,6 +55,13 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
         display: block;
         min-width: 0;
       }
+      a:focus-visible, button:focus-visible {
+        outline: 2px solid var(--portal-text);
+        outline-offset: 4px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .scroll-smooth { scroll-behavior: auto; }
+      }
     `,
   ],
   template: `
@@ -71,7 +77,8 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
           <div class="absolute inset-0">
             <img
               *ngIf="content.backdrop || content.image"
-              [src]="content.backdrop || content.image"
+              [src]="backdropUrl(content.backdrop || content.image || '')"
+              decoding="async"
               [alt]="''"
               class="h-full w-full object-cover opacity-55"
             />
@@ -92,7 +99,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             <!-- Poster / artwork -->
             <div
               *ngIf="content.image"
-              class="mx-auto w-36 flex-shrink-0 overflow-hidden rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] sm:w-44 md:mx-0 md:w-48 lg:w-56"
+              class="hidden w-36 flex-shrink-0 sm:block overflow-hidden rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] sm:w-44 md:mx-0 md:w-48 lg:w-56"
             >
               <img
                 [src]="posterUrl(content.image)"
@@ -123,13 +130,13 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 {{ content.title }}
               </h1>
 
-              <p *ngIf="content.enrichment?.metadata?.originalTitle || content.originalTitle as original" class="text-base text-[var(--hero-text-muted)]">
+              <p *ngIf="originalTitle(content) as original" class="text-base text-[var(--hero-text-muted)]">
                 <span class="sr-only">Título original: </span><i>{{ original }}</i>
               </p>
 
               <div class="tnum flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--hero-text-muted)]">
                 <span *ngIf="content.releaseYear">{{ content.releaseYear }}</span>
-                <span *ngIf="content.durationMinutes">{{ content.durationMinutes }} min</span>
+                <span *ngIf="content.contentType !== 'series' && content.durationMinutes">{{ content.durationMinutes }} min</span>
                 <span *ngIf="content.channel?.name">{{ content.channel?.name }}</span>
                 <span *ngIf="content.start">{{ formatTime(content.start) }}</span>
                 <span *ngIf="content.rating" class="inline-flex items-center gap-1 text-[var(--status-warning)]">
@@ -140,9 +147,13 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 </span>
               </div>
 
-              <p class="line-clamp-4 max-w-3xl text-base leading-7 text-[var(--hero-text-muted)]">
+              <p class="max-w-3xl text-base leading-7 text-[var(--hero-text-muted)]">
                 {{ content.synopsis || 'Sinopsis no disponible.' }}
               </p>
+
+              <a [attr.href]="broadcastHref" class="inline-flex min-h-11 items-center rounded-[var(--radius-pill)] bg-[var(--hero-text)] px-5 py-2.5 text-sm font-bold text-[var(--hero-bg)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
+                {{ schedule.broadcasts.items.length ? 'Ver emisiones en TV' : 'Consultar emisiones en TV' }}
+              </a>
 
               <div *ngIf="content.genres?.length" class="flex flex-wrap gap-2">
                 <span
@@ -216,74 +227,22 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
             </span>
           </div>
 
-          <!--
-            A programa page is schedule-centric like a canal (see
-            canal-completo.component.html's "Ahora en emisión"/"A
-            continuación" split) — for content.contentType === 'program'
-            specifically, lead with that framing instead of the generic
-            "Próximas emisiones" list movies/series get. Scoped strictly to
-            'program' so the canal-style day-tabs/full-timeline themselves
-            are intentionally NOT ported here — this is copy/grouping only.
-          -->
-          <!-- Phase 3E: with a verified schedule (movies/series) the section is the shared broadcast list; the legacy airings it does not contain follow it, so nothing listed before is dropped. -->
-          <div *ngIf="schedule.verified as verified" class="mb-10 lg:mb-14">
-            <app-entity-broadcast-list [broadcasts]="verified" [now]="now" [entityTitle]="content.title"></app-entity-broadcast-list>
-            <div *ngIf="schedule.legacyOnly.length" class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <ng-container *ngFor="let airing of schedule.legacyOnly">
+          <div id="emisiones" class="mb-10 scroll-mt-6 lg:mb-14">
+            <app-entity-broadcast-list [broadcasts]="schedule.broadcasts" [now]="now" [entityTitle]="content.title"></app-entity-broadcast-list>
+          </div>
+
+          <section *ngIf="schedule.channel.length" class="mb-10 lg:mb-14" aria-labelledby="channel-programmes-heading">
+            <p class="eyebrow text-[var(--portal-text-muted)]">Más programación</p>
+            <h2 id="channel-programmes-heading" class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">También en este canal</h2>
+            <p class="mt-1 text-sm text-[var(--portal-text-muted)]">Otros programas del canal, independientes de esta ficha.</p>
+            <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              <ng-container *ngFor="let airing of schedule.channel">
                 <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
               </ng-container>
             </div>
-          </div>
-          <div *ngIf="!schedule.verified && (nowAiring(content) || nextAirings(content).length)" class="mb-10 lg:mb-14">
-            <ng-container *ngIf="content.contentType === 'program'; else genericAirings">
-              <ng-container *ngIf="nowAiring(content) as live">
-                <p class="eyebrow text-[var(--accent-live)]">En directo</p>
-                <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Ahora en emisión</h2>
-                <a
-                  [routerLink]="live.detailPath || channelPath(live.channelId)"
-                  class="tnum mt-4 flex items-center gap-4 rounded-[var(--radius-md)] border border-[var(--accent-live)] bg-[var(--accent-live-soft)] p-4 transition-colors"
-                >
-                  <span class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-[var(--radius-sm)] bg-[var(--portal-surface-strong)] sm:h-20 sm:w-20">
-                    <ng-container *ngTemplateOutlet="airingThumb; context: { $implicit: live }"></ng-container>
-                  </span>
-                  <span class="min-w-0 flex-1">
-                    <span class="block truncate text-sm font-semibold text-[var(--portal-text)]">{{ live.title || live.channelName }}</span>
-                    <span class="mt-1 block text-xs text-[var(--portal-text-muted)]">
-                      {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
-                    </span>
-                  </span>
-                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--portal-text)] underline underline-offset-4">Ver canal →</span>
-                </a>
-              </ng-container>
+          </section>
 
-              <ng-container *ngIf="nextAirings(content) as next">
-                <ng-container *ngIf="next.length">
-                  <p class="eyebrow text-[var(--portal-text-muted)]" [class.mt-6]="nowAiring(content)">TV lineal</p>
-                  <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">A continuación</h2>
-                  <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                    <ng-container *ngFor="let airing of next">
-                      <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
-                    </ng-container>
-                  </div>
-                </ng-container>
-              </ng-container>
-            </ng-container>
-
-            <ng-template #genericAirings>
-              <p class="eyebrow text-[var(--portal-text-muted)]">TV lineal</p>
-              <h2 class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Próximas emisiones</h2>
-              <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                <ng-container *ngFor="let airing of currentAndNextAirings(content)">
-                  <ng-container *ngTemplateOutlet="airingCard; context: { $implicit: airing }"></ng-container>
-                </ng-container>
-              </div>
-            </ng-template>
-          </div>
-
-          <!-- Shared airing-card row (thumbnail + title/time/CTA), used by both the
-               program "A continuación" grid and the generic "Próximas emisiones" grid
-               above — kept as one template so the "no aparecen imágenes" fix only
-               needed to land once. -->
+          <!-- Other programmes on the source channel have their own navigation cards. -->
           <ng-template #airingCard let-airing>
             <a
               [routerLink]="airing.detailPath || channelPath(airing.channelId)"
@@ -355,7 +314,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
               </svg>
             </button>
 
-            <div #castScrollEl class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2">
+            <div #castScrollEl tabindex="0" role="region" aria-label="Reparto: lista desplazable" class="scrollbar-hide mt-4 flex gap-4 overflow-x-auto scroll-smooth pb-2">
               <div
                 *ngFor="let member of content.cast"
                 class="w-24 flex-shrink-0 text-center sm:w-28"
@@ -429,8 +388,9 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   public safeLdHtml: SafeHtml | null = null;
   public breadcrumbItems: BreadcrumbItem[] = [];
   public shareUrl = '';
-  /** Phase 3E: verified schedule for movies/series (`verified` null = the legacy schedule renders as before). */
-  public schedule: ScheduleView = { verified: null, legacyOnly: [] };
+  get broadcastHref(): string { return `${this.canonicalPath()}#emisiones`; }
+  /** Work broadcasts and channel recommendations are selected separately. */
+  public schedule: ScheduleView = scheduleView({} as CatalogItem);
   /** The clock relative times are measured against: the API's `generatedAt` while rendering on the server, the browser's after. */
   public now = new Date();
   private readonly server = isPlatformServer(inject(PLATFORM_ID));
@@ -541,26 +501,13 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       month: 'short',
       hour: '2-digit',
       minute: '2-digit',
+      timeZone: GUIDE_TIME_ZONE,
     });
   }
 
-  // For contentType 'program' only — splits content.airings (current airing +
-  // relatedChannelItems, per CatalogService.getProgramDetail) into the
-  // "ahora en emisión" / "a continuación" framing borrowed from
-  // canal-completo.component.html, instead of one flat "Próximas emisiones"
-  // list.
-  nowAiring(item: CatalogItem): CatalogAiring | null {
-    return splitAiringsByTime(item.airings).current;
-  }
-
-  nextAirings(item: CatalogItem): CatalogAiring[] {
-    return splitAiringsByTime(item.airings).upcoming;
-  }
-
-  /** Movies/series "Próximas emisiones": the airing on now, then the upcoming ones; never finished ones. */
-  currentAndNextAirings(item: CatalogItem): CatalogAiring[] {
-    const { current, upcoming } = splitAiringsByTime(item.airings);
-    return current ? [current, ...upcoming] : upcoming;
+  originalTitle(item: CatalogItem): string {
+    const original = item.enrichment?.metadata?.originalTitle || item.originalTitle || '';
+    return original.trim().toLocaleLowerCase() === item.title.trim().toLocaleLowerCase() ? '' : original;
   }
 
   humanStatus(status: string): string {
@@ -575,6 +522,10 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
     if (type === 'movie') return 'Película';
     if (type === 'series') return 'Serie';
     return 'Programa de TV';
+  }
+
+  backdropUrl(value: string): string {
+    return value.replace('https://image.tmdb.org/t/p/original/', 'https://image.tmdb.org/t/p/w1280/');
   }
 
   /** Poster art at a size appropriate for the detail hero (narrower than the full backdrop). */
@@ -782,7 +733,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       image: item.backdrop || item.image,
       canonicalUrl,
       type: 'article',
-      robots: catalogRobotsPolicy(item),
+      robots: canonicalUrl.startsWith('/contenido/') ? 'noindex, follow' : catalogRobotsPolicy(item),
     });
   }
 
@@ -806,7 +757,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
   private presentSchedule(item: CatalogItem | null): void {
     const generated = item?.enrichment?.broadcasts?.generatedAt ? new Date(item.enrichment.broadcasts.generatedAt) : null;
     this.now = this.server && generated && !Number.isNaN(generated.getTime()) ? generated : new Date();
-    this.schedule = item ? scheduleView(item, this.now.getTime()) : { verified: null, legacyOnly: [] };
+    this.schedule = item ? scheduleView(item, this.now.getTime()) : scheduleView({} as CatalogItem);
   }
 
   updatedOn(iso: string): string {

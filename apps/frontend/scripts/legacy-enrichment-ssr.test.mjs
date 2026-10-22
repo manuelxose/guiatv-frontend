@@ -7,7 +7,8 @@ import assert from 'node:assert/strict';
 import { launchSsr, startBackend } from './entity-ssr-harness.mjs';
 
 const SLUG = 'la-cura-del-bienestar';
-const hours = (n) => new Date(Date.now() + n * 3_600_000).toISOString();
+const fixtureNow = Date.now();
+const hours = (n) => new Date(fixtureNow + n * 3_600_000).toISOString();
 const airing = (channelId, at) => ({ channelId, channelName: channelId.toUpperCase(), start: hours(at), end: hours(at + 2), title: 'La cura del bienestar', catalogId: `program:${channelId}`, detailPath: `/peliculas/${SLUG}` });
 const broadcast = (channelId, at, title = 'La cura del bienestar') => ({
   airingId: `b-${channelId}`, channel: { id: channelId, name: channelId.toUpperCase(), path: `/canales/${channelId}` }, programmeTitle: title,
@@ -64,7 +65,7 @@ test('verified enrichment adds content to the legacy page and changes nothing SE
   assert.equal(surface(enriched).canonical.length, 1);
 
   // Plain: untouched legacy schedule. Enriched: shared broadcast list, original title, attribution, legacy-only airing kept.
-  assert.doesNotMatch(plain.html, /app-entity-broadcast-list/);
+  assert.match(plain.html, /<app-entity-broadcast-list/);
   assert.match(enriched.html, /<app-entity-broadcast-list/);
   assert.match(enriched.html, /href="\/canales\/amc"/);
   assert.match(enriched.html, /href="\/canales\/la_1"|href="\/canales\/la-1"/);
@@ -73,7 +74,7 @@ test('verified enrichment adds content to the legacy page and changes nothing SE
   assert.match(enriched.html, /themoviedb\.org/);
   assert.match(enriched.html, /TCM/, 'a legacy airing the verification did not confirm is still listed');
   assert.match(enriched.html, /<time[^>]*datetime=/);
-  assert.doesNotMatch(unreadable.html, /app-entity-broadcast-list/);
+  assert.match(unreadable.html, /<app-entity-broadcast-list/);
 
   const movies = jsonLd(enriched.html).filter((d) => d['@type'] === 'Movie');
   assert.equal(movies.length, 1, 'one Movie entity per page');
@@ -89,4 +90,28 @@ test('a hostile title cannot break out of the structured data or the markup', { 
   assert.doesNotMatch(html, /<img src=x onerror/);
   assert.doesNotMatch(html, /<\/script><img/);
   assert.doesNotThrow(() => jsonLd(html));
+});
+
+test('known programme IDs render without guessed slugs or redirect loops and stay noindex', { timeout: 60000 }, async () => {
+  const detailPath = '/contenido/program:m05-fixture';
+  const payload = { ...legacy(), catalogId: 'program:m05-fixture', source: 'program', detailPath };
+  const backend = await startBackend({}, {
+    '/v2/catalog/program%3Am05-fixture': payload,
+    '/v2/content/program%3Am05-fixture': payload,
+  });
+  const ssr = await launchSsr(backend.origin);
+  try {
+    const response = await fetch(`${ssr.origin}${detailPath}`);
+    const html = await response.text();
+    assert.equal(response.status, 200, ssr.logs());
+    assert.match(html, /La cura del bienestar/);
+    assert.equal(response.headers.get('x-robots-tag'), 'noindex, follow');
+    assert.match(html, /<meta name="robots" content="noindex, follow"/);
+    assert.match(html, /<link rel="canonical" href="https:\/\/guiaprogramaciontv.com\/contenido\/program:m05-fixture"/);
+    const encoded = await fetch(`${ssr.origin}/contenido/program%3Am05-fixture`, { redirect: 'manual' });
+    assert.equal(encoded.status, 301);
+    assert.equal(encoded.headers.get('location'), detailPath);
+    const missing = await fetch(`${ssr.origin}/contenido/program%3Am05-missing`);
+    assert.equal(missing.status, 404);
+  } finally { await ssr.stop(); await backend.stop(); }
 });
