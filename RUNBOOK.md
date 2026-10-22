@@ -23,8 +23,8 @@ sudo /var/www/guiatv/deploy-guiatv.sh
 
 ## Deploy automatico (GitHub Actions)
 
-El workflow `.github/workflows/deploy.yml` despliega a produccion en cada push a `main`
-(o manualmente desde la pestaña Actions con `workflow_dispatch`).
+Desde la Fase 3E, `.github/workflows/deploy.yml` (compila EN el VPS) es **solo manual** (`workflow_dispatch`): un merge a `main`
+ya no despliega nada. La via por defecto es `.github/workflows/deploy-artifact.yml` (CI compila, el servidor solo verifica y publica).
 
 - CI hace SSH con el usuario `deploy` del VPS (clave dedicada, sin password).
 - Ejecuta `sudo /var/www/guiatv/deploy-guiatv.sh` (build + release + restart + smoke).

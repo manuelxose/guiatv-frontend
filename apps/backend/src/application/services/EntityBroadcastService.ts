@@ -66,11 +66,16 @@ export interface IBroadcastReader {
 }
 
 export class MongoBroadcastReader implements IBroadcastReader {
+  /** `maxTimeMS` bounds the server-side work of one read (the legacy page path must never wait on a slow database). */
+  constructor(private readonly maxTimeMS?: number) {}
+
   async findByTmdbId(tmdbId: number, dates: string[], limit: number): Promise<AiringRow[]> {
-    return (await TVReadAiringModel.find(
+    const query = TVReadAiringModel.find(
       { 'program.tmdbId': tmdbId, date: { $in: dates } },
       { id: 1, date: 1, 'channel.id': 1, 'channel.name': 1, 'channel.normalizedName': 1, 'channel.icon': 1, 'program.title': 1, 'program.subtitle': 1, 'program.tmdbId': 1, 'program.mediaId': 1, 'program.entityId': 1, 'airing.start': 1, 'airing.end': 1, 'airing.durationMinutes': 1 }
-    ).sort({ 'airing.start': 1 }).limit(limit).lean().exec()) as unknown as AiringRow[];
+    ).sort({ 'airing.start': 1 }).limit(limit);
+    if (this.maxTimeMS) query.maxTimeMS(this.maxTimeMS);
+    return (await query.lean().exec()) as unknown as AiringRow[];
   }
 }
 
@@ -112,11 +117,21 @@ export interface BroadcastSelection {
 
 const channelPath = (channel: NonNullable<AiringRow['channel']>) => `/canales/${encodeURIComponent(String(channel.normalizedName || channel.id).replace(/_/g, '-'))}`;
 
-/** Pure: which rows are this entity's upcoming broadcasts at `now`. */
-export function selectBroadcasts(entity: Pick<ContentEntityRecord, 'entityId' | 'title' | 'originalTitle' | 'externalIds' | 'metadata'>, rows: AiringRow[], now: Date, max = BROADCAST_MAX_ITEMS): BroadcastSelection {
-  const tmdbId = entity.externalIds?.tmdb?.type === 'movie' ? entity.externalIds.tmdb.id : undefined;
-  const keys = new Set([titleIdentityKey(entity.title), titleIdentityKey(entity.originalTitle)].filter((k): k is string => Boolean(k)));
-  const mediaId = entity.metadata?.enrichment?.mediaId;
+/** The work whose broadcasts are wanted: an entity, or (Phase 3E) a legacy catalogue page with no entity behind it. */
+export interface BroadcastWork {
+  entityId?: string;
+  tmdbId?: number;
+  titles: Array<string | undefined>;
+  /** The catalogue row the metadata was validated against. */
+  mediaId?: string;
+  /** Legacy pages: refuse `tmdb_title` (an airing that does not name the same catalogue row), keep only `catalogue_media`/`entity_ref`. */
+  requireCatalogueRow?: boolean;
+}
+
+/** Pure: which rows are this work's upcoming broadcasts at `now`. */
+export function selectWorkBroadcasts(work: BroadcastWork, rows: AiringRow[], now: Date, max = BROADCAST_MAX_ITEMS): BroadcastSelection {
+  const { tmdbId, mediaId } = work;
+  const keys = new Set(work.titles.map((title) => titleIdentityKey(title)).filter((k): k is string => Boolean(k)));
   const rejected: Record<string, number> = {};
   const reject = (reason: string) => { rejected[reason] = (rejected[reason] ?? 0) + 1; };
   const evidence: Record<string, BroadcastEvidence> = {};
@@ -137,13 +152,14 @@ export function selectBroadcasts(entity: Pick<ContentEntityRecord, 'entityId' | 
     if (!row.channel?.id || !row.channel.name) { reject('no_channel'); continue; }
 
     let how: BroadcastEvidence;
-    if (program.entityId === entity.entityId) how = 'entity_ref';
+    if (work.entityId && program.entityId === work.entityId) how = 'entity_ref';
     else if (program.entityId) { reject('other_entity_ref'); continue; }
     else {
       const titleKey = titleIdentityKey(program.title);
       if (!titleKey || !keys.has(titleKey)) { reject('title_key_differs'); continue; }
       if (program.mediaId && mediaId && program.mediaId !== mediaId) { reject('other_catalogue_row'); continue; }
       how = program.mediaId && mediaId ? 'catalogue_media' : 'tmdb_title';
+      if (how === 'tmdb_title' && work.requireCatalogueRow) { reject('no_catalogue_row'); continue; }
     }
     const slot = `${row.channel.id}|${start.toISOString()}`;
     if (seen.has(slot)) { reject('duplicate_slot'); continue; }
@@ -164,6 +180,20 @@ export function selectBroadcasts(entity: Pick<ContentEntityRecord, 'entityId' | 
   return { items: kept.slice(0, max).map(({ at: _at, ...item }) => item), evidence, rejected, legacyWindowRows };
 }
 
+/** Pure: which rows are this entity's upcoming broadcasts at `now`. */
+export function selectBroadcasts(entity: Pick<ContentEntityRecord, 'entityId' | 'title' | 'originalTitle' | 'externalIds' | 'metadata'>, rows: AiringRow[], now: Date, max = BROADCAST_MAX_ITEMS): BroadcastSelection {
+  return selectWorkBroadcasts({
+    entityId: entity.entityId,
+    tmdbId: entity.externalIds?.tmdb?.type === 'movie' ? entity.externalIds.tmdb.id : undefined,
+    titles: [entity.title, entity.originalTitle],
+    mediaId: entity.metadata?.enrichment?.mediaId,
+  }, rows, now, max);
+}
+
+/** The read window shared by entity pages and legacy enrichment: yesterday (for a broadcast still running) to `BROADCAST_WINDOW_DAYS` ahead. */
+export const broadcastWindowDates = (now: Date) => Array.from({ length: BROADCAST_WINDOW_DAYS + 2 }, (_, i) => madridDay(now, i - 1));
+export const BROADCAST_QUERY_LIMIT = QUERY_LIMIT;
+
 export class EntityBroadcastService {
   constructor(private readonly reader: IBroadcastReader = new MongoBroadcastReader(), private readonly clock: () => Date = () => new Date()) {}
 
@@ -178,7 +208,7 @@ export class EntityBroadcastService {
     const tmdb = entity.externalIds?.tmdb;
     if (!tmdb || tmdb.type !== 'movie') return { broadcasts: { status: 'none', items: [], ...base }, legacyIndexableNow: false };
     try {
-      const dates = Array.from({ length: BROADCAST_WINDOW_DAYS + 2 }, (_, i) => madridDay(now, i - 1));
+      const dates = broadcastWindowDates(now);
       const rows = await this.reader.findByTmdbId(tmdb.id, dates, QUERY_LIMIT);
       const selection = selectBroadcasts(entity, rows, now);
       return {

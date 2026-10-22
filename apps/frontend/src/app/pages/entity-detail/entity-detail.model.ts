@@ -112,6 +112,19 @@ export function broadcastTiming(b: Pick<EntityBroadcast, 'start' | 'end'>, now: 
   return { state: 'upcoming', text: days === 0 ? 'hoy' : days === 1 ? 'mañana' : `en ${days} días` };
 }
 
+/** The verified broadcasts as schema.org `publication` events (empty unless the schedule was read and something is upcoming). */
+export function broadcastPublication(broadcasts: EntityBroadcasts | undefined, baseUrl: string): Array<Record<string, unknown>> {
+  const upcoming = broadcasts?.status === 'ok' ? broadcasts.items : [];
+  return upcoming.map((b) => ({
+    '@type': 'BroadcastEvent',
+    name: `${b.programmeTitle} en ${b.channel.name}`,
+    startDate: b.startLocal,
+    endDate: b.end,
+    isLiveBroadcast: false,
+    publishedOn: { '@type': 'BroadcastService', name: b.channel.name, url: `${baseUrl}${b.channel.path}` },
+  }));
+}
+
 const clean = (value: string | undefined) => (value ?? '').replace(/\s+/g, ' ').trim();
 
 /**
@@ -132,16 +145,7 @@ export function buildMovieSchema(entity: PublicEntity, baseUrl: string): Record<
   if (duration) schema['duration'] = duration;
   if (entity.credits?.directors.length) schema['director'] = entity.credits.directors.map((name) => ({ '@type': 'Person', name }));
   if (entity.credits?.cast.length) schema['actor'] = entity.credits.cast.map((c) => ({ '@type': 'Person', name: c.name }));
-  const upcoming = entity.broadcasts?.status === 'ok' ? entity.broadcasts.items : [];
-  if (upcoming.length) {
-    schema['publication'] = upcoming.map((b) => ({
-      '@type': 'BroadcastEvent',
-      name: `${b.programmeTitle} en ${b.channel.name}`,
-      startDate: b.startLocal,
-      endDate: b.end,
-      isLiveBroadcast: false,
-      publishedOn: { '@type': 'BroadcastService', name: b.channel.name, url: `${baseUrl}${b.channel.path}` },
-    }));
-  }
+  const publication = broadcastPublication(entity.broadcasts, baseUrl);
+  if (publication.length) schema['publication'] = publication;
   return schema;
 }
