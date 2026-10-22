@@ -252,7 +252,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                       {{ live.channelName }} · {{ formatTime(live.start) }} - {{ formatTime(live.end) }}
                     </span>
                   </span>
-                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--accent-live)]">Ver canal →</span>
+                  <span class="flex-shrink-0 text-xs font-semibold text-[var(--portal-text)] underline underline-offset-4">Ver canal →</span>
                 </a>
               </ng-container>
 
@@ -297,7 +297,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 <p class="mt-1 text-xs text-[var(--portal-text-muted)]">
                   {{ airing.channelName }} · {{ formatTime(airing.start) }} - {{ formatTime(airing.end) }}
                 </p>
-                <span class="mt-2 inline-block text-xs font-semibold text-[var(--accent-live)]">
+                <span class="mt-2 inline-block text-xs font-semibold text-[var(--portal-text)] underline underline-offset-4">
                   {{ airing.detailPath ? 'Ver qué se emite →' : 'Ver programación del canal →' }}
                 </span>
               </span>

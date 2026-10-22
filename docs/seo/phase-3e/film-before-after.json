@@ -1,0 +1,739 @@
+{
+  "basis": "fixture",
+  "clock": "each payload fetchedAt",
+  "totals": {
+    "films": 20,
+    "gainGenres": 20,
+    "gainRuntime": 20,
+    "gainOriginalTitle": 15,
+    "gainAttribution": 20,
+    "withSchedule": 10,
+    "legacyScheduleRows": 13,
+    "verifiedScheduleRows": 13,
+    "robotsChanged": 0,
+    "synopsisChanged": 0,
+    "airingsChanged": 0
+  },
+  "films": [
+    {
+      "path": "/peliculas/la-cura-del-bienestar",
+      "before": {
+        "synopsisChars": 491,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 2,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 491,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 2,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/venganza-en-las-vegas",
+      "before": {
+        "synopsisChars": 350,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 2,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 350,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 2,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/dobles-vidas",
+      "before": {
+        "synopsisChars": 474,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 474,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/los-subdesarrollados",
+      "before": {
+        "synopsisChars": 431,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 431,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/la-galaxia-del-terror",
+      "before": {
+        "synopsisChars": 420,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 420,
+        "genres": 4,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/jinetes-de-la-justicia",
+      "before": {
+        "synopsisChars": 377,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 377,
+        "genres": 4,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/el-exorcista-iii",
+      "before": {
+        "synopsisChars": 371,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 371,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/22-balas",
+      "before": {
+        "synopsisChars": 362,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 362,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/jurassic-world-dominion",
+      "before": {
+        "synopsisChars": 344,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 1,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 344,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 1,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/como-se-escribe-amor",
+      "before": {
+        "synopsisChars": 324,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 2,
+        "scheduleChannels": 1,
+        "attribution": false,
+        "robots": "index"
+      },
+      "after": {
+        "synopsisChars": 324,
+        "genres": 2,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 2,
+        "verifiedChannels": 1,
+        "scheduleStatus": "ok",
+        "attribution": true,
+        "robots": "index"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/bano-de-sangre-al-salir-el-sol",
+      "before": {
+        "synopsisChars": 449,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 449,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/amerigeddon",
+      "before": {
+        "synopsisChars": 418,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 418,
+        "genres": 2,
+        "runtime": true,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/las-catadoras-de-hitler",
+      "before": {
+        "synopsisChars": 418,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 418,
+        "genres": 2,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/morir-no-siempre-sale-bien",
+      "before": {
+        "synopsisChars": 376,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 376,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/el-valle-de-la-furia",
+      "before": {
+        "synopsisChars": 353,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 353,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/bats-murcielagos",
+      "before": {
+        "synopsisChars": 337,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 337,
+        "genres": 3,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/suzhou-river",
+      "before": {
+        "synopsisChars": 315,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 5,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 315,
+        "genres": 2,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 5,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/pecados-del-pasado",
+      "before": {
+        "synopsisChars": 314,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 314,
+        "genres": 4,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/tres-tejanos",
+      "before": {
+        "synopsisChars": 312,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 312,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": true,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    },
+    {
+      "path": "/peliculas/el-desafio-de-pancho-villa",
+      "before": {
+        "synopsisChars": 301,
+        "genres": 0,
+        "runtime": false,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "schedule": 0,
+        "scheduleChannels": 0,
+        "attribution": false,
+        "robots": "noindex"
+      },
+      "after": {
+        "synopsisChars": 301,
+        "genres": 1,
+        "runtime": true,
+        "originalTitle": false,
+        "cast": 10,
+        "director": true,
+        "verifiedBroadcasts": 0,
+        "verifiedChannels": 0,
+        "scheduleStatus": "none",
+        "attribution": true,
+        "robots": "noindex"
+      },
+      "unchanged": {
+        "synopsis": true,
+        "airings": true,
+        "seoFields": true
+      },
+      "counters": {
+        "attached": 1
+      }
+    }
+  ]
+}
