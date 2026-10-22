@@ -98,6 +98,8 @@ export interface IProgramRepository {
   findEnrichedByTitles(titles: string[]): Promise<Array<{
     title: string;
     tmdbId: number;
+    /** The media-catalogue row the same stored programme recorded with that `tmdbId`; absent for rows enriched before it was kept. */
+    mediaId?: string;
     image: string;
     description?: string;
     year?: string;

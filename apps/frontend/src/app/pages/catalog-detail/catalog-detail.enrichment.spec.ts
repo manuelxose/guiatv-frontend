@@ -131,7 +131,7 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
 
   it('says plainly when nothing is scheduled, and falls back to the legacy schedule when the schedule could not be read', () => {
     const none = render(legacy({ airings: [], enrichment: { version: 1, broadcasts: { status: 'none', generatedAt: iso(0), timeZone: 'Europe/Madrid', items: [] } } }));
-    expect(none.nativeElement.textContent).toContain('No hay emisiones programadas en los próximos 7 días');
+    expect(none.nativeElement.textContent).toContain('No hay emisiones programadas en la programación disponible');
     none.destroy();
     TestBed.resetTestingModule();
     const unavailable = render(legacy({ enrichment: { version: 1, broadcasts: { status: 'unavailable', generatedAt: iso(0), timeZone: 'Europe/Madrid', items: [] } } }));

@@ -6,7 +6,7 @@ import { legacyBindingRefusals, legacyMetadataGaps } from '@/domain/services/leg
 import type { EnrichmentSource } from '@/domain/services/entityEnrichment';
 import type { AiringRow, IBroadcastReader } from './EntityBroadcastService';
 import { LegacyEnrichmentPolicy } from './LegacyEnrichmentPolicy';
-import { LegacyEnrichmentService } from './LegacyEnrichmentService';
+import { LegacyEnrichmentService, legacyEnrichmentSnapshot } from './LegacyEnrichmentService';
 
 const NOW = new Date('2026-10-22T10:00:00Z');
 const ON = { CONTENT_LEGACY_ENRICHMENT_ENABLED: 'true', CONTENT_LEGACY_ENRICHMENT_SCOPE: 'all' } as NodeJS.ProcessEnv;
@@ -196,4 +196,14 @@ test('pure rules: title similarity alone never binds, and only absent facts are 
   const page = { source: 'tmdb', tmdbId: 2, tmdbType: 'movie', title: 'Bats', genres: [] } as const;
   assert.deepEqual(legacyBindingRefusals({ ...page, genres: [] }, row), ['tmdb_id_mismatch']);
   assert.deepEqual(legacyMetadataGaps({ ...page, genres: [] }, row), {});
+});
+
+test('operators can read the outcome counters of the running service', async () => {
+  const { service } = setup({ rows: [airing()] });
+  await service.apply(detail(), { tmdbType: 'movie', slugBound: true });
+  await service.apply(detail({ tmdbId: 2 }), { tmdbType: 'movie', slugBound: false });
+  const snapshot = legacyEnrichmentSnapshot();
+  assert.equal(snapshot.counters.attached, 1);
+  assert.equal(snapshot.counters['refused:tmdb_id_mismatch'] > 0 || snapshot.counters['refused:slug_unbound'] > 0, true);
+  assert.equal(typeof snapshot.epoch, 'string');
 });

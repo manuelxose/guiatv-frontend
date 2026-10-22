@@ -1,0 +1,406 @@
+{
+ "success": true,
+ "data": {
+  "requests": {
+   "total": 933,
+   "requestsPerSecond": 0.95,
+   "serverErrors": 0,
+   "errorRate": 0,
+   "responseBytes": 1006280,
+   "latencyMs": {
+    "count": 933,
+    "p50": 11.42,
+    "p95": 325.12,
+    "p99": 3601.17
+   }
+  },
+  "mongo": {
+   "requestCount": 73,
+   "latencyMs": {
+    "count": 73,
+    "p50": 37.9,
+    "p95": 847.3,
+    "p99": 7179.3
+   }
+  },
+  "provider": {
+   "requestCount": 1,
+   "latencyMs": {
+    "count": 1,
+    "p50": 27,
+    "p95": 27,
+    "p99": 27
+   }
+  },
+  "epg": {
+   "latencyMs": {
+    "count": 72,
+    "p50": 38,
+    "p95": 847.4,
+    "p99": 7179.5
+   }
+  },
+  "routes": [
+   {
+    "route": "GET /v2/catalog/slug/:contentType/:slug",
+    "count": 174,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 174,
+     "p50": 14.36,
+     "p95": 148.21,
+     "p99": 240.96
+    }
+   },
+   {
+    "route": "GET /v2/catalog/:catalogId",
+    "count": 116,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 116,
+     "p50": 11.42,
+     "p95": 25.87,
+     "p99": 60.59
+    }
+   },
+   {
+    "route": "GET /v2/catalog/",
+    "count": 87,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 87,
+     "p50": 0.93,
+     "p95": 3676.47,
+     "p99": 4359.47
+    }
+   },
+   {
+    "route": "GET /v2/catalog/:catalogId/enrichment",
+    "count": 80,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 80,
+     "p50": 106.95,
+     "p95": 3475.92,
+     "p99": 4896.39
+    }
+   },
+   {
+    "route": "POST /v2/affiliate/resolve",
+    "count": 72,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 72,
+     "p50": 30.38,
+     "p95": 139.83,
+     "p99": 726.45
+    }
+   },
+   {
+    "route": "GET /v2/tv/read",
+    "count": 55,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 55,
+     "p50": 40.4,
+     "p95": 614.74,
+     "p99": 1116.34
+    }
+   },
+   {
+    "route": "GET /v2/content/providers/:contentType/:tmdbId",
+    "count": 38,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 38,
+     "p50": 101.72,
+     "p95": 3512.54,
+     "p99": 3614.28
+    }
+   },
+   {
+    "route": "GET /slug/:contentType/:slug",
+    "count": 37,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 37,
+     "p50": 34.26,
+     "p95": 209.32,
+     "p99": 784.01
+    }
+   },
+   {
+    "route": "GET /v2/chat/online-users",
+    "count": 23,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 23,
+     "p50": 11.22,
+     "p95": 29.35,
+     "p99": 39.18
+    }
+   },
+   {
+    "route": "POST /v2/telemetry/event",
+    "count": 20,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 20,
+     "p50": 2.38,
+     "p95": 5.42,
+     "p99": 5.77
+    }
+   },
+   {
+    "route": "GET /v2/discovery/browse",
+    "count": 19,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 19,
+     "p50": 41.06,
+     "p95": 1103.61,
+     "p99": 1103.61
+    }
+   },
+   {
+    "route": "POST /v2/telemetry/session/heartbeat",
+    "count": 16,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 16,
+     "p50": 3.13,
+     "p95": 11.79,
+     "p99": 11.79
+    }
+   },
+   {
+    "route": "GET /v2/chat/conversations",
+    "count": 12,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 12,
+     "p50": 30.06,
+     "p95": 105.24,
+     "p99": 105.24
+    }
+   },
+   {
+    "route": "GET /v2/blog/",
+    "count": 11,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 11,
+     "p50": 4.64,
+     "p95": 30.04,
+     "p99": 30.04
+    }
+   },
+   {
+    "route": "GET /v2/tv/read/channels",
+    "count": 7,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 7,
+     "p50": 501.84,
+     "p95": 807.26,
+     "p99": 807.26
+    }
+   },
+   {
+    "route": "POST /v2/telemetry/session/start",
+    "count": 7,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 7,
+     "p50": 4.68,
+     "p95": 7.19,
+     "p99": 7.19
+    }
+   },
+   {
+    "route": "GET /v2/tv/surface/channels/:channelId",
+    "count": 6,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 6,
+     "p50": 170,
+     "p95": 602.2,
+     "p99": 602.2
+    }
+   },
+   {
+    "route": "GET /:catalogId",
+    "count": 6,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 6,
+     "p50": 4.84,
+     "p95": 6.25,
+     "p99": 6.25
+    }
+   },
+   {
+    "route": "GET /v2/catalog/platforms",
+    "count": 5,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 5,
+     "p50": 0.63,
+     "p95": 0.75,
+     "p99": 0.75
+    }
+   },
+   {
+    "route": "GET /v2/health/",
+    "count": 4,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 4,
+     "p50": 1.27,
+     "p95": 2.18,
+     "p99": 2.18
+    }
+   },
+   {
+    "route": "GET /v2/discovery/home",
+    "count": 4,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 4,
+     "p50": 706.84,
+     "p95": 7349.57,
+     "p99": 7349.57
+    }
+   },
+   {
+    "route": "GET /v2/sports/football/home",
+    "count": 4,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 4,
+     "p50": 7.53,
+     "p95": 29.1,
+     "p99": 29.1
+    }
+   },
+   {
+    "route": "POST /v2/telemetry/session/end",
+    "count": 3,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 3,
+     "p50": 3.15,
+     "p95": 6.62,
+     "p99": 6.62
+    }
+   },
+   {
+    "route": "GET /v2/health/metrics",
+    "count": 2,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 2,
+     "p50": 5.01,
+     "p95": 5.27,
+     "p99": 5.27
+    }
+   },
+   {
+    "route": "GET /v2/tv/surface/guide",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 604.18,
+     "p95": 604.18,
+     "p99": 604.18
+    }
+   },
+   {
+    "route": "GET /v2/sports/football/competitions",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 32.35,
+     "p95": 32.35,
+     "p99": 32.35
+    }
+   },
+   {
+    "route": "GET /teams/:slug",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 1631.78,
+     "p95": 1631.78,
+     "p99": 1631.78
+    }
+   },
+   {
+    "route": "POST /v2/auth/refresh",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 26.43,
+     "p95": 26.43,
+     "p99": 26.43
+    }
+   },
+   {
+    "route": "GET /v2/oembed",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 1.09,
+     "p95": 1.09,
+     "p99": 1.09
+    }
+   },
+   {
+    "route": "GET /matches/:idOrSlug",
+    "count": 1,
+    "errorRate": 0,
+    "latencyMs": {
+     "count": 1,
+     "p50": 2640.82,
+     "p95": 2640.82,
+     "p99": 2640.82
+    }
+   }
+  ],
+  "cache": {
+   "connected": true,
+   "hits": 1470,
+   "misses": 855,
+   "errors": 0,
+   "hitRate": 0.63,
+   "memoryBytes": 132015656,
+   "evictions": 0,
+   "latencyMs": {
+    "count": 2000,
+    "p50": 0.95,
+    "p95": 8.3,
+    "p99": 51.56
+   }
+  },
+  "process": {
+   "uptimeSeconds": 987,
+   "rssBytes": 243331072,
+   "heapUsedBytes": 74075664,
+   "heapTotalBytes": 90288128,
+   "eventLoopLagMs": {
+    "mean": 21.47,
+    "p95": 21.18,
+    "max": 4255.12
+   }
+  }
+ },
+ "meta": {
+  "timestamp": "2026-10-22T08:55:00.178Z",
+  "cached": false
+ }
+}

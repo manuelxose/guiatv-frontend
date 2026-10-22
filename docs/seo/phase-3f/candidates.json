@@ -1,0 +1,452 @@
+[
+ {
+  "path": "/peliculas/snake-eyes-el-origen",
+  "tmdbId": 568620,
+  "title": "Snake Eyes. El origen",
+  "releaseYear": 2021,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 458
+  }
+ },
+ {
+  "path": "/peliculas/fast-furious-8",
+  "tmdbId": 337339,
+  "title": "Fast & Furious 8",
+  "releaseYear": 2017,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 277
+  }
+ },
+ {
+  "path": "/peliculas/robin-hood-principe-de-los-ladrones",
+  "tmdbId": 8367,
+  "title": "Robin Hood. Príncipe de los ladrones",
+  "releaseYear": 1991,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 476
+  }
+ },
+ {
+  "path": "/peliculas/una-quinta-portuguesa",
+  "tmdbId": 1440171,
+  "title": "Una quinta portuguesa",
+  "releaseYear": 2025,
+  "proposed": true,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 4,
+   "airingsBeyondLegacyWindow": 2,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 299
+  }
+ },
+ {
+  "path": "/peliculas/california-suite",
+  "tmdbId": 26686,
+  "title": "California Suite",
+  "releaseYear": 1978,
+  "proposed": true,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 4,
+   "airingsBeyondLegacyWindow": 3,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 131
+  }
+ },
+ {
+  "path": "/peliculas/la-ley-de-la-horca",
+  "tmdbId": 90406,
+  "title": "La ley de la horca",
+  "releaseYear": 1956,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 370
+  }
+ },
+ {
+  "path": "/peliculas/garantia-personal",
+  "tmdbId": 443989,
+  "title": "Garantía personal",
+  "releaseYear": 2017,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 198
+  }
+ },
+ {
+  "path": "/peliculas/evasion-o-victoria",
+  "tmdbId": 17360,
+  "title": "Evasión o victoria",
+  "releaseYear": 1981,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 487
+  }
+ },
+ {
+  "path": "/peliculas/moneyball-rompiendo-las-reglas",
+  "tmdbId": 60308,
+  "title": "Moneyball: Rompiendo las reglas",
+  "releaseYear": 2011,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 427
+  }
+ },
+ {
+  "path": "/peliculas/perdida",
+  "tmdbId": 210577,
+  "title": "Perdida",
+  "releaseYear": 2014,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 356
+  }
+ },
+ {
+  "path": "/peliculas/brawl-in-cell-block-99",
+  "tmdbId": 398175,
+  "title": "Brawl in Cell Block 99",
+  "releaseYear": 2017,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 388
+  }
+ },
+ {
+  "path": "/peliculas/los-otros",
+  "tmdbId": 1933,
+  "title": "Los Otros",
+  "releaseYear": 2001,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 313
+  }
+ },
+ {
+  "path": "/peliculas/la-semilla-del-diablo",
+  "tmdbId": 805,
+  "title": "La semilla del diablo",
+  "releaseYear": 1968,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 190
+  }
+ },
+ {
+  "path": "/peliculas/el-rey-del-rio",
+  "tmdbId": 249877,
+  "title": "El rey del río",
+  "releaseYear": 1995,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 302
+  }
+ },
+ {
+  "path": "/peliculas/bikeriders-la-ley-del-asfalto",
+  "tmdbId": 1008409,
+  "title": "Bikeriders. La ley del asfalto",
+  "releaseYear": 2024,
+  "proposed": true,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 5,
+   "airingsBeyondLegacyWindow": 4,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 294
+  }
+ },
+ {
+  "path": "/peliculas/mision-imposible-protocolo-fantasma",
+  "tmdbId": 56292,
+  "title": "Misión imposible: Protocolo fantasma",
+  "releaseYear": 2011,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 435
+  }
+ },
+ {
+  "path": "/peliculas/el-dragon-rojo",
+  "tmdbId": 9533,
+  "title": "El dragón rojo",
+  "releaseYear": 2002,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 289
+  }
+ },
+ {
+  "path": "/peliculas/gladiator",
+  "tmdbId": 98,
+  "title": "Gladiator",
+  "releaseYear": 2000,
+  "proposed": true,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 2,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 353
+  }
+ },
+ {
+  "path": "/peliculas/ay-carmela",
+  "tmdbId": 41806,
+  "title": "¡Ay, Carmela!",
+  "releaseYear": 1990,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 424
+  }
+ },
+ {
+  "path": "/peliculas/el-secreto-de-mi-exito",
+  "tmdbId": 10021,
+  "title": "El secreto de mi éxito",
+  "releaseYear": 1987,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 449
+  }
+ },
+ {
+  "path": "/peliculas/los-subdesarrollados",
+  "tmdbId": 221650,
+  "title": "Los subdesarrollados",
+  "releaseYear": 1968,
+  "proposed": true,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 2,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 431
+  }
+ },
+ {
+  "path": "/peliculas/la-pianista",
+  "tmdbId": 1791,
+  "title": "La pianista",
+  "releaseYear": 2001,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 184
+  }
+ },
+ {
+  "path": "/peliculas/the-prince",
+  "tmdbId": 241254,
+  "title": "The Prince",
+  "releaseYear": 2014,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 2,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 132
+  }
+ },
+ {
+  "path": "/peliculas/la-isla-de-los-faisanes",
+  "tmdbId": 1248185,
+  "title": "La isla de los faisanes",
+  "releaseYear": 2025,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 316
+  }
+ },
+ {
+  "path": "/peliculas/los-goonies",
+  "tmdbId": 9340,
+  "title": "Los Goonies",
+  "releaseYear": 1985,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 234
+  }
+ },
+ {
+  "path": "/peliculas/babe-el-cerdito-valiente",
+  "tmdbId": 9598,
+  "title": "Babe: El cerdito valiente",
+  "releaseYear": 1995,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 392
+  }
+ },
+ {
+  "path": "/peliculas/los-blandings-ya-tienen-casa",
+  "tmdbId": 32294,
+  "title": "Los Blandings ya tienen casa",
+  "releaseYear": 1948,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 406
+  }
+ },
+ {
+  "path": "/peliculas/siete-dias-de-mayo",
+  "tmdbId": 23518,
+  "title": "Siete días de mayo",
+  "releaseYear": 1964,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 1,
+   "guideAirings": 2,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 232
+  }
+ },
+ {
+  "path": "/peliculas/rondallas",
+  "tmdbId": 1437873,
+  "title": "Rondallas",
+  "releaseYear": 2025,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 482
+  }
+ },
+ {
+  "path": "/peliculas/novembre",
+  "tmdbId": 823951,
+  "title": "Novembre",
+  "releaseYear": 2022,
+  "proposed": false,
+  "publicEvidence": {
+   "legacyAirings": 2,
+   "guideAirings": 3,
+   "airingsBeyondLegacyWindow": 1,
+   "legacyGenres": 0,
+   "legacyRuntime": null,
+   "synopsisChars": 426
+  }
+ }
+]
