@@ -23,7 +23,7 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 ### M02-A — Phase 3F PR validation and integration
 - **Objective**: review PR #51 against its report, fix only real defects, merge with owner approval. **Scope**: add `scripts/legacy-rollout-snapshot.test.mjs` to `test:ops`; confirm the `mediaId` test and preflight test run in `verify`; confirm no workflow sets a legacy flag. **Non-goals**: deploy, re-measuring, new features.
-- **Status**: Eng ✔ (one gap: snapshot test not in CI) · CI ✔ on `36b0e15` · Merge ○ · Deploy ○ (M01-B) · Act –
+- **Status**: ENGINEERING_DONE (2026-10-22: snapshot test added to `test:ops`, #51 rebased on `44b8391`; review found no critical/high defect) · Merge ○ (owner approval) · Deploy ○ (M01-B) · Act –
 - **Depends**: M00. **Skills**: code-review, tdd, diagnosing-bugs (only if a check fails).
 - **Acceptance**: green `verify` + `ssr-resilience` on the final head; review has no open correctness finding; merge approved by the owner; merge deploys nothing (`deploy.yml`/`deploy-artifact.yml` are dispatch-only).
 - **Evidence**: PR checks, review notes. **Blockers**: owner merge approval. **Rollback**: `git revert` of the squash commit (flags off, nothing deployed). **GO** (merge itself: needs owner).

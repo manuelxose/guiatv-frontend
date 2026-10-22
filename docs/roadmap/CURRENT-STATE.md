@@ -51,3 +51,10 @@ Written for: the owner and whoever executes the next milestone. Plan: [GUIATV-MI
 ## Safety statement for M00
 
 Documentation only. No flag, deploy, restart, migration, credential or indexation rule was touched; production was read through public GETs only.
+
+## Addendum — M02-A (2026-10-22)
+
+- PR #52 squash-merged: `main` = `44b8391`. PR #51 rebased onto it; `scripts/legacy-rollout-snapshot.test.mjs` is now in `test:ops` (deficiency 1 resolved). Backend suite with MongoDB: 610 pass / 0 fail (incl. `mediaId` cache and preflight Mongo tests); `tsc` clean; `test:ops` 18 pass.
+- Review of #51: `mediaId` is copied only from the same stored programme row that supplies `tmdbId` (first alias match, absent → omitted, never synthesised); preflight runs under the read-only guard (exit 97 on write); snapshot tool only issues GETs and writes `--out`; no flag defaults changed; no workflow runs on merge. No critical/high findings.
+- Corrections: the 3E report's "not merged" is superseded (merged `ac58a24`, **not deployed**); EPG horizon is **3 days**, not 7. Historical reports are left unchanged.
+- Remaining: owner merge approval for #51; VPS-only checks (M01-A), preflight against real data (M02-B); all activation stays owner-gated.
