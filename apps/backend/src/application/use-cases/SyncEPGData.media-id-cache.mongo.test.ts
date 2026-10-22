@@ -127,3 +127,24 @@ test('M03-L2: an unreadable catalogue copies no mediaId but keeps the cached met
     assert.deepEqual(out, { n: [949, null] });
     assert.deepEqual(raw.cacheRefusals, { catalogue_unavailable: 1 });
   }));
+
+test('M03-L2: an untyped stored entry is not reused for a Cine/Serie airing (no kind evidence); phase 2 reuses it without a kind claim', { skip: !process.env.TEST_MONGO_URI }, () =>
+  withDb('m03l2untyped', async (repo) => {
+    await row(888, 'movie', 'Lobo');
+    // Legacy film enrichment with no tmdbKind and no row id, plus a typed film for a phase-2 (no-image, other genre) airing.
+    await repo.saveBatch([stored('legacy', 'Lobo', 'Cine', 888, undefined), stored('typed', 'Mar', 'Cine', 999, 'movie', await row(999, 'movie', 'Mar'))]);
+    const { enrich, calls, refusals } = makeSync(repo, { series: { lobo: 4242 } });
+    const out = await enrich([
+      Program.create(base('n_series', 'Lobo', '2026-10-24', 'Serie') as never),
+      Program.create(base('n_other', 'Mar', '2026-10-24', 'Documental') as never),
+    ]);
+    const ids = byId(out);
+    assert.deepEqual(ids.n_series, [4242, null], 'searched as a show, not given the film\'s TMDB id');
+    assert.deepEqual(calls, ['tv:lobo']);
+    assert.equal(refusals().missing_kind, 1);
+    // Phase 2 (no expected kind): the single-kind entry is reused with its verified row; no tmdbKind is stamped (category unchanged).
+    const other = out.find((p) => p.id === 'n_other')!;
+    assert.equal(other.tmdbId, 999);
+    assert.ok(other.mediaId);
+    assert.equal((other.trustFlags as any)?.tmdbKind, undefined);
+  }));

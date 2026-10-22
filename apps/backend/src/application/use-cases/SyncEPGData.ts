@@ -917,9 +917,10 @@ export class SyncEPGData {
   }
 
   /**
-   * M03-L2: the stored enrichment to reuse for a title. With an expected kind (Cine → movie, Serie → tv) only entries of that
-   * kind qualify; untyped entries only when no entry of the other kind shares the title. Without one, a title stored as both
-   * kinds is not reused. The mediaId survives only when every qualifying entry names the same TMDB id and row.
+   * M03-L2: the stored enrichment to reuse for a title. With an expected kind (Cine → movie, Serie → tv) only entries
+   * explicitly of that kind qualify — an untyped entry may be the same-titled work of the other kind, so the title goes to
+   * the TMDB search of its kind instead. Without one, a title stored as both kinds is not reused. The mediaId survives only
+   * when every qualifying entry names the same TMDB id and row.
    */
   private pickCachedEnrichment(map: Map<string, EnrichmentCacheEntry[]>, aliases: string[], want?: 'movie' | 'tv'): EnrichmentCacheEntry | undefined {
     for (const alias of aliases) {
@@ -929,17 +930,15 @@ export class SyncEPGData {
       if (want) {
         pool = entries.filter((e) => e.kind === want);
         if (!pool.length) {
-          if (entries.some((e) => e.kind)) {
-            this.refuseCache('other_kind_only');
-            return undefined;
-          }
-          pool = entries;
+          this.refuseCache(entries.some((e) => e.kind) ? 'other_kind_only' : 'missing_kind');
+          return undefined;
         }
       } else if (new Set(entries.map((e) => e.kind).filter(Boolean)).size > 1) {
         this.refuseCache('ambiguous_kind');
         return undefined;
       }
-      const hit = pool.find((e) => e.mediaId) ?? pool[0];
+      const tagged = pool.filter((e) => e.genreTags?.length);
+      const hit = tagged.find((e) => e.mediaId) ?? tagged[0] ?? pool[0];
       if (hit.mediaId && (new Set(pool.map((e) => e.tmdbId)).size > 1 || new Set(pool.map((e) => e.mediaId).filter(Boolean)).size > 1)) {
         this.refuseCache('ambiguous_candidates');
         return { ...hit, mediaId: undefined };
