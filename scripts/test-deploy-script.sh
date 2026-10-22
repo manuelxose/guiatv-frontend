@@ -168,4 +168,40 @@ bash "${ROOT}/scripts/guiatv-ops.sh" rollback >"${T}/ops4.log" 2>&1 || { cat "${
 set +e; bash "${ROOT}/scripts/guiatv-ops.sh" rollback 20261022010257 >"${T}/ops5.log" 2>&1; code=$?; set -e
 [ "${code}" != "0" ] || fail "rolling back to the release that is already live must fail"
 
+# --- 8. the CI wrapper (scripts/deploy-ssh.sh) turns the real deploy script's failures into a failing step -----------
+# fake ssh runs the remote script locally; fake sudo runs the sandboxed deploy-guiatv.sh instead of /var/www/guiatv's.
+cat >"${T}/bin/fakessh" <<'EOF'
+#!/bin/bash
+while [ "$1" != bash ]; do shift; done
+exec "$@"
+EOF
+cat >"${T}/bin/sudo" <<'EOF'
+#!/bin/bash
+exec env DEPLOY_ARTIFACT="${VT}/${SHA_DIR}/guiatv-artifact.tgz" DEPLOY_ARTIFACT_SHA256="$4" FORCE_DEPLOY=1 bash "${ROOT}/deploy-guiatv.sh" main
+EOF
+chmod +x "${T}/bin/fakessh" "${T}/bin/sudo"
+export ROOT SSH_BIN="${T}/bin/fakessh" DEPLOY_SSH_HOST=h DEPLOY_SSH_USER=u DEPLOY_SSH_KEY=k VT="${T}/vt"
+W40="$(printf 'c%.0s' {1..40})"; W64="$(printf 'd%.0s' {1..64})"
+live="$(readlink -f "${SRV}/current")"
+( exec 8>"${DEPLOY_LOCK_FILE}"; flock 8; exec sleep 5 ) &
+holder=$!; sleep 0.5
+set +e; SHA_DIR=none bash "${ROOT}/scripts/deploy-ssh.sh" "${W40}" "${W64}" >"${T}/ci1.log" 2>&1; code=$?; set -e
+kill "${holder}" 2>/dev/null || true; wait "${holder}" 2>/dev/null || true
+[ "${code}" = "75" ] || { cat "${T}/ci1.log"; fail "the CI step must fail with 75 on lock contention (got ${code})"; }
+[ "$(readlink -f "${SRV}/current")" = "${live}" ] || fail "a lock-refused CI deploy changed the release"
+art2="${T}/art2"; mkdir -p "${art2}/apps/backend/dist/server" "${art2}/apps/frontend/dist/guiatv/browser" "${art2}/apps/frontend/dist/guiatv/server"
+touch "${art2}/apps/backend/dist/server/index.js" "${art2}/apps/frontend/dist/guiatv/browser/main.js" "${art2}/apps/frontend/dist/guiatv/server/main.server.mjs" "${art2}/apps/frontend/dist/guiatv/server/index.server.html"
+sha2="$(git -C "${SRV}" rev-parse HEAD)"; echo "${sha2}" >"${art2}/ARTIFACT_GIT_SHA"
+mkdir -p "${VT}/a"; tar -czf "${VT}/a/guiatv-artifact.tgz" -C "${art2}" ARTIFACT_GIT_SHA apps
+sum2="$(sha256sum "${VT}/a/guiatv-artifact.tgz" | cut -d' ' -f1)"
+export SHA_DIR=a
+n=$(ls "${SRV}/releases" | wc -l); touch "${FAIL_FLAG}"; export FAIL_RELEASE="R$((n + 1))"
+set +e; bash "${ROOT}/scripts/deploy-ssh.sh" "${sha2}" "${sum2}" >"${T}/ci2.log" 2>&1; code=$?; set -e
+[ "${code}" != "0" ] || { cat "${T}/ci2.log"; fail "the CI step must fail when the smoke check fails"; }
+[ "$(readlink -f "${SRV}/current")" = "${live}" ] || { cat "${T}/ci2.log"; fail "smoke failure through the CI wrapper did not roll back"; }
+grep -q "rolling back" "${T}/ci2.log" && grep -q "Remote deploy FAILED" "${T}/ci2.log" || fail "the failed CI deploy was not reported"
+rm -f "${FAIL_FLAG}"; export FAIL_RELEASE=none
+bash "${ROOT}/scripts/deploy-ssh.sh" "${sha2}" "${sum2}" >"${T}/ci3.log" 2>&1 || { cat "${T}/ci3.log"; fail "a healthy CI deploy must exit 0"; }
+[ "$(readlink -f "${SRV}/current")" != "${live}" ] || fail "the healthy CI deploy did not publish"
+
 echo "deploy script checks passed"

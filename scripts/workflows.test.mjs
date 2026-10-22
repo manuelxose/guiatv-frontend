@@ -69,3 +69,15 @@ test('M01-B1: the proposed main ruleset blocks force-push/deletion and requires 
   assert.deepEqual(contexts, ['verify']);
   assert.match(read('.github/workflows/performance.yml'), /on:\s*\n\s+pull_request:\s*\n\s+push:/, 'verify must run on every PR (no path filter)');
 });
+
+test('M02-B: the artifact deploy uses an explicit exit-status step, not ssh-action (which ignores script_stop), and keeps SHA check + lock', () => {
+  const yml = read('.github/workflows/deploy-artifact.yml');
+  assert.doesNotMatch(yml, /appleboy\/ssh-action|script_stop/);
+  assert.match(yml, /run: scripts\/deploy-ssh\.sh /);
+  assert.match(yml, /needs\.build\.outputs\.sha256/);
+  assert.match(yml, /group: deploy-prod\s*\n\s+cancel-in-progress: false/);
+  const remote = read('scripts/deploy-ssh.sh');
+  assert.match(remote, /set -euo pipefail/);
+  assert.match(remote, /trap 'rm -rf "\$\{dir\}"' EXIT/, 'cleanup is a trap, never a trailing command that masks the deploy status');
+  assert.doesNotMatch(remote, /npm |ng build|tsc/, 'no compilation on the host');
+});

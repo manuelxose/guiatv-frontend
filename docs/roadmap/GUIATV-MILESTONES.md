@@ -43,9 +43,9 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 ### M02-B — Real catalogue and EPG measurement
 - **Objective**: measure `catalogueRowShare` and verified broadcasts per candidate on production data. **Scope**: run the existing read-only preflight on the VPS (guard aborts on any write). **Non-goals**: new tooling; relaxing the evidence join; waiting is not a fix (the sync fix only affects programmes synced after M01-B, so run after at least one full EPG sync).
-- **Status**: Eng ✔ (tool) · CI ✔ · Merge ○ · Deploy ○ (needs M01-B) · Act –
+- **Status**: Eng ✔ · Measured ✔ (2026-10-22, read-only, 0 writes) · CI (see PR) · Merge ○ · Deploy ○ (not authorised in M02-B) · Act – · mediaId-fix effect **not yet measurable** (no sync since deploy; next scheduled sync re-measure: `scripts/m02b-measure.cjs`) · `catalogueRowShare` **26.3 %** · deploy exit-status fix + catalogue batch-read fix in PR
 - **Depends**: M01-B. **Skills**: Context Mode, diagnosing-bugs if share is low. **Acceptance**: preflight JSON with per-date coverage and per-candidate outcome, zero writes. **Evidence**: `/tmp/preflight.json` committed under `docs/seo/phase-3f/`. **Blockers**: VPS access. **Rollback**: none (read-only). **NO-GO** until M01-B.
-- **If the share is low**: next step is tying airings to rows at read-model build time (3F §10), as a new milestone — not a looser join.
+- **If the share is low**: next step is tying airings to rows at read-model build time (3F §10), as a new milestone — not a looser join. **Result: share is low (26.3 %); 2 196 of the 2 746 unlinked TMDB airings (59 % of all) have exactly one catalogue row for that TMDB id whose title key matches — see CURRENT-STATE M02-B addendum.**
 
 ### M03-A — Candidate enrichment verification
 - **Objective**: final allowlist of 3–5 `/peliculas/` paths. **Scope**: pick candidates the preflight accepts with `verifiedBroadcasts > 0`; swap from the 25 reserves; re-take before-snapshots if > a few hours old. **Non-goals**: title-only matches, `scope=all`, series/programmes.

@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - uses: actions/checkout@v4 # only for scripts/deploy-ssh.sh
       - uses: actions/download-artifact@v4
         with:
           name: guiatv-artifact
@@ -51,13 +52,9 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           source: guiatv-artifact.tgz
           target: /var/tmp/guiatv-${{ github.sha }}
-      - uses: appleboy/ssh-action@v1.2.2
-        with:
-          host: ${{ secrets.DEPLOY_SSH_HOST }}
-          username: ${{ secrets.DEPLOY_SSH_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          command_timeout: 15m
-          script_stop: true # a failed deploy must fail the workflow, not be masked by the cleanup line
-          script: |
-            sudo /var/www/guiatv/deploy-guiatv.sh main /var/tmp/guiatv-${{ github.sha }}/guiatv-artifact.tgz ${{ needs.build.outputs.sha256 }}
-            rm -rf /var/tmp/guiatv-${{ github.sha }}
+      - name: Deploy on the host (exit status = deploy-guiatv.sh status; see scripts/deploy-ssh.sh)
+        env:
+          DEPLOY_SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          DEPLOY_SSH_USER: ${{ secrets.DEPLOY_SSH_USER }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: scripts/deploy-ssh.sh "${{ github.sha }}" "${{ needs.build.outputs.sha256 }}"
