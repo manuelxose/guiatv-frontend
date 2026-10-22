@@ -1,0 +1,91 @@
+# GuíaTV — milestones
+
+Written for: the owner and the agents/operators executing milestones. Facts and evidence: [CURRENT-STATE.md](CURRENT-STATE.md) (source of truth for "what is true now"). Rules for every milestone: one milestone per session; no deploy, flag change, restart, migration or credential change without the owner's explicit approval for that action; docs-only changes never deploy; do not deploy unrelated changes while a rollout is being watched (M04-B); report engineering / CI / merge / deploy / activation separately; never record a result that was not observed.
+
+Status key: `Eng/CI/Merge/Deploy/Act` — ✔ done, ○ pending, – not applicable, ✖ blocked. GO = may start now; NO-GO = a dependency or approval is missing.
+
+## Order of execution (adjusted from the provisional list)
+
+```
+M00 → M02-A (merge #51) → M01-A (VPS checks) → M01-B (deploy main) → M02-B (preflight) → M03-A → M03-B → M04-A → M04-B
+```
+
+Adjustments, each from evidence: (1) **M02-A now precedes M01-B** — #51 carries the `mediaId` fix and metrics block; deploying `ac58a24` alone wastes a sync cycle. (2) **M02-B narrowed** to the one unmeasured quantity (`catalogueRowShare`); EPG coverage, horizon (3 days) and identity checks are already measured. (3) **M03-A reuses** the preflight and `candidates.json` (candidates expire; re-select, don't rebuild). (4) **M03-B** is flag-off parity after deploy; the enriched-vs-before compare belongs to M04-B. (5) **M11 split** into M11-A (existing corpus defects) and M11-B (new original text). (6) Stream B code may start after M02-A but is not deployed during M04-B.
+
+Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M01-B · M03-A←M02-B · M03-B←M01-B · M04-A←M03-A,M03-B · M04-B←M04-A · M05←M02-A · M06←M05 · M07←M05 · M08←M05,M06,M07 · M09←M00 · M10←M09 · M11-A←M00 · M11-B←M11-A,M04-B · M12←M09,M10,M11-B · M13←M01-B · M14←M08,M09,M10,M11-A,M11-B,M13 · M15←M14
+
+## Stream A — Production and enrichment
+
+### M00 — Current-state reconciliation
+- **Objective**: verified baseline, this roadmap, PR for review. **Non-goals**: any code, deploy, merge of #51, flag.
+- **Status**: Eng ✔ · CI ○ (runs on the PR) · Merge ○ (owner) · Deploy – · Act –
+- **Skills**: Graphify/Context Mode (targeted), code-review. **Acceptance**: both docs present; IDs unique; dependencies acyclic; every PR/commit cited exists. **Evidence**: CURRENT-STATE.md + the validation in the PR body. **Blockers**: none. **Rollback**: revert the docs commit. **GO** (complete on PR open).
+
+### M02-A — Phase 3F PR validation and integration
+- **Objective**: review PR #51 against its report, fix only real defects, merge with owner approval. **Scope**: add `scripts/legacy-rollout-snapshot.test.mjs` to `test:ops`; confirm the `mediaId` test and preflight test run in `verify`; confirm no workflow sets a legacy flag. **Non-goals**: deploy, re-measuring, new features.
+- **Status**: Eng ✔ (one gap: snapshot test not in CI) · CI ✔ on `36b0e15` · Merge ○ · Deploy ○ (M01-B) · Act –
+- **Depends**: M00. **Skills**: code-review, tdd, diagnosing-bugs (only if a check fails).
+- **Acceptance**: green `verify` + `ssr-resilience` on the final head; review has no open correctness finding; merge approved by the owner; merge deploys nothing (`deploy.yml`/`deploy-artifact.yml` are dispatch-only).
+- **Evidence**: PR checks, review notes. **Blockers**: owner merge approval. **Rollback**: `git revert` of the squash commit (flags off, nothing deployed). **GO** (merge itself: needs owner).
+
+### M01-A — Artifact deployment safety verification
+- **Objective**: prove the artifact path and rollback are ready before shipping code. **Scope** (read-only on the VPS, by an operator): live commit and release id, previous release id for rollback, `guiatv-ops.sh status`, disk/memory, unit health, `api.env` has no activation flags by name, deploy lock free. Optionally a rollback drill in a quiet window (owner decision; never run so far). **Non-goals**: deploy, edits to `/etc/guiatv/*`.
+- **Status**: Eng ✔ (`deploy-artifact.yml`, sandbox-tested) · CI ✔ · Merge ✔ · Deploy: artifact path used once (`6907540`) · Act –
+- **Depends**: M00. **Skills**: engineering:deploy-checklist, Context Mode. **Acceptance**: checklist from 3F §2 filled with observed values; rollback target named. **Evidence**: operator output pasted into CURRENT-STATE. **Blockers**: VPS access (no SSH from agent sessions), owner window. **Rollback**: none needed (read-only). **NO-GO** until an operator with VPS access is available.
+
+### M01-B — Controlled Phase 3E production deployment
+- **Objective**: ship `main` (3E + 3F) to production with every legacy flag unset. **Scope**: `gh workflow run deploy-artifact.yml --ref main`, post-deploy smoke: existing routes, `/sitemap.xml`, canonical/robots of a sample, `/v2/health/metrics` shows `legacyEnrichment` with epoch `off`, 0 new 5xx. **Non-goals**: any flag, switching `deploy.yml` to artifacts, post-boot unit.
+- **Status**: Eng ✔ · CI ✔ · Merge ○ (needs M02-A) · Deploy ○ · Act –
+- **Depends**: M01-A, M02-A. **Skills**: engineering:deploy-checklist. **Acceptance**: production serves the new commit; payloads of sampled pages identical to flag-off baseline; metrics block present. **Evidence**: workflow run URL, smoke output. **Blockers**: owner approval of deploy and window; Contabo instability unresolved. **Rollback**: `sudo guiatv-ops.sh rollback <previous-release-id>` (id recorded in M01-A); triggers in `docs/release-workflow.md`. **NO-GO** until M01-A and M02-A.
+
+### M02-B — Real catalogue and EPG measurement
+- **Objective**: measure `catalogueRowShare` and verified broadcasts per candidate on production data. **Scope**: run the existing read-only preflight on the VPS (guard aborts on any write). **Non-goals**: new tooling; relaxing the evidence join; waiting is not a fix (the sync fix only affects programmes synced after M01-B, so run after at least one full EPG sync).
+- **Status**: Eng ✔ (tool) · CI ✔ · Merge ○ · Deploy ○ (needs M01-B) · Act –
+- **Depends**: M01-B. **Skills**: Context Mode, diagnosing-bugs if share is low. **Acceptance**: preflight JSON with per-date coverage and per-candidate outcome, zero writes. **Evidence**: `/tmp/preflight.json` committed under `docs/seo/phase-3f/`. **Blockers**: VPS access. **Rollback**: none (read-only). **NO-GO** until M01-B.
+- **If the share is low**: next step is tying airings to rows at read-model build time (3F §10), as a new milestone — not a looser join.
+
+### M03-A — Candidate enrichment verification
+- **Objective**: final allowlist of 3–5 `/peliculas/` paths. **Scope**: pick candidates the preflight accepts with `verifiedBroadcasts > 0`; swap from the 25 reserves; re-take before-snapshots if > a few hours old. **Non-goals**: title-only matches, `scope=all`, series/programmes.
+- **Status**: Eng ✔ · CI – · Merge – · Deploy – · Act –
+- **Depends**: M02-B. **Skills**: Context Mode. **Acceptance**: allowlist + fresh `rollout-before-*.json`; each page `index, follow` at snapshot time. **Blockers**: candidates go `noindex` when the last airing passes — the list is valid for hours, not weeks. **Rollback**: none. **NO-GO** until M02-B.
+
+### M03-B — SEO and performance regression validation
+- **Objective**: show the deployed build with flags off changes nothing. **Scope**: `legacy-rollout-snapshot compare` of the M01-B build against the 3F before-snapshot (without `--expect-enriched`), `seo-regression` live crawl by manual dispatch, latency vs the 3F baseline. **Non-goals**: enrichment on.
+- **Status**: Eng ✔ · CI ✔ · Merge – · Deploy – · Act –
+- **Depends**: M01-B. **Skills**: seo, seo-technical, Playwright. **Acceptance**: compare exit 0; slug p95 ≤ 300 ms, `tv/read` p95 ≤ 1,230 ms, 0 new 5xx. **Rollback**: M01-B rollback. **NO-GO** until M01-B.
+
+### M04-A — Controlled rollout preparation
+- **Objective**: everything decided before the flag moves. **Scope**: owner confirms thresholds (3F §6, may tighten), rollback owner on call, kill file path agreed, nginx cache-purge command rehearsed on one path, exact `api.env` diff written out. **Non-goals**: setting the flag.
+- **Status**: Eng ✔ · CI – · Merge – · Deploy – · Act ○
+- **Depends**: M03-A, M03-B. **Skills**: engineering:deploy-checklist. **Acceptance**: a one-page go sheet signed off by the owner. **Blockers**: owner decisions. **Rollback**: n/a. **NO-GO** until dependencies.
+
+### M04-B — Authorized rollout and monitoring
+- **Objective**: enable `CONTENT_LEGACY_ENRICHMENT_ENABLED=true` with `SCOPE=<allowlist>` (never `all`), restart only `guiatv-api`, verify, watch ≥ 1 week. **Scope**: 3F §6 steps 2–5; `compare --expect-enriched`; metrics watch. **Non-goals**: more pages, other content types, unrelated deploys during the watch.
+- **Status**: all ○ · **Depends**: M04-A. **Skills**: engineering:incident-response if a trigger fires. **Acceptance**: compare exit 0, counters healthy (`timeout` ≤ 1 %, `skipped:breaker_open` = 0), thresholds not breached for the watch period. **Blockers**: **explicit owner approval to activate**, quiet window. **Rollback**: kill file or unset flag + restart `guiatv-api` (nothing was written, nothing to undo); purge nginx cache of the paths. **NO-GO** until M04-A and approval.
+
+## Stream B — Content and UX (provisional; detail when next)
+
+| ID | Objective | Depends | Skills | Acceptance (summary) | Blockers | Go |
+|---|---|---|---|---|---|---|
+| M05 | Movie detail page: show verified genres/runtime/schedule well, a11y, no SEO-contract change | M02-A | frontend-design, UI-UX-Pro-Max, angular-component | Karma + axe + Playwright pass; meta/canonical/robots unchanged | do not deploy during M04-B | NO-GO (dep) |
+| M06 | Series and episodes pages | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO |
+| M07 | Programme and channel pages (now/next; fix "7-day" assumptions) | M05 | same | no copy promises more than the 3-day guide | EPG horizon | NO-GO |
+| M08 | Shared UX/UI consistency (tokens, cards, empty states) | M05, M06, M07 | web-design-guidelines, UI-UX-Pro-Max | one component set; bundle budgets hold | — | NO-GO |
+
+## Stream C — SEO and editorial (provisional)
+
+| ID | Objective | Depends | Skills | Acceptance (summary) | Known blockers | Go |
+|---|---|---|---|---|---|---|
+| M09 | Canonicals, indexation, technical SEO; decide sitemap policy for `/peliculas/` (822 `/programas/` URLs, no `/peliculas/` today) | M00 | seo-technical, seo-sitemap, seo-page | documented indexation policy; `seo-regression` green; no thin page indexable | `noindex`-by-airing rule makes indexability time-dependent | GO (read-only audit) |
+| M10 | Internal linking and topical architecture | M09 | seo-cluster, mk-site-architecture | link graph reviewed; no orphaned indexable detail pages | — | NO-GO |
+| M11-A | Fix existing editorial defects (10 stubs, 17 unsourced/markdown posts, 14 stale, near-duplicate clusters; resolve the rewrite-vs-production discrepancy in `docs/seo/03-ADSENSE-READINESS.md`) | M00 | seo-content, mk-copy-editing | `scripts/editorial-audit.mjs` shows each class fixed or `noindex` | needs production DB read and an editor; GSC data | NO-GO (access) |
+| M11-B | Original, person-written text for enriched pages that earn traffic | M11-A, M04-B | seo-content-brief, mk-copywriting | per-title text with sources; not template-shaped | needs a human author and traffic data | NO-GO |
+| M12 | Controlled programmatic SEO | M09, M10, M11-B | mk-programmatic-seo | small batch, quality gate, kill switch | scaled-content risk; not before M11-B | NO-GO |
+
+## Stream D — Reliability and monetization (provisional)
+
+| ID | Objective | Depends | Skills | Acceptance (summary) | Known blockers | Go |
+|---|---|---|---|---|---|---|
+| M13 | Performance and reliability: Mongo p99 tail (7.2 s), `tv/read` p95, cold-start slowness, Contabo outage follow-up | M01-B | diagnosing-bugs, sql-optimization | baselines improved or accepted by owner; uptime probe green | root cause of 2026-10-20/21 outage unknown (provider) | NO-GO |
+| M14 | AdSense readiness review (internal verdict vs `03-ADSENSE-READINESS.md`) | M08, M09, M10, M11-A, M11-B, M13 | seo, seo-content, mk-analytics | every class in the remediation table closed or `noindex`; verdict written with evidence | Google publishes no pass threshold | NO-GO |
+| M15 | Final remediation and submission readiness | M14 | engineering:deploy-checklist | owner submits; no open M14 finding | owner decision | NO-GO |
