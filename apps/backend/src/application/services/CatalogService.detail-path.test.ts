@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CatalogService } from './CatalogService';
+import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 
 const catalog = new CatalogService({} as any, {} as any, {} as any, {} as any, {} as any, {} as any);
 
@@ -28,4 +29,24 @@ test('film and series airings link to the slug their detail page resolves', () =
 
 test('programme airings keep the legacy slug of their indexed URLs', () => {
   assert.deepEqual(paths('España directo', 'Magacín'), ['/programas/espaa-directo', '/programas/espaa-directo']);
+});
+
+// QA on this change: with no TMDB match the slug falls back to the TV read model, which must accept every slug
+// airingDetailSlug links, or a film/series without a TMDB entry would 404 (and be negative-cached).
+test('the TV read slug fallback resolves the slugs airing links now use', async () => {
+  const titles = ['Él Sueño', 'Serie Local T1 E3', 'España directo'];
+  const original = { distinct: TVReadAiringModel.distinct, findOne: TVReadAiringModel.findOne };
+  (TVReadAiringModel as any).distinct = () => ({ exec: async () => titles });
+  (TVReadAiringModel as any).findOne = (filter: { 'program.title': string }) => ({
+    sort: () => ({ lean: () => ({ exec: async () => ({ id: filter['program.title'] }) }) }),
+  });
+  try {
+    const find = (text: string, slug: string) => (catalog as any).findTvReadItemBySlug(text, slug, '20261022');
+    assert.equal((await find('el sueno', 'el-sueno'))?.id, 'Él Sueño');
+    assert.equal((await find('serie local', 'serie-local'))?.id, 'Serie Local T1 E3');
+    assert.equal((await find('espaa directo', 'espaa-directo'))?.id, 'España directo');
+    assert.equal(await find('otro titulo', 'otro-titulo'), null);
+  } finally {
+    Object.assign(TVReadAiringModel, original);
+  }
 });

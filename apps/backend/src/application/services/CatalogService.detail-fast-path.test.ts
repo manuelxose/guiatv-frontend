@@ -231,7 +231,7 @@ test('tmdb detail carries its genres, film runtime and a differing original titl
   assert.equal(film.durationMinutes, 136);
   assert.equal(film.originalTitle, 'Atomic Blonde');
 
-  const same = await withStubbedTvReadFind(() => detail({ runtime: 0, genres: undefined }).getDetail('tmdb:movie:603'));
+  const same = await withStubbedTvReadFind(() => detail({ title: 'Amélie', original_title: 'Amelie', runtime: 0, genres: undefined }).getDetail('tmdb:movie:603'));
   assert.deepEqual([same.genres, same.durationMinutes, same.originalTitle], [[], undefined, undefined]);
 
   const series = await withStubbedTvReadFind(() =>
