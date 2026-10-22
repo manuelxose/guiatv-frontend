@@ -66,12 +66,13 @@ Independent of every `CONTENT_ENTITIES_*`, identity-write, public-read, canary a
 
 | Check | Result |
 |---|---|
-| Backend `npm test` (scratch MongoDB 8) | see §9 |
+| Backend `npm test` (scratch MongoDB 8) | 608 tests: 607 pass, 1 skip (existing Redis skip), **0 fail** (the flake did not recur) |
 | New backend: service rules, policy/epoch, DST, breaker/timeout, no-write proxy; real-read-model parity + zero-write count | pass |
 | `SyncEPGData.icon-cache-deferred` flake | root cause: a wall-clock bound (`elapsed < serial/2`) on a scheduler-sensitive fetch pool. Now asserts the property itself: **peak in-flight fetches = 8** (and 16 fetches, one per channel). Deterministic; would fail at concurrency 1 |
-| Frontend Karma | see §9 (new: `legacy-enrichment.spec`, `catalog-detail.enrichment.spec`) |
+| Frontend Karma | **310/310** (300 before; new: `legacy-enrichment.spec`, `catalog-detail.enrichment.spec`) |
 | SSR (compiled bundle) | `legacy-enrichment-ssr.test.mjs`: status, robots header+meta, canonical, title, description identical with/without/unreadable enrichment; one `Movie`; hostile title inert; plus the 3D entity SSR tests |
-| Playwright desktop + mobile | `e2e/entity/legacy-enrichment.spec.ts`: see §9 |
+| Playwright desktop + mobile (Windows, compiled SSR bundle) | **18 passed, 2 skipped by design** (mobile-only tests on desktop); includes the 4 new legacy specs ×2 projects: SEO surface equality, schedule/facts, empty/unreadable, axe wcag2a/aa/21aa light+dark, one column on mobile |
+| Node SSR tests (compiled bundle) | 9/9 (`legacy-enrichment-ssr`, `entity-read-ssr`, `ssr-cache`) |
 | Static workflow tests | `deploy.yml` manual-only, flag never set by a workflow |
 | Deploy sandbox script | `scripts/test-deploy-script.sh`: passed |
 
@@ -103,9 +104,9 @@ Non-regression: canonical path, robots, meta title and description, sitemap memb
 - `deploy.yml` (builds **on the VPS**) now runs **only by `workflow_dispatch`**; a merge to `main` no longer starts it. The default path is `deploy-artifact.yml` (CI builds; the server verifies, unpacks, publishes, smoke-tests); both share `concurrency: deploy-prod` (no cancel) and the server takes its own lock. `RUNBOOK.md` and `workflows.test.mjs` say so. This reverses an auto-deploy trigger the owner never explicitly changed: revert one hunk if undesired.
 - **Not merged, not deployed**: no operational authorisation for a production deploy was given in this session, and the artifact route needs root SSH to the VPS. With every flag unset the code is inert.
 
-## 9. Final results
+## 9. CI
 
-See the delivery report in the PR description for the last numbers (backend, Karma, SSR, Playwright, CI).
+PR #49: `verify` pass (6 m 0 s), `ssr-resilience` pass (2 m 29 s), `live-crawl` skipped by design. `graphify update` was not run (the CLI is not installed here).
 
 ## 10. Limits and next phase
 
