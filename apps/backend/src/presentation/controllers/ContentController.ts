@@ -138,7 +138,8 @@ export class ContentController {
     if (catalogIds.length === ids.length) {
       const items = await Promise.all(
         ids.map((id) =>
-          this.catalogService.getDetail(id, (req as AuthenticatedRequest).user?.id)
+          // A list of cards needs no per-item schedule read: enrichment belongs to a detail page.
+          this.catalogService.getDetail(id, (req as AuthenticatedRequest).user?.id, { legacyEnrichment: false })
         )
       );
       res.status(200).json(successResponse({ items }));

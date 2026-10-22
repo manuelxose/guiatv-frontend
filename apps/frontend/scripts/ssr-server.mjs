@@ -533,6 +533,28 @@ app.get('*', async (req, res) => {
   }
 });
 
+// Phase 3E: the API says which legacy pages receive enrichment (health header). When that changes, pages rendered
+// under the previous state are dropped, so a rollout or rollback never serves a mixed set. A failed poll changes nothing.
+let enrichmentEpoch = null;
+function pollEnrichmentEpoch() {
+  backendClient
+    .get(new URL('/v2/health', backendUrl), { timeout: 3000 }, (res) => {
+      res.resume();
+      const epoch = res.headers['x-legacy-enrichment-epoch'];
+      if (typeof epoch === 'string') {
+        if (enrichmentEpoch !== null && epoch !== enrichmentEpoch) {
+          ssrCache.clear();
+          console.log(`[SSR] legacy enrichment state ${enrichmentEpoch} -> ${epoch}; rendered-page cache cleared`);
+        }
+        enrichmentEpoch = epoch;
+      }
+    })
+    .on('timeout', function onTimeout() { this.destroy(); })
+    .on('error', () => undefined);
+}
+setInterval(pollEnrichmentEpoch, 30_000).unref();
+pollEnrichmentEpoch();
+
 const server = app.listen(port, () => {
   console.log(`[SSR] Server listening on http://localhost:${port}`);
 });

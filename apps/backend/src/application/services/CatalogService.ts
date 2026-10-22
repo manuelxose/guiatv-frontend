@@ -1,3 +1,4 @@
+import { LegacyEnrichmentService } from './LegacyEnrichmentService';
 import { IChannelRepository } from '@/domain/repositories/IChannelRepository';
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import {
@@ -110,7 +111,8 @@ export class CatalogService {
     // catalog (L1 -> Redis -> Mongo -> TMDB) instead of hitting TMDB directly
     // on every request. Falls back to the old direct-TMDB behavior when absent
     // so existing tests/call sites that don't pass it keep working unchanged.
-    private readonly mediaCatalogService?: MediaCatalogService
+    private readonly mediaCatalogService?: MediaCatalogService,
+    private readonly legacyEnrichment?: LegacyEnrichmentService
   ) {}
 
   /** Single choke point for TMDB *detail* fetches (movie/tv by id) so the
@@ -268,7 +270,8 @@ export class CatalogService {
 
   async getDetail(
     catalogId: string,
-    userId?: string
+    userId?: string,
+    options: { legacyEnrichment?: boolean } = {}
   ): Promise<CatalogDetailDTO> {
     const parsed = parseCatalogId(catalogId);
     if (!parsed) {
@@ -276,14 +279,32 @@ export class CatalogService {
     }
 
     if (parsed.source === 'program' && parsed.programId) {
-      return this.getProgramDetail(parsed.programId, userId);
+      const detail = await this.getProgramDetail(parsed.programId, userId);
+      return options.legacyEnrichment === false ? detail : this.withLegacyEnrichment(detail);
     }
 
     if (parsed.source === 'tmdb' && parsed.tmdbId && parsed.tmdbType) {
-      return this.getTmdbDetail(parsed.tmdbId, parsed.tmdbType, userId);
+      const detail = await this.getTmdbDetail(parsed.tmdbId, parsed.tmdbType, userId);
+      return options.legacyEnrichment === false ? detail : this.withLegacyEnrichment(detail);
     }
 
     throw new NotFoundError('Catalog item', catalogId);
+  }
+
+  /**
+   * Phase 3E: verified additions to the legacy payload, behind `CONTENT_LEGACY_ENRICHMENT_ENABLED`. Applied at the
+   * public entry points (`getDetail`, `getBySlug`) so every route to a legacy page shares it; it never throws and
+   * returns the payload untouched when off, unbound or unavailable (see `LegacyEnrichmentService`).
+   */
+  private async withLegacyEnrichment(detail: CatalogDetailDTO, requestedSlug?: string): Promise<CatalogDetailDTO> {
+    if (!this.legacyEnrichment) return detail;
+    const tmdbType = detail.source === 'tmdb'
+      ? (detail.contentType === 'movie' ? 'movie' : 'tv')
+      : this.resolveProgramTmdbType(detail.contentType, detail.tmdbId);
+    const slugBound = requestedSlug === undefined
+      ? undefined
+      : [detail.slug, this.slugify(detail.title), this.slugifyTitle(detail.title)].includes(requestedSlug);
+    return this.legacyEnrichment.apply(detail, { tmdbType, slugBound });
   }
 
   async getBySlug(
@@ -318,7 +339,7 @@ export class CatalogService {
     const inFlightKey = `${contentType}:${slug}:${userId || 'anon'}`;
     const existing = this.inFlightSlugLookups.get(inFlightKey);
     if (existing) {
-      return existing;
+      return existing.then((detail) => this.withLegacyEnrichment(detail, slug));
     }
 
     const lookupPromise = this.resolveBySlug(
@@ -331,7 +352,7 @@ export class CatalogService {
       this.inFlightSlugLookups.delete(inFlightKey);
     });
     this.inFlightSlugLookups.set(inFlightKey, lookupPromise);
-    return lookupPromise;
+    return lookupPromise.then((detail) => this.withLegacyEnrichment(detail, slug));
   }
 
   private buildSlugNotFoundCacheKey(

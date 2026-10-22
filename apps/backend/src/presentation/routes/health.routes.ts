@@ -4,6 +4,7 @@ import { Router, Request, Response } from 'express';
 import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { runtimeMetricsSnapshot } from '../../shared/utils/runtimeMetrics';
+import { legacyEnrichmentPolicy } from '../../application/services/LegacyEnrichmentPolicy';
 import { ChatSocketHub } from '../realtime/ChatSocketHub';
 
 /**
@@ -58,6 +59,7 @@ export const createHealthRoutes = (): Router => {
         realtime = null;
       }
 
+      res.set('X-Legacy-Enrichment-Epoch', legacyEnrichmentPolicy.epoch());
       res.status(200).json(
         successResponse(
           {
