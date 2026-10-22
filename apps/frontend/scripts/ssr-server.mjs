@@ -381,7 +381,7 @@ app.get(['/editorial/:slug', '/blog/:slug'], (req, res) => movedTo(req, res, gui
 app.get('/mi-cuenta', (_req, res) => res.redirect(301, '/perfil'));
 app.get('/comunidad', (_req, res) => res.redirect(301, '/perfil'));
 
-async function redirectLegacyCatalog(req, res, catalogId) {
+async function redirectLegacyCatalog(req, res, catalogId, next) {
   if (!catalogId) return res.status(404).send('Not found');
   try {
     const apiResponse = await fetch(`${backendOrigin}/v2/catalog/${encodeURIComponent(catalogId)}`, {
@@ -395,6 +395,8 @@ async function redirectLegacyCatalog(req, res, catalogId) {
     if (apiResponse.ok) {
       const payload = await apiResponse.json();
       const detailPath = payload?.data?.detailPath;
+      // A known airing can render directly without guessing a movie/series slug. It remains a noindex route.
+      if (detailPath === req.path && req.path.startsWith('/contenido/')) return next();
       // Same-site content paths only: never the home page, another host (`//x`) or a redirect loop.
       if (typeof detailPath === 'string' && /^\/[^/]/.test(detailPath) && detailPath !== req.path) {
         return res.redirect(301, detailPath);
@@ -406,18 +408,18 @@ async function redirectLegacyCatalog(req, res, catalogId) {
   return res.status(404).send('Not found');
 }
 
-app.get('/pelicula-details/:id', (req, res) => {
+app.get('/pelicula-details/:id', (req, res, next) => {
   const id = Number(req.params.id);
-  return redirectLegacyCatalog(req, res, Number.isInteger(id) && id > 0 ? `tmdb:movie:${id}` : '');
+  return redirectLegacyCatalog(req, res, Number.isInteger(id) && id > 0 ? `tmdb:movie:${id}` : '', next);
 });
-app.get(['/detalles/:id', '/program-full-details/:id'], (req, res) => {
+app.get(['/detalles/:id', '/program-full-details/:id'], (req, res, next) => {
   const id = String(req.params.id || '').trim();
-  return redirectLegacyCatalog(req, res, id ? `program:${id}` : '');
+  return redirectLegacyCatalog(req, res, id ? `program:${id}` : '', next);
 });
 
-app.get('/contenido/:catalogId', async (req, res) => {
-  const catalogId = decodeURIComponent(req.params.catalogId || '');
-  return redirectLegacyCatalog(req, res, catalogId);
+app.get('/contenido/:catalogId', async (req, res, next) => {
+  const catalogId = req.params.catalogId || '';
+  return redirectLegacyCatalog(req, res, catalogId, next);
 });
 
 app.get(['/programacion-tv/ver-canal/:id', '/ver-canal/:id'], (req, res) => {

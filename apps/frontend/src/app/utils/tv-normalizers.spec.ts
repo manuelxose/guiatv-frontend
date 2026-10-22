@@ -32,7 +32,7 @@ describe('tv-normalizers', () => {
     expect(normalized.badges).toContain('LIVE');
     expect(normalized.badges).toContain('Fútbol');
     expect(normalized.badges).toContain('Deportes');
-    expect(normalized.detailPath).toContain('/programas/');
+    expect(normalized.detailPath).toBe('/canales/la-1');
     expect(
       computeProgress(start, end, new Date('2026-03-26T21:00:00.000Z'))
     ).toBe(50);
@@ -85,7 +85,16 @@ describe('tv-normalizers', () => {
     // "fútbol" -> "ftbol", "región" -> "regin").
     const tvItem = makeTvItem({ editorialCategory: 'Deportes', title: 'Fútbol por la región' });
     const program = normalizeToCard(tvItem);
-    expect(program.detailPath).toBe('/programas/ftbol-por-la-regin');
+    expect(program.detailPath).toBe('/canales/la-1');
+  });
+
+  it('uses resolved episode targets and never guesses URLs from older guide responses', () => {
+    const episode = makeTvItem({ editorialCategory: 'Series', title: 'Friends T3 E13' });
+    expect(normalizeToCard({ ...episode, detailPath: '/series/friends' }).detailPath).toBe('/series/friends');
+    expect(normalizeToCard(episode).detailPath).toBe('/canales/la-1');
+    const program: CatalogItem = { catalogId: 'program:1', source: 'program', contentType: 'series', title: 'Friends T3 E13', genres: [], primaryPlatforms: [], channel: { id: 'la-1', name: 'La 1' } };
+    expect(normalizeToCard({ ...program, detailPath: '/series/friends' }).detailPath).toBe('/series/friends');
+    expect(normalizeToCard(program).detailPath).toBe('/canales/la-1');
   });
 
   it('normalizes editorial labels consistently', () => {

@@ -136,6 +136,8 @@ export interface TvReadItemDTO {
     suppressionReason?: string;
     reasons: string[];
   };
+  /** The detail page the API resolves for this programme (episode titles link to their series). */
+  detailPath?: string;
 }
 
 export interface TvReadChannelSummaryDTO {

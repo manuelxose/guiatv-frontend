@@ -109,6 +109,8 @@ export interface TvReadItemDTO {
   timingContext: CatalogTimingContextDTO;
   relevance: TvReadRelevanceDTO;
   trustDecision?: TvReadTrustDecisionDTO;
+  /** The detail page this programme links to (`programDetailPath`); set on every public read. */
+  detailPath?: string;
 }
 
 export interface TvReadChannelSummaryDTO {
