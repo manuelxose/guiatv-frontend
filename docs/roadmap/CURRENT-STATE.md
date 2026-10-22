@@ -316,3 +316,7 @@ To check, re-run `scripts/m03l2-cross-type.cjs`. `crossType.airings` should be 0
 - (a) The frontend `tv-normalizers` still builds episode-titled series links (`/series/x-t1-e3-…`). They resolve through the widened TV-read fallback while the airing is in today's or tomorrow's guide, otherwise 404.
 - (b) EPG `Series` category on films.
 - (c) `source=program` detail pages list the channel's adjacent programmes among airings, which the page should label as "en el canal" (UX, M05).
+
+## M05 addendum — implementation and CI (2026-10-23)
+
+The resumed M05 implementation is in PR #66 (`fd2304d`) with backend broadcast partitioning, safe known-airing routes, SSR noindex alias handling, and shared movie/series detail UX. Local evidence is in `docs/roadmap/M05-DELIVERY.md` and `artifacts/m05/before/`. GitHub `verify` and `ssr-resilience` passed for the backend/navigation commit; the final UX/e2e evidence is included in the follow-up commit and must be rechecked before merge. Production remains release `20261022182542`; no deployment or activation has occurred.

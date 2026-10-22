@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { PLATFORM_ID } from '@angular/core';
@@ -24,7 +24,7 @@ const legacy = (over: Partial<CatalogItem> = {}): CatalogItem => ({
 });
 
 describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
-  function render(item: CatalogItem) {
+  function render(item: CatalogItem, path = '/') {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]), provideHttpClient(), provideHttpClientTesting(),
@@ -40,6 +40,7 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
         },
       ],
     });
+    spyOnProperty(TestBed.inject(Router), 'url', 'get').and.returnValue(path);
     const fixture = TestBed.createComponent(CatalogDetailComponent);
     fixture.detectChanges();
     fixture.detectChanges();
@@ -49,10 +50,17 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
   const jsonLd = (fixture: { nativeElement: HTMLElement }) =>
     Array.from(fixture.nativeElement.querySelectorAll('script[type="application/ld+json"]')).flatMap((s) => [JSON.parse(s.textContent || '[]')].flat());
 
-  it('without enrichment the page is the legacy page: legacy schedule, no broadcast list, no attribution', () => {
+  it('keeps exact programme aliases out of the index', () => {
+    const fixture = render(legacy({ source: 'program' }), '/contenido/program%3A123');
+    expect(robots()).toBe('noindex, follow');
+    expect(fixture.nativeElement.querySelector('a[href="/contenido/program%3A123#emisiones"]')).not.toBeNull();
+    fixture.destroy();
+  });
+
+  it('renders legacy airings through the shared broadcast list without attribution', () => {
     const fixture = render(legacy());
     const text = fixture.nativeElement.textContent as string;
-    expect(fixture.nativeElement.querySelector('app-entity-broadcast-list')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-entity-broadcast-list')).not.toBeNull();
     expect(text).toContain('Próximas emisiones');
     expect(text).not.toContain('themoviedb.org');
     expect(robots()).toContain('index, follow');
@@ -130,6 +138,19 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
     fixture.destroy();
   });
 
+  it('separates channel recommendations from this work and hides whole-series runtime', () => {
+    const fixture = render(legacy({
+      contentType: 'series', durationMinutes: 45, originalTitle: 'La cura del bienestar',
+      channelAirings: [legacyAiring('amc', 32, 'Otra obra')],
+    }));
+    const el = fixture.nativeElement as HTMLElement;
+    expect(el.querySelector('app-entity-broadcast-list')?.textContent).not.toContain('Otra obra');
+    expect(el.querySelector('[aria-labelledby="channel-programmes-heading"]')?.textContent).toContain('Otra obra');
+    expect(el.textContent).not.toContain('45 min');
+    expect(el.textContent).not.toContain('Título original:');
+    fixture.destroy();
+  });
+
   it('structured data cannot be broken out of by a hostile title', () => {
     const fixture = render(legacy({
       enrichment: {
@@ -150,18 +171,18 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
     none.destroy();
     TestBed.resetTestingModule();
     const unavailable = render(legacy({ enrichment: { version: 1, broadcasts: { status: 'unavailable', generatedAt: iso(0), timeZone: 'Europe/Madrid', items: [] } } }));
-    expect(unavailable.nativeElement.querySelector('app-entity-broadcast-list')).toBeNull();
+    expect(unavailable.nativeElement.querySelector('app-entity-broadcast-list')).not.toBeNull();
     expect(unavailable.nativeElement.textContent).toContain('AMC');
     unavailable.destroy();
   });
 
-  it('a programme page keeps its own now/next layout', () => {
+  it('a programme page uses the broadcast list for its own airings', () => {
     const fixture = render(legacy({
       contentType: 'program', source: 'program',
       enrichment: { version: 1, metadata: { genres: ['Magazine'] } },
     }));
-    expect(fixture.nativeElement.querySelector('app-entity-broadcast-list')).toBeNull();
-    expect(fixture.nativeElement.textContent).toContain('A continuación');
+    expect(fixture.nativeElement.querySelector('app-entity-broadcast-list')).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Próximas emisiones');
     fixture.destroy();
   });
 });
