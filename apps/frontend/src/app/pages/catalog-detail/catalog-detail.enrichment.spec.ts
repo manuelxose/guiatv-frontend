@@ -115,6 +115,21 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
     fixture.destroy();
   });
 
+  it('without enrichment, the TMDB detail facts render and reach the Movie entity, with no third-party rating or invented language', () => {
+    const fixture = render(legacy({ genres: ['Terror'], durationMinutes: 147, originalTitle: 'A Cure for Wellness', rating: 6.4 }));
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('A Cure for Wellness');
+    expect(text).toContain('147 min');
+    expect(text).toContain('Terror');
+    const [movie] = jsonLd(fixture).filter((d: { '@type'?: string }) => d['@type'] === 'Movie');
+    expect(movie.alternateName).toBe('A Cure for Wellness');
+    expect(movie.duration).toBe('PT2H27M');
+    expect(movie.genre).toEqual(['Terror']);
+    expect('aggregateRating' in movie).toBeFalse();
+    expect('inLanguage' in movie).toBeFalse();
+    fixture.destroy();
+  });
+
   it('structured data cannot be broken out of by a hostile title', () => {
     const fixture = render(legacy({
       enrichment: {

@@ -125,6 +125,8 @@ export interface CatalogItemDTO {
   rating?: number;
   releaseYear?: number;
   durationMinutes?: number;
+  /** TMDB detail only, and only when it differs from `title`. */
+  originalTitle?: string;
   start?: string;
   end?: string;
   liveNow?: boolean;

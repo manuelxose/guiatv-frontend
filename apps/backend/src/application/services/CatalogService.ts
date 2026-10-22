@@ -52,6 +52,7 @@ import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring
 import { MediaCatalogService } from './MediaCatalogService';
 import { measureTiming } from '@/shared/utils/performanceTiming';
 import { logger } from '@/shared/utils/logger';
+import { parseEpgTitle } from '@/domain/services/contentIdentity';
 
 export interface CatalogQueryParams {
   userId?: string;
@@ -756,7 +757,7 @@ export class CatalogService {
     providers?: CatalogWhereToWatchDTO
   ): CatalogItemDTO {
     const contentType = this.inferTvReadContentType(item);
-    const slug = this.slugify(item.program.title);
+    const slug = this.airingDetailSlug(contentType, item.program.title);
     const image =
       item.assets.poster?.url ||
       (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
@@ -827,9 +828,15 @@ export class CatalogService {
     const airings = await measureTiming('airings', () =>
       this.loadAiringsForTmdb(detail, item.contentType)
     );
+    const original = (detail.original_title || detail.original_name || '').trim();
 
     return {
       ...item,
+      // The full record of this same TMDB id (search results carry none of these). A series' runtime is per
+      // episode, so only a film gets a duration.
+      genres: (detail.genres ?? []).map((genre) => genre.name).filter(Boolean),
+      durationMinutes: type === 'movie' && Number.isInteger(detail.runtime) && (detail.runtime as number) > 0 ? detail.runtime : undefined,
+      originalTitle: original && original.toLowerCase() !== item.title.toLowerCase() ? original : undefined,
       cast: this.mapCast(detail),
       director: this.extractDirector(detail),
       airings,
@@ -951,6 +958,18 @@ export class CatalogService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
     return this.slugify(transliterated);
+  }
+
+  /**
+   * Detail slug for an EPG airing. Programmes keep the legacy slug (indexed URLs); films and series use the slug
+   * their detail pages resolve (accents folded), and a series airing titled with an explicit season/episode marker
+   * ("Friends T3 E1 …") links to the work, not to an episode URL that 404s.
+   */
+  private airingDetailSlug(contentType: CatalogContentType, title: string): string {
+    if (contentType === 'program') return this.slugify(title);
+    const parsed = contentType === 'series' ? parseEpgTitle(title) : undefined;
+    const work = parsed?.resolutionState === 'episode' && parsed.confidence === 'high' ? parsed.proposedWorkTitle : null;
+    return this.slugifyTitle(work || title);
   }
 
   private buildDetailPath(contentType: CatalogContentType, slug: string): string {
@@ -1984,7 +2003,7 @@ export class CatalogService {
 
   private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
     const contentType = this.inferTvReadContentType(item);
-    const slug = this.slugify(item.program.title);
+    const slug = this.airingDetailSlug(contentType, item.program.title);
     return {
       channelId: item.channel.id,
       channelName: item.channel.name,

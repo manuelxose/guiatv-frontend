@@ -218,6 +218,27 @@ test('direct catalogId navigation (tmdb) resolves without any slug search', asyn
   assert.equal(mediaCatalogService.calls.findKnownMatchesForTitles, 0, 'no slug resolution needed for a direct catalogId');
 });
 
+// M03: 30/31 sampled film pages rendered without genres or runtime although the TMDB detail carries them.
+test('tmdb detail carries its genres, film runtime and a differing original title', async () => {
+  const detail = (overrides: Partial<any>) => buildService({
+    tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },
+    providersCounters: { calls: 0 },
+    mediaCatalogOverrides: { getDetail: async () => tmdbDetailFixture(overrides) },
+  }).service;
+
+  const film = await withStubbedTvReadFind(() => detail({ title: 'Atómica', original_title: 'Atomic Blonde' }).getDetail('tmdb:movie:603'));
+  assert.deepEqual(film.genres, ['Ciencia ficción']);
+  assert.equal(film.durationMinutes, 136);
+  assert.equal(film.originalTitle, 'Atomic Blonde');
+
+  const same = await withStubbedTvReadFind(() => detail({ runtime: 0, genres: undefined }).getDetail('tmdb:movie:603'));
+  assert.deepEqual([same.genres, same.durationMinutes, same.originalTitle], [[], undefined, undefined]);
+
+  const series = await withStubbedTvReadFind(() =>
+    detail({ title: undefined, original_title: undefined, name: 'La casa de papel', original_name: 'La casa de papel', episode_run_time: [50] }).getDetail('tmdb:tv:603'));
+  assert.deepEqual([series.genres, series.durationMinutes, series.originalTitle], [['Ciencia ficción'], undefined, undefined]);
+});
+
 test('direct catalogId navigation (program) resolves from the airing itself, no TMDB required', async () => {
   const { service, mediaCatalogService } = buildService({
     tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },

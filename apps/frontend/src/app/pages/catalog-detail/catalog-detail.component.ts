@@ -123,7 +123,7 @@ type CatalogAiring = NonNullable<CatalogItem['airings']>[number];
                 {{ content.title }}
               </h1>
 
-              <p *ngIf="content.enrichment?.metadata?.originalTitle as original" class="text-base text-[var(--hero-text-muted)]">
+              <p *ngIf="content.enrichment?.metadata?.originalTitle || content.originalTitle as original" class="text-base text-[var(--hero-text-muted)]">
                 <span class="sr-only">Título original: </span><i>{{ original }}</i>
               </p>
 
@@ -826,7 +826,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       schemas.unshift({ ...generateTVSeriesSchema(item, baseUrl), url });
     } else if (item.contentType === 'movie') {
       // One Movie per page: the verified original title and broadcasts extend it, they never add a second entity for the same work.
-      const original = item.enrichment?.metadata?.originalTitle;
+      const original = item.enrichment?.metadata?.originalTitle || item.originalTitle;
       const publication = broadcastPublication(item.enrichment?.broadcasts, baseUrl);
       schemas.unshift({
         ...generateMovieSchema(item, baseUrl), url,
