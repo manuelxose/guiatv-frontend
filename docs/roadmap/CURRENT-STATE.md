@@ -58,3 +58,49 @@ Documentation only. No flag, deploy, restart, migration, credential or indexatio
 - Review of #51: `mediaId` is copied only from the same stored programme row that supplies `tmdbId` (first alias match, absent → omitted, never synthesised); preflight runs under the read-only guard (exit 97 on write); snapshot tool only issues GETs and writes `--out`; no flag defaults changed; no workflow runs on merge. No critical/high findings.
 - Corrections: the 3E report's "not merged" is superseded (merged `ac58a24`, **not deployed**); EPG horizon is **3 days**, not 7. Historical reports are left unchanged.
 - Remaining: owner merge approval for #51; VPS-only checks (M01-A), preflight against real data (M02-B); all activation stays owner-gated.
+
+## M01-A addendum — production readiness (2026-10-22 ~10:05Z, read-only)
+
+Method: SSH `contabo` (read-only commands only), public GETs. Nothing restarted, written, deployed or compiled.
+
+**Phase 3F**: PR #51 head `0f85308` unchanged since review, `verify` ✔ `ssr-resilience` ✔ (`live-crawl` skipped by design), no review findings, no `.github/` change, both deploy workflows `workflow_dispatch`-only. Squash-merged → `main` = `221ca46`. The push ran only *Build, test, and performance budgets*; no deploy run. Flags unchanged (code default-off).
+
+**Release baseline**: live = `releases/20261022103818`, `gitSha ed03242` (Phase 3D, old compile-on-VPS deploy, 08:38Z); checkout HEAD `ed03242`, clean (only untracked `.editorial-publish/`). `main` is 3 commits ahead (3E, M00, 3F), **not deployed**. `package-lock.json` unchanged `ed03242`→`main` and equals the server stamp, so the artifact path will not be refused for stale dependencies.
+
+**Rollback**: releases on disk `20261021190805, …195307, …205747, 20261022010257 (6907540, Phase 3C), 20261022103818 (live)`. `guiatv-ops.sh rollback` (no id) picks `20261022010257`: atomic `ln -sfn` + `mv -Tf`, restarts API then SSR each health-verified, warms hubs, re-verifies; runs as root under the shared flock. `deploy-guiatv.sh` also auto-rolls back to the previous release if anything fails after publish starts. Data: 3E/3F add no migration/schema change (diff checked); `db:bootstrap` runs only with `BOOTSTRAP_DB=1`, which `deploy-artifact.yml` does not set; every flag off, so the old release reads the same data. **Never drilled on the VPS** (needs separate owner authorization).
+
+**Deployment safety (code read, not executed)**: concurrency group `deploy-prod`, `cancel-in-progress: false`, build job 30 min, deploy job 20 min, ssh `command_timeout` 15 m, `script_stop`; server `flock /var/lock/guiatv-deploy.lock` (free; exit 75 if held); sha256 verified, `ARTIFACT_GIT_SHA` must equal checkout HEAD, lockfile-stamp guard, no `npm`/build on the host; post-publish smoke: 8 API, 8 SSR (incl. 301s) and Socket.IO checks; auth smokes skipped without `SMOKE_AUTH_TOKEN`. Caveat: the script `git reset --hard`s the live checkout it is running from (existing behaviour, worked on the 3C artifact deploy).
+
+**Runtime (10:05Z)**: `guiatv-api`, `guiatv-ssr`, `nginx`, `mongod`, `valkey` active; 0 `NRestarts`; only failed unit `systemd-networkd-wait-online` (cosmetic, repeated). RAM 11.9 GB, 7.7 GB available, swap 4 GB file 0 B used, swappiness 10; `/` 145 GB, 42 % used, inodes 5 %. Kernel OOM/panic/hung-task/I-O-error lines: 0 in the last three boots. API `/v2/health` healthy. Services have no `MemoryMax`.
+
+**Flags (effective)**: no `CONTENT_*`, `EPG_YEAR_PROVENANCE`, entity, canary, identity-write or legacy-enrichment variable exists in `api.env`, `ssr.env` or the running API/SSR process environments (checked by name only; no values read) → **all unset = off**. `post-boot.json` agrees (`activationFlagsPresent: []`, `entityReads: off`).
+
+**Public baseline** (single GET each, curl, from WSL; all `index, follow` + matching canonical unless noted):
+
+| URL | Status | Time | Bytes |
+|---|---|---|---|
+| `/` | 200 | 0.23–0.32 s | 1,124,713 |
+| `/canales/la-1` | 200 | 0.81 s | 360,307 |
+| `/canales/la-2` | 200 | 1.15 s | 503,863 |
+| `/programas/chicago-pd` | 200 | 0.79 s | 232,575 |
+| `/peliculas/gladiator` (legacy movie detail) | 200 | 0.64 s | 221,682 |
+| `/peliculas/bikeriders-la-ley-del-asfalto` | 200 | 0.60 s | 218,895 |
+| `/programacion-tv/en-directo` | 200 | 0.85 s | 450,402 |
+| `/programacion-tv/peliculas` | 200 | 4.74 s (cold) | 372,228 |
+| `/robots.txt`, `/sitemap.xml` (4 child sitemaps) | 200 | 0.26 s | 470 / 619 |
+| `/v2/health` | 200 | 0.22 s | 526 |
+| `/peliculas` (not a route) | 404 `noindex, nofollow` | 0.42 s | – |
+
+`/api/v2/health` is 404 (health lives at `/v2/health`). `/peliculas/a|b` pages are not in any sitemap (3F finding).
+
+**Outages (journal evidence)**:
+- Verified: boot of 2026-10-20 17:24 ended with a **clean systemd poweroff** (23 min down, `last -x`): someone/something requested shutdown; not a crash. Boot of 21 Oct ends 20:58:47 CEST mid-service (valkey save line), no shutdown sequence, no kernel OOM/panic/hung/IO lines; node memory peak 2.7 GB of 11.9 GB, swap unused; VM is KVM. Reboot at 21:18 (owner).
+- Verified: the ten "guiatv-api crashed" alerts on 21 Oct (and 10:38 on 22 Oct) are **restarts**: each shows `Stopping…` then exit status 1 ≈10 s later (stop timeout) and `OnFailure` firing. They are false-positive "crash" alerts and noise, not 10 crashes. The last one (20:57:51–20:58:01) precedes the journal cut by ~45 s: a restart was in progress shortly before the host vanished (correlation, not cause).
+- `post-boot.json` says `endedWithoutShutdown: false` for the 21 Oct boot although the journal shows no shutdown: the detector under-reports; do not rely on it.
+- Hypotheses (unproven): provider-side hard stop/migration (best fit for a silent cut, needs Contabo ticket); a memory/IO stall during on-host builds (no supporting counters). **No root cause.** Mitigations needing owner approval: file the Contabo ticket with the timestamps; artifact deploys only; `MemoryMax`/`OOMScoreAdjust` on units; fix the API's slow stop (10 s → exit 1) and the crash-alert wording; persistent journald is already on.
+
+**Outstanding risks**: no rollback drill; `main` unprotected; outage cause open; 10 s API stop timeout makes every restart look like a failure; `deploy-guiatv.sh` self-replacement during run; auth smokes skipped without `SMOKE_AUTH_TOKEN`; `/programacion-tv/peliculas` cold render 4.7 s.
+
+**M01-B prerequisites**: owner go + window, watched deploy (`gh workflow run deploy-artifact.yml --ref main`, then confirm the run built `221ca46`); pre-record `readlink current` (rollback id `20261022010257`); post-deploy compare this baseline (status, canonical, robots, payload size ±), `/v2/health/metrics` shows the `legacyEnrichment` block with flag off, flags still unset; abort and `guiatv-ops.sh rollback` on any smoke failure.
+
+**Decision: CONDITIONAL GO for M01-B** (owner approval required; rollback drill recommended first or accept its absence explicitly).

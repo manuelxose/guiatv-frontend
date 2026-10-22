@@ -23,15 +23,15 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 ### M02-A — Phase 3F PR validation and integration
 - **Objective**: review PR #51 against its report, fix only real defects, merge with owner approval. **Scope**: add `scripts/legacy-rollout-snapshot.test.mjs` to `test:ops`; confirm the `mediaId` test and preflight test run in `verify`; confirm no workflow sets a legacy flag. **Non-goals**: deploy, re-measuring, new features.
-- **Status**: ENGINEERING_DONE (2026-10-22: snapshot test added to `test:ops`, #51 rebased on `44b8391`; review found no critical/high defect) · Merge ○ (owner approval) · Deploy ○ (M01-B) · Act –
+- **Status**: DONE — #51 squash-merged 2026-10-22 as `221ca46` (head `0f85308`, checks green, no deploy triggered) · Merge ✔ · Deploy ○ (M01-B) · Act –
 - **Depends**: M00. **Skills**: code-review, tdd, diagnosing-bugs (only if a check fails).
 - **Acceptance**: green `verify` + `ssr-resilience` on the final head; review has no open correctness finding; merge approved by the owner; merge deploys nothing (`deploy.yml`/`deploy-artifact.yml` are dispatch-only).
 - **Evidence**: PR checks, review notes. **Blockers**: owner merge approval. **Rollback**: `git revert` of the squash commit (flags off, nothing deployed). **GO** (merge itself: needs owner).
 
 ### M01-A — Artifact deployment safety verification
 - **Objective**: prove the artifact path and rollback are ready before shipping code. **Scope** (read-only on the VPS, by an operator): live commit and release id, previous release id for rollback, `guiatv-ops.sh status`, disk/memory, unit health, `api.env` has no activation flags by name, deploy lock free. Optionally a rollback drill in a quiet window (owner decision; never run so far). **Non-goals**: deploy, edits to `/etc/guiatv/*`.
-- **Status**: Eng ✔ (`deploy-artifact.yml`, sandbox-tested) · CI ✔ · Merge ✔ · Deploy: artifact path used once (`6907540`) · Act –
-- **Depends**: M00. **Skills**: engineering:deploy-checklist, Context Mode. **Acceptance**: checklist from 3F §2 filled with observed values; rollback target named. **Evidence**: operator output pasted into CURRENT-STATE. **Blockers**: VPS access (no SSH from agent sessions), owner window. **Rollback**: none needed (read-only). **NO-GO** until an operator with VPS access is available.
+- **Status**: **DONE 2026-10-22 — CONDITIONAL GO for M01-B** (read-only SSH to `contabo` worked; evidence in CURRENT-STATE, "M01-A addendum"). Phase 3F merged as `221ca46`. Open conditions: no rollback drill ever run, `main` unprotected, outage cause unproven · Deploy: artifact path used once (`6907540`) · Act –
+- **Depends**: M00. **Skills**: engineering:deploy-checklist, Context Mode. **Acceptance**: checklist from 3F §2 filled with observed values; rollback target named. **Evidence**: operator output pasted into CURRENT-STATE. **Blockers**: none for the checks (done); owner window and approval for M01-B. **Rollback**: none needed (read-only).
 
 ### M01-B — Controlled Phase 3E production deployment
 - **Objective**: ship `main` (3E + 3F) to production with every legacy flag unset. **Scope**: `gh workflow run deploy-artifact.yml --ref main`, post-deploy smoke: existing routes, `/sitemap.xml`, canonical/robots of a sample, `/v2/health/metrics` shows `legacyEnrichment` with epoch `off`, 0 new 5xx. **Non-goals**: any flag, switching `deploy.yml` to artifacts, post-boot unit.
