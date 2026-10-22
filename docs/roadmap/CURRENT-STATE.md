@@ -274,3 +274,45 @@ To check, re-run `scripts/m03l2-cross-type.cjs`. `crossType.airings` should be 0
 - The guard fails open on a catalogue read error. It is counted, and the read-time joiner still refuses type mismatches.
 - 127 `db_cache` documents carry a `mediaId` without a recorded kind. Their rows are verified, but their kind is not.
 
+
+## M03 addendum — content enrichment, identity stream closed (2026-10-22 ~16:30Z)
+
+**Git**: #62 (M03-L2 record) merged `68b8523`. **#63** merged `b0b0462` (detail facts, hub links, schema). **#64** merged `ece2b03` (opposite-kind airing guard). CI `verify` + `ssr-resilience` green on each head. An independent review of #63 found 1 high (the TV-read slug fallback did not accept the new airing slugs), fixed before merge, plus 1 medium and 1 low, both addressed.
+
+**Deploys** (`deploy-artifact`, flags untouched):
+- run 39809158261 → release `20261022175606` (#63);
+- run 39813703223 → release **`20261022182542`** (#64), live. Rollback target `20261022175606` (then `20261022161030`).
+- `/v2/health` epoch `off`; `catalogueLink.mode` `off`.
+
+**M03.0 — identity closed** (read-only census `scripts/m03l2-cross-type.cjs` after the 18:15 Madrid precompute, `artifacts/m03/cross-type-post-rebuild.json`):
+- Cross-type airings in the window: **199 → 0**.
+- Raw `mediaId` 1 162 (projection 1 164). All 3 952 TMDB airings were rebuilt on the guarded code; the guard ran with 0 errors.
+- A second public path was found and fixed in #64. TMDB detail pages listed airings by `program.tmdbId` without checking kind, and today's window still had 55 `Series` airings whose id has only a film row (stored residue and namespace collisions). Those airings are now excluded.
+- **Technical debt (separate, not an M03 prerequisite)**: about 201 stored `programs` documents keep a cross-type `mediaId` and film `tmdbId` (`M03-L2-REMEDIATION-PROPOSAL.md`, needs owner approval for a write). They no longer reach built airings, `mediaId` joins or TMDB detail broadcasts.
+
+**M03.1/M03.2 — detail pages** (live sample: 64 `/peliculas` + `/series` pages linked from the hubs; `artifacts/m03/detail-sample-{before,after}.json`):
+
+| field | before (`20261022161030`) | after (`20261022182542`) |
+|---|---|---|
+| film genres | 1/31 | **31/31** |
+| film runtime | 1/31 | **31/31** |
+| series genres | 2/33 | **32/33** |
+| original title (when it differs) | 0 (enrichment-only) | **31/64** |
+| `/v2/catalog/slug` p50 / p90 | 69 / 99 ms | 70 / 99 ms |
+
+- **Cause**: `mapTmdbToCatalogItem` hardcoded `genres: []` and dropped `runtime` even though the cached TMDB detail held both. The values come from the same TMDB id the page already shows: no new identity, no new reads. A series' runtime is per episode, so it is not shown.
+- **Hub links** (`artifacts/m03/hub-links-*.txt`): 3/95 returned 404 before, 1/79 after. Film and series airing links now use the accent-folded slug, and a high-confidence `T<n> E<n>` title links to the work. Programme slugs are unchanged. The remaining 404 is `/series/camino-a-la-perdicion`, a film the EPG categorises as `Series` (classification, follow-up).
+
+**M03.4 — SEO** (`artifacts/m03/seo-{before,after}.json`):
+- Canonical is self-referencing and the robots meta matches `X-Robots-Tag` on every page sampled (92 before, 77 after).
+- Index/noindex is unchanged on the 57 pages common to both crawls.
+- Movie/TVSeries JSON-LD no longer emits `aggregateRating`: it was a TMDB vote with no `ratingCount`, not collected on the site (before: 60/64). The hardcoded `inLanguage: 'es'` is also gone.
+- Movie now carries `genre`, `duration` and `alternateName` from verified TMDB fields.
+- No indexation rule was changed and no page was made indexable.
+
+**Activation state**: unchanged. Legacy enrichment off, catalogue linker off, no `CONTENT_*` flag set. The M03 improvements are live **without** activation: they come from data the default path already loaded.
+
+**Open follow-ups**:
+- (a) The frontend `tv-normalizers` still builds episode-titled series links (`/series/x-t1-e3-…`). They resolve through the widened TV-read fallback while the airing is in today's or tomorrow's guide, otherwise 404.
+- (b) EPG `Series` category on films.
+- (c) `source=program` detail pages list the channel's adjacent programmes among airings, which the page should label as "en el canal" (UX, M05).
