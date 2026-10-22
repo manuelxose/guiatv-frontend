@@ -497,7 +497,6 @@ export function generateTVSeriesSchema(item: {
   cast?: Array<{ name: string; character?: string }>;
   director?: string;
   releaseYear?: number;
-  rating?: number;
   slug?: string;
 }, baseUrl: string): object {
   const schema: Record<string, any> = {
@@ -517,20 +516,12 @@ export function generateTVSeriesSchema(item: {
       name: c.name,
     }));
   }
-  if (item.rating && item.rating > 0) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: item.rating,
-      bestRating: 10,
-      worstRating: 0,
-    };
-  }
-  schema.inLanguage = 'es';
   return schema;
 }
 
 /**
- * Genera JSON-LD Movie para una película
+ * Genera JSON-LD Movie para una película. Sin aggregateRating (la nota es de TMDB, no de usuarios del sitio) ni
+ * inLanguage (no consta el idioma de la obra), igual que entity-detail.model.
  */
 export function generateMovieSchema(item: {
   title: string;
@@ -541,7 +532,6 @@ export function generateMovieSchema(item: {
   cast?: Array<{ name: string; character?: string }>;
   director?: string;
   releaseYear?: number;
-  rating?: number;
   durationMinutes?: number;
   slug?: string;
 }, baseUrl: string): object {
@@ -563,15 +553,6 @@ export function generateMovieSchema(item: {
       name: c.name,
     }));
   }
-  if (item.rating && item.rating > 0) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: item.rating,
-      bestRating: 10,
-      worstRating: 0,
-    };
-  }
-  schema.inLanguage = 'es';
   return schema;
 }
 

@@ -52,6 +52,7 @@ import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring
 import { MediaCatalogService } from './MediaCatalogService';
 import { measureTiming } from '@/shared/utils/performanceTiming';
 import { logger } from '@/shared/utils/logger';
+import { parseEpgTitle, titleIdentityKey } from '@/domain/services/contentIdentity';
 
 export interface CatalogQueryParams {
   userId?: string;
@@ -756,7 +757,7 @@ export class CatalogService {
     providers?: CatalogWhereToWatchDTO
   ): CatalogItemDTO {
     const contentType = this.inferTvReadContentType(item);
-    const slug = this.slugify(item.program.title);
+    const slug = this.airingDetailSlug(contentType, item.program.title);
     const image =
       item.assets.poster?.url ||
       (item.assets.primary?.kind === 'poster' || item.assets.primary?.kind === 'backdrop'
@@ -827,9 +828,15 @@ export class CatalogService {
     const airings = await measureTiming('airings', () =>
       this.loadAiringsForTmdb(detail, item.contentType)
     );
+    const original = (detail.original_title || detail.original_name || '').trim();
 
     return {
       ...item,
+      // The full record of this same TMDB id (search results carry none of these). A series' runtime is per
+      // episode, so only a film gets a duration.
+      genres: (detail.genres ?? []).map((genre) => genre.name).filter(Boolean),
+      durationMinutes: type === 'movie' && Number.isInteger(detail.runtime) && (detail.runtime as number) > 0 ? detail.runtime : undefined,
+      originalTitle: original && titleIdentityKey(original) !== titleIdentityKey(item.title) ? original : undefined,
       cast: this.mapCast(detail),
       director: this.extractDirector(detail),
       airings,
@@ -951,6 +958,22 @@ export class CatalogService {
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '');
     return this.slugify(transliterated);
+  }
+
+  /**
+   * Detail slug for an EPG airing. Programmes keep the legacy slug (indexed URLs); films and series use the slug
+   * their detail pages resolve (accents folded), and a series airing titled with an explicit season/episode marker
+   * ("Friends T3 E1 …") links to the work, not to an episode URL that 404s.
+   */
+  private airingDetailSlug(contentType: CatalogContentType, title: string): string {
+    if (contentType === 'program') return this.slugify(title);
+    return this.slugifyTitle((contentType === 'series' && this.episodeWorkTitle(title)) || title);
+  }
+
+  /** The work of an EPG title with an explicit, high-confidence season/episode marker; null otherwise. */
+  private episodeWorkTitle(title: string): string | null {
+    const parsed = parseEpgTitle(title);
+    return parsed.resolutionState === 'episode' && parsed.confidence === 'high' ? parsed.proposedWorkTitle : null;
   }
 
   private buildDetailPath(contentType: CatalogContentType, slug: string): string {
@@ -1873,7 +1896,11 @@ export class CatalogService {
         date,
         searchTokens: token,
       }).exec()) as string[];
-      const title = titles.find((candidate) => this.slugify(candidate) === slug);
+      // Every slug airingDetailSlug may have linked: legacy, accent-folded, or the work of an episode title.
+      const title = titles.find((candidate) => {
+        const work = this.episodeWorkTitle(candidate);
+        return [this.slugify(candidate), this.slugifyTitle(candidate), ...(work ? [this.slugifyTitle(work)] : [])].includes(slug);
+      });
       if (!title) continue;
       // The token narrows the lookup to that title's few airings ({searchTokens, date} index) instead of walking
       // the whole day through the date/start index (production 2026-10-21: 11,697 docs, 499 ms -> 2 docs, 2 ms).
@@ -1984,7 +2011,7 @@ export class CatalogService {
 
   private mapTvReadItemToAiring(item: TvReadItemDTO): CatalogAiringDTO {
     const contentType = this.inferTvReadContentType(item);
-    const slug = this.slugify(item.program.title);
+    const slug = this.airingDetailSlug(contentType, item.program.title);
     return {
       channelId: item.channel.id,
       channelName: item.channel.name,
