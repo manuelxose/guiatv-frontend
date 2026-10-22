@@ -1,0 +1,352 @@
+[
+  {
+    "path": "/peliculas/gladiator",
+    "measuredAt": "2026-10-22T11:21:50.286Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/gladiator"
+    ],
+    "title": "Gladiator: dónde ver | Guía TV",
+    "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Gladiator",
+      "url": "https://guiaprogramaciontv.com/peliculas/gladiator",
+      "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide transferir el poder a Máximo, bravo general de sus ejércitos y hombre de inquebrantable lealtad al imperio. Pero su hijo Cómodo, que aspiraba al trono, no lo acepta y trata de asesinar a Máximo.",
+      "image": "https://image.tmdb.org/t/p/original/Ar7QuJ7sJEiC0oP3I8fKBKIQD9u.jpg",
+      "datePublished": "2000",
+      "director": {
+        "@type": "Person",
+        "name": "Ridley Scott"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Russell Crowe"
+        },
+        {
+          "@type": "Person",
+          "name": "Joaquin Phoenix"
+        },
+        {
+          "@type": "Person",
+          "name": "Connie Nielsen"
+        },
+        {
+          "@type": "Person",
+          "name": "Oliver Reed"
+        },
+        {
+          "@type": "Person",
+          "name": "Richard Harris"
+        },
+        {
+          "@type": "Person",
+          "name": "Derek Jacobi"
+        },
+        {
+          "@type": "Person",
+          "name": "Djimon Hounsou"
+        },
+        {
+          "@type": "Person",
+          "name": "David Schofield"
+        },
+        {
+          "@type": "Person",
+          "name": "John Shrapnel"
+        },
+        {
+          "@type": "Person",
+          "name": "Tomas Arana"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 8.232,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/gladiator",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "eac7cb301a67627d",
+      "synopsisChars": 353,
+      "tmdbId": 98,
+      "slug": "gladiator",
+      "detailPath": "/peliculas/gladiator",
+      "airings": [
+        "canal_hollywood|1792785600000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/bikeriders-la-ley-del-asfalto",
+    "measuredAt": "2026-10-22T11:21:53.898Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/bikeriders-la-ley-del-asfalto"
+    ],
+    "title": "Bikeriders. La ley del asfalto: dónde ver | Guía TV",
+    "description": "Ambientada en los años 60, sigue el ascenso de un club de motoristas del medio oeste, &quot;Los Vándalos&quot;. El club pasa, en el transcurso de una década, de ser un…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Bikeriders. La ley del asfalto",
+      "url": "https://guiaprogramaciontv.com/peliculas/bikeriders-la-ley-del-asfalto",
+      "description": "Ambientada en los años 60, sigue el ascenso de un club de motoristas del medio oeste, \"Los Vándalos\". El club pasa, en el transcurso de una década, de ser un lugar de reunión para forasteros locales a convertirse en una banda más siniestra, que amenaza el modo de vida único del grupo original.",
+      "image": "https://image.tmdb.org/t/p/original/kwGvFyRtGSSm8AFfnRNXoZTQmJj.jpg",
+      "datePublished": "2024",
+      "director": {
+        "@type": "Person",
+        "name": "Jeff Nichols"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Jodie Comer"
+        },
+        {
+          "@type": "Person",
+          "name": "Austin Butler"
+        },
+        {
+          "@type": "Person",
+          "name": "Tom Hardy"
+        },
+        {
+          "@type": "Person",
+          "name": "Michael Shannon"
+        },
+        {
+          "@type": "Person",
+          "name": "Mike Faist"
+        },
+        {
+          "@type": "Person",
+          "name": "Boyd Holbrook"
+        },
+        {
+          "@type": "Person",
+          "name": "Damon Herriman"
+        },
+        {
+          "@type": "Person",
+          "name": "Beau Knapp"
+        },
+        {
+          "@type": "Person",
+          "name": "Emory Cohen"
+        },
+        {
+          "@type": "Person",
+          "name": "Karl Glusman"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 6.692,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/bikeriders-la-ley-del-asfalto",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "236398c2aace13a0",
+      "synopsisChars": 294,
+      "tmdbId": 1008409,
+      "slug": "bikeriders-la-ley-del-asfalto",
+      "detailPath": "/peliculas/bikeriders-la-ley-del-asfalto",
+      "airings": [
+        "amc|1792786200000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/programas/chicago-pd",
+    "measuredAt": "2026-10-22T11:22:00.821Z",
+    "inSitemap": true,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/programas/chicago-pd"
+    ],
+    "title": "Chicago P.D.: dónde ver | Guía TV",
+    "description": "Narra las historias del Distrito 21 del Departamento de Policía de Chicago, hombres y mujeres que lo dan todo para proteger su comunidad El distrito 21 está…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "TVSeries"
+    ],
+    "movie": null,
+    "moviesCount": 0,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/series/big-bang",
+      "/series/big-bang-t4-e7-la-insuficiencia-de-la-disculpa",
+      "/series/big-bang-t4-e8-la-excitacin-de-21-segundos",
+      "/series/big-bang-t4-e9-la-complejidad-del-novio",
+      "/series/breaking-bad",
+      "/series/dagsrevyen",
+      "/series/friends",
+      "/series/ley-y-orden-unidad-de-victimas-especiales",
+      "/series/lo-que-hacemos-en-las-sombras",
+      "/series/los-simpson",
+      "/series/los-simpson-t13-e15-la-culpa-es-de-lisa",
+      "/series/los-simpson-t14-e5-buscando-refugio",
+      "/series/los-simpson-t36-e15-uno-para-todos",
+      "/series/los-simpson-t36-e16-p-d-te-odio",
+      "/series/los-simpson-t36-e8-convenience-airways",
+      "/series/running-man",
+      "/series/south-park",
+      "/series/the-bear",
+      "/series/visionquest",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "4b4ef1583ce2cd09",
+      "synopsisChars": 382,
+      "tmdbId": 58841,
+      "slug": "chicago-pd",
+      "detailPath": "/series/chicago-pd",
+      "airings": [
+        "neox|1792619220000",
+        "neox|1792661760000",
+        "neox|1792667100000",
+        "neox|1792668720000",
+        "neox|1792670400000",
+        "neox|1792671900000",
+        "neox|1792672020000",
+        "neox|1792673700000",
+        "neox|1792675320000",
+        "neox|1792677000000",
+        "neox|1792678440000",
+        "neox|1792679400000",
+        "neox|1792679940000"
+      ],
+      "genres": 3,
+      "durationMinutes": 51,
+      "cast": 6,
+      "enrichment": null
+    }
+  }
+]
