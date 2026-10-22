@@ -1827,7 +1827,13 @@ export class CatalogService {
             .exec()
         )
       );
-      return (chunks.flatMap((chunk) => chunk as unknown as TvReadItemDTO[])).slice(0, 12);
+      // Film and TV ids are separate TMDB namespaces, and a series airing may still carry a same-titled film's id
+      // (M03-L2): an airing of the opposite kind is never a broadcast of this page. Programme-classed airings stay.
+      const opposite = contentType === 'movie' ? 'series' : contentType === 'series' ? 'movie' : undefined;
+      return chunks
+        .flatMap((chunk) => chunk as unknown as TvReadItemDTO[])
+        .filter((program) => !opposite || this.inferTvReadContentType(program) !== opposite)
+        .slice(0, 12);
     }
 
     // No tmdbId to key off of (defensive fallback, not exercised by the

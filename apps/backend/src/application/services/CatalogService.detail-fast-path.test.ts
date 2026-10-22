@@ -427,3 +427,29 @@ test('current/next airing lookup for a resolved TMDB id queries by indexed progr
   });
   assert.deepEqual(observedLimits, [12, 12], 'bounded to a handful of airings, never the full day');
 });
+
+// M03 (prod 2026-10-22: 55 Series airings carry a tmdbId whose only catalogue row is a film): a film page never lists
+// a series airing as its broadcast, whatever id it carries; programme-classed airings with the id still count.
+test('tmdbId airings of the opposite kind are not broadcasts of the page', async () => {
+  const { service } = buildService({
+    tmdbCounters: { searchMovies: 0, searchTV: 0, discoverMovies: 0, discoverTV: 0 },
+    providersCounters: { calls: 0 },
+    mediaCatalogOverrides: { getDetail: async () => tmdbDetailFixture() },
+  });
+  const rows = [
+    tvReadItemFixture({ id: 'film', program: { title: 'The Matrix', editorialCategory: 'Cine', genre: 'Cine', tmdbId: 603 } }),
+    tvReadItemFixture({ id: 'series', program: { title: 'The Matrix', editorialCategory: 'Series', genre: 'Series', tmdbId: 603 } }),
+    tvReadItemFixture({ id: 'doc', program: { title: 'The Matrix', editorialCategory: 'Documental', genre: 'Documental', tmdbId: 603 } }),
+  ];
+  const originalFind = TVReadAiringModel.find;
+  let call = 0;
+  (TVReadAiringModel as any).find = () => ({
+    sort: () => ({ limit: () => ({ lean: () => ({ exec: async () => (call++ === 0 ? rows : []) }) }) }),
+  });
+  try {
+    const film = await service.getDetail('tmdb:movie:603');
+    assert.deepEqual(film.airings!.map((a) => a.catalogId), ['program:film', 'program:doc']);
+  } finally {
+    TVReadAiringModel.find = originalFind;
+  }
+});
