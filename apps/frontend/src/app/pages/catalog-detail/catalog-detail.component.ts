@@ -19,7 +19,7 @@ import {
 import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId, splitAiringsByTime } from '../../utils/catalog';
 import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
-import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema } from '../../utils/utils';
+import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema, serializeJsonLd } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
 import { channelPath } from '../../config/route-map';
@@ -780,7 +780,7 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
 
     try {
       this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
-        `<script type="application/ld+json">${JSON.stringify(schemas)}</script>`
+        `<script type="application/ld+json">${serializeJsonLd(schemas)}</script>`
       );
     } catch {
       this.safeLdHtml = null;

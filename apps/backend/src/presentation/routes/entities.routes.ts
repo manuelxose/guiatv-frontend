@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { createCertificationReader } from '@/application/services/ContentCertification';
 import { PublicContentEntityService } from '@/application/services/PublicContentEntityService';
 import { Decision, EntityPublicReadPolicy, entityPublicReadPolicy } from '@/application/services/EntityPublicReadPolicy';
+import { EntityBroadcastService } from '@/application/services/EntityBroadcastService';
 import { ContentIdentityService } from '@/application/services/ContentIdentityService';
 import { MongoContentEntityRepository, MongoContentSlugRepository, MongoContentTitleKeyRepository } from '@/infrastructure/repositories/MongoContentIdentityRepositories';
 import { errorResponse, successResponse } from '@/shared/types/ApiResponse';
@@ -13,7 +14,7 @@ const logger = new Logger('PublicContentEntity');
 export function createEntityRoutes(
   service = new PublicContentEntityService(new ContentIdentityService(
     new MongoContentEntityRepository(), new MongoContentSlugRepository(), new MongoContentTitleKeyRepository()
-  ), createCertificationReader()),
+  ), createCertificationReader(), new EntityBroadcastService()),
   policy: EntityPublicReadPolicy = entityPublicReadPolicy()
 ): Router {
   const router = Router();
@@ -43,6 +44,13 @@ export function createEntityRoutes(
       // Canary: the registry must still agree with the approved pin, at this read.
       if (canary && !(result.status === 'canonical' && result.entity.entityId === decision.entry.entityId && result.entity.canonicalPath === decision.entry.canonicalPath)) {
         policy.outcome(req.query.path, result.status === 'integrity_error' ? 'integrity_error' : 'revalidation_failed');
+        legacy();
+        return;
+      }
+      // Per-URL safeguard (Phase 3D): the legacy page turns `index, follow` the moment its work is scheduled today or
+      // tomorrow. An indexable page is never replaced by a noindex entity page, whatever else says this entity is ready.
+      if (result.status === 'canonical' && result.guard && result.guard.legacyIndexableNow !== false) {
+        policy.outcome(req.query.path, 'legacy_indexable');
         legacy();
         return;
       }

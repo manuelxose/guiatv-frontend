@@ -1,56 +1,155 @@
 import { CommonModule, isPlatformServer } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, OnInit, PLATFORM_ID, RESPONSE_INIT, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, Injector, OnInit, PLATFORM_ID, RESPONSE_INIT, afterNextRender, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { EMPTY, catchError, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MetaService } from '../../services/meta.service';
+import { APP_PATHS } from '../../config/route-map';
+import { serializeJsonLd } from '../../utils/utils';
 import { CatalogDetailComponent } from '../catalog-detail/catalog-detail.component';
+import { BreadcrumbComponent, BreadcrumbItem } from '../../components/breadcrumb/breadcrumb.component';
+import { EntityBroadcastListComponent } from '../../components/entity-broadcast-list/entity-broadcast-list.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
+import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
+import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
+import { broadcastDisplay, buildMovieSchema, ENTITY_CANONICAL_PATH, formatRuntime, kindLabel, PublicEntity } from './entity-detail.model';
 
-interface PublicEntity {
-  entityId: string;
-  kind: string;
-  title: string;
-  canonicalPath: string;
-  originalTitle?: string;
-  year?: number;
-  synopsis?: string;
-  genres?: string[];
-}
+const SITE = 'https://guiaprogramaciontv.com';
+/** The relative times on the page are re-measured this often in the browser (never on the server: a timer would hold the render). */
+const TICK_MS = 30_000;
 
 @Component({
   selector: 'app-entity-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, CatalogDetailComponent, UnifiedAsyncStateComponent],
+  imports: [
+    CommonModule, RouterLink, CatalogDetailComponent, BreadcrumbComponent, EntityBroadcastListComponent,
+    UnifiedAsyncStateComponent, UnifiedSkeletonBlockComponent, WhereToWatchComponent,
+  ],
   styles: [':host { display: block; min-width: 0; }'],
   template: `
     @if (legacy) {
       <app-catalog-detail />
     } @else {
-      <section class="min-h-[60vh] bg-[var(--portal-bg)] px-4 py-10 text-[var(--portal-text)] sm:px-6">
-        <div class="mx-auto max-w-4xl space-y-6">
-          <a routerLink="/" class="inline-block underline underline-offset-4">Inicio</a>
-          @if (loading) {
-            <p role="status" aria-live="polite">Cargando ficha…</p>
-          } @else if (entity; as content) {
-            <h1 class="break-words text-3xl font-bold sm:text-5xl">{{ content.title }}</h1>
-            @if (content.originalTitle && content.originalTitle !== content.title) {
-              <p>{{ content.originalTitle }}</p>
-            }
-            @if (content.year) { <p>{{ content.year }}</p> }
-            @if (content.genres?.length) { <p>{{ content.genres?.join(' · ') }}</p> }
-            @if (content.synopsis) {
-              <p class="max-w-prose whitespace-pre-line text-base leading-7">{{ content.synopsis }}</p>
-            } @else { <p>Sinopsis no disponible.</p> }
-          } @else {
+      <div class="min-h-[60vh] bg-[var(--portal-bg)] text-[var(--portal-text)]">
+        @if (loading) {
+          <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8" role="status" aria-live="polite" aria-busy="true">
+            <span class="sr-only">Cargando ficha…</span>
+            <app-unified-skeleton-block [count]="6" [columns]="3" cardHeight="13rem"></app-unified-skeleton-block>
+          </div>
+        } @else if (entity; as content) {
+          @if (structuredData) { <div [innerHTML]="structuredData"></div> }
+          <article>
+            <header class="relative overflow-hidden bg-[var(--hero-bg)]">
+              <div class="absolute inset-0" aria-hidden="true">
+                @if (content.images?.backdrop; as backdrop) {
+                  <img [src]="backdrop" alt="" class="h-full w-full object-cover opacity-55" decoding="async" />
+                } @else {
+                  <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_oklch,var(--accent-live)_14%,transparent),transparent_38%),radial-gradient(circle_at_top_right,color-mix(in_oklch,var(--accent-discover)_10%,transparent),transparent_32%)]"></div>
+                }
+                <div class="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_oklch,var(--hero-bg)_98%,transparent)_0%,color-mix(in_oklch,var(--hero-bg)_78%,transparent)_55%,color-mix(in_oklch,var(--hero-bg)_45%,transparent)_100%)]"></div>
+                <div class="absolute inset-0 bg-[linear-gradient(180deg,color-mix(in_oklch,var(--hero-bg)_10%,transparent),var(--hero-bg)_100%)]"></div>
+              </div>
+
+              <div class="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
+                <app-breadcrumb [items]="breadcrumbItems" [embedded]="true"></app-breadcrumb>
+              </div>
+
+              <div class="relative mx-auto flex min-h-[18rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-6 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-8">
+                @if (content.images?.poster; as poster) {
+                  <div class="mx-auto w-36 flex-shrink-0 overflow-hidden rounded-[var(--radius-lg)] shadow-[var(--shadow-lg)] sm:w-44 md:mx-0 md:w-48 lg:w-56">
+                    <img [src]="poster" [alt]="'Cartel de ' + content.title" width="380" height="570" class="aspect-[2/3] w-full object-cover" fetchpriority="high" decoding="async" />
+                  </div>
+                }
+                <div class="min-w-0 flex-1 space-y-4">
+                  <p class="inline-block rounded-[var(--radius-pill)] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-[var(--hero-text-muted)]">{{ kind }}</p>
+                  <h1 class="max-w-4xl break-words text-3xl font-black tracking-tight text-[var(--hero-text)] md:text-5xl">{{ content.title }}</h1>
+                  @if (content.originalTitle && content.originalTitle !== content.title) {
+                    <p class="text-base text-[var(--hero-text-muted)]"><span class="sr-only">Título original: </span><i>{{ content.originalTitle }}</i></p>
+                  }
+                  @if (content.year || runtime) {
+                    <p class="tnum flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[var(--hero-text-muted)]">
+                      @if (content.year) { <span>{{ content.year }}</span> }
+                      @if (runtime) { <span><span class="sr-only">Duración: </span>{{ runtime }}</span> }
+                    </p>
+                  }
+                  @if (content.genres?.length) {
+                    <ul class="flex flex-wrap gap-2" aria-label="Géneros">
+                      @for (genre of content.genres; track genre) {
+                        <li class="rounded-[var(--radius-pill)] border border-[var(--hero-border)] bg-[var(--hero-bg-soft)] px-3 py-1 text-xs font-semibold text-[var(--hero-text-muted)]">{{ genre }}</li>
+                      }
+                    </ul>
+                  }
+                  @if (content.synopsis) {
+                    <p class="max-w-3xl whitespace-pre-line text-base leading-7 text-[var(--hero-text-muted)]">{{ content.synopsis }}</p>
+                  } @else {
+                    <p class="max-w-3xl text-base leading-7 text-[var(--hero-text-muted)]">Sinopsis no disponible.</p>
+                  }
+                </div>
+              </div>
+            </header>
+
+            <div class="mx-auto max-w-7xl space-y-10 px-4 pb-16 pt-8 sm:px-6 lg:space-y-14 lg:px-8 lg:pt-10">
+              @if (content.broadcasts) {
+                <app-entity-broadcast-list [broadcasts]="content.broadcasts" [now]="now" [entityTitle]="content.title" />
+              }
+
+              @if (content.tmdbId) {
+                <section aria-labelledby="entity-where-title">
+                  <p class="eyebrow text-[var(--portal-text-muted)]">Disponibilidad</p>
+                  <h2 id="entity-where-title" class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Dónde ver</h2>
+                  <div class="mt-4">
+                    <app-where-to-watch [tmdbId]="content.tmdbId" contentType="movie" [primaryPlatforms]="[]" placement="catalog-detail"
+                      [catalogId]="'tmdb:movie:' + content.tmdbId" [page]="content.canonicalPath"></app-where-to-watch>
+                  </div>
+                </section>
+              }
+
+              @if (content.credits?.directors?.length || content.credits?.cast?.length) {
+                <section aria-labelledby="entity-credits-title">
+                  <p class="eyebrow text-[var(--portal-text-muted)]">Equipo</p>
+                  <h2 id="entity-credits-title" class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Reparto y dirección</h2>
+                  @if (content.credits?.directors?.length) {
+                    <p class="mt-3 text-sm text-[var(--portal-text-soft)]"><span class="text-[var(--portal-text-muted)]">Dirección:</span> {{ content.credits?.directors?.join(', ') }}</p>
+                  }
+                  @if (content.credits?.cast?.length) {
+                    <ul class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
+                      @for (person of content.credits?.cast; track person.name) {
+                        <li class="text-[var(--portal-text)]">{{ person.name }}@if (person.character) { <span class="text-[var(--portal-text-muted)]"> · {{ person.character }}</span> }</li>
+                      }
+                    </ul>
+                  }
+                </section>
+              }
+
+              <nav aria-labelledby="entity-explore-title">
+                <h2 id="entity-explore-title" class="text-xl font-bold tracking-tight text-[var(--portal-text)]">Sigue explorando</h2>
+                <ul class="mt-4 flex flex-wrap gap-3 text-sm">
+                  @for (link of exploreLinks; track link.path) {
+                    <li><a [routerLink]="link.path" class="inline-block rounded-[var(--radius-pill)] border border-[var(--portal-border)] bg-[var(--portal-surface)] px-4 py-2 font-semibold text-[var(--portal-text)] hover:border-[var(--portal-border-strong)] focus-visible:border-[var(--portal-border-strong)]">{{ link.label }}</a></li>
+                  }
+                </ul>
+              </nav>
+
+              @if (content.attribution; as attribution) {
+                <footer class="border-t border-[var(--portal-border)] pt-6 text-xs leading-5 text-[var(--portal-text-muted)]">
+                  <p>{{ attribution.notice }} <a href="https://www.themoviedb.org" rel="noopener noreferrer" class="underline underline-offset-4">themoviedb.org</a></p>
+                  @if (updated) { <p>Datos actualizados el <time [attr.datetime]="attribution.updatedAt">{{ updated }}</time>.</p> }
+                </footer>
+              }
+            </div>
+          </article>
+        } @else {
+          <div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
             <app-unified-async-state [kind]="unavailable ? 'error' : 'empty'"
               [title]="unavailable ? 'Ficha no disponible' : 'Contenido no encontrado'"
               [message]="unavailable ? 'No se pudo cargar la ficha. Inténtalo más tarde.' : 'Esta ficha no está disponible.'" />
-          }
-        </div>
-      </section>
+            <a routerLink="/" class="mt-6 inline-block underline underline-offset-4">Volver al inicio</a>
+          </div>
+        }
+      </div>
     }
   `,
 })
@@ -60,20 +159,43 @@ export class EntityDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(MetaService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly sanitizer = inject(DomSanitizer);
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly server = isPlatformServer(inject(PLATFORM_ID));
   entity?: PublicEntity;
   legacy = false;
   loading = true;
   unavailable = false;
+  /** The clock for relative times: the API's `generatedAt` until the browser takes over. */
+  now = new Date();
+  structuredData: SafeHtml | null = null;
+  breadcrumbItems: BreadcrumbItem[] = [];
+  runtime: string | null = null;
+  kind = '';
+  updated = '';
+  readonly exploreLinks = [
+    { label: 'Qué ver hoy en TV', path: APP_PATHS.explore },
+    { label: 'Películas en TV', path: APP_PATHS.movies },
+    { label: 'Canales', path: APP_PATHS.channels },
+  ];
 
   ngOnInit(): void {
+    if (!this.server) {
+      // Browser only: a repeating timer on the server would keep the render from ever settling.
+      afterNextRender(() => {
+        const id = setInterval(() => { this.now = new Date(); this.cdr.markForCheck(); }, TICK_MS);
+        this.destroyRef.onDestroy(() => clearInterval(id));
+      }, { injector: this.injector });
+    }
     this.route.paramMap.pipe(
       switchMap(() => {
         this.entity = undefined;
         this.legacy = false;
         this.loading = true;
         this.unavailable = false;
+        this.structuredData = null;
         this.setMeta('Ficha - Guía TV', null);
         return this.http.get<{ success: boolean; data: PublicEntity }>(`${environment.API_BASE_URL}/entities/resolve`, {
           params: { path: this.router.url.split(/[?#]/)[0], redirect: 'false' },
@@ -91,13 +213,14 @@ export class EntityDetailComponent implements OnInit {
     ).subscribe({
       next: ({ success, data }) => {
         this.loading = false;
-        if (!success || !data?.title || !/^\/(peliculas|series|programas)\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(data.canonicalPath)) {
+        if (!success || !data?.title || !ENTITY_CANONICAL_PATH.test(data.canonicalPath)) {
           this.fail(503);
           return;
         }
         this.entity = data;
+        this.present(data);
         this.markEntityResponse();
-        this.setMeta(`${data.title} - Guía TV`, data.canonicalPath, 200, data.synopsis);
+        this.setMeta(this.metaTitle(data), data.canonicalPath, 200, this.metaDescription(data), data.images?.poster);
         if (data.canonicalPath !== this.router.url.split(/[?#]/)[0]) {
           if (this.server && this.response) {
             this.response.status = 301;
@@ -108,6 +231,31 @@ export class EntityDetailComponent implements OnInit {
         }
       },
     });
+  }
+
+  /** View-model fields derived once per response, so the template stays declarative. */
+  private present(data: PublicEntity): void {
+    const generated = data.broadcasts?.generatedAt ? new Date(data.broadcasts.generatedAt) : null;
+    this.now = this.server && generated && !Number.isNaN(generated.getTime()) ? generated : new Date();
+    this.kind = kindLabel(data.kind);
+    this.runtime = formatRuntime(data.runtimeMinutes);
+    this.updated = data.attribution ? new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.attribution.updatedAt)) : '';
+    const hub = data.kind === 'series' ? { name: 'Series', url: APP_PATHS.series } : data.kind === 'movie' ? { name: 'Películas', url: APP_PATHS.movies } : { name: 'Programas', url: APP_PATHS.live };
+    this.breadcrumbItems = [{ name: 'Inicio', url: '/' }, hub, { name: data.title, url: data.canonicalPath }];
+    const schema = buildMovieSchema(data, SITE);
+    this.structuredData = schema
+      ? this.sanitizer.bypassSecurityTrustHtml(`<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
+      : null;
+  }
+
+  private metaTitle(data: PublicEntity): string {
+    return `${data.title}${data.year ? ` (${data.year})` : ''} - Guía TV`;
+  }
+
+  private metaDescription(data: PublicEntity): string {
+    const next = data.broadcasts?.status === 'ok' ? data.broadcasts.items[0] : undefined;
+    const when = next ? `Próxima emisión en ${next.channel.name}: ${broadcastDisplay(next, this.now).day.toLowerCase()} a las ${next.localTime}. ` : '';
+    return `${when}${data.synopsis ?? ''}`;
   }
 
   private fail(status: number): void {
@@ -125,8 +273,8 @@ export class EntityDetailComponent implements OnInit {
     };
   }
 
-  private setMeta(title: string, canonicalUrl: string | null, httpStatus?: number, description = ''): void {
-    this.meta.setMetaTags({ title, description, canonicalUrl, robots: 'noindex, follow', httpStatus });
+  private setMeta(title: string, canonicalUrl: string | null, httpStatus?: number, description = '', image?: string): void {
+    this.meta.setMetaTags({ title, description, canonicalUrl, robots: 'noindex, follow', httpStatus, ...(image ? { image } : {}) });
     if (this.response && httpStatus) this.response.status = httpStatus;
   }
 }

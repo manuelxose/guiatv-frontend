@@ -1,0 +1,1471 @@
+[
+ {
+  "tmdbId": 340837,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "La cura del bienestar",
+  "originalTitle": "A Cure for Wellness",
+  "year": "2017",
+  "synopsis": "A un joven y ambicioso ejecutivo le encargan una misión: traer de vuelta al director de su empresa de un idílico y enigmático centro de “bienestar” situado en un área remota de los Alpes suizos. Pronto sospecha que los milagrosos tratamientos que allí tienen lugar no son lo que parecen. Su cordura se pone a prueba cuando empieza a desvelar los terroríficos secretos que allí se ocultan y es diagnosticado con la misma extraña enfermedad que mantiene a los pacientes a la espera de la cura.",
+  "tmdbGenres": [
+   {
+    "id": 27,
+    "name": "Terror"
+   },
+   {
+    "id": 878,
+    "name": "Ciencia ficción"
+   },
+   {
+    "id": 9648,
+    "name": "Misterio"
+   }
+  ],
+  "runtimeMinutes": 147,
+  "posterPath": "/k4XZ47wFZF1aUv7bjLM4Pae2TYm.jpg",
+  "backdropPath": "/uXx9wjfJEzLlfqB8GW67SYBrhVT.jpg",
+  "rating": 6.4,
+  "castSummary": [
+   {
+    "name": "Dane DeHaan",
+    "character": "Lockhart"
+   },
+   {
+    "name": "Jason Isaacs",
+    "character": "Volmer"
+   },
+   {
+    "name": "Mia Goth",
+    "character": "Hannah"
+   },
+   {
+    "name": "Harry Groener",
+    "character": "Pembroke"
+   },
+   {
+    "name": "Celia Imrie",
+    "character": "Victoria Watkins"
+   },
+   {
+    "name": "Adrian Schiller",
+    "character": "Deputy Director"
+   },
+   {
+    "name": "Ivo Nandi",
+    "character": "Enrico"
+   },
+   {
+    "name": "Tomas Norström",
+    "character": "Frank Hill"
+   },
+   {
+    "name": "Ashok Mandanna",
+    "character": "Ron Nair"
+   },
+   {
+    "name": "Lisa Banes",
+    "character": "Hollis"
+   }
+  ],
+  "directors": [
+   "Gore Verbinski"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:54Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:54Z"
+  }
+ },
+ {
+  "tmdbId": 1081620,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Venganza en Las Vegas",
+  "originalTitle": "The Weapon",
+  "year": "2023",
+  "synopsis": "Dallas es una máquina de matar involucrado en un alboroto misterioso. Sus ataques contra bandas de motociclistas y laboratorios de metanfetamina enfurecen al jefe de la mafia de Las Vegas que tiene como rehén a la novia de Dallas. Pero, ¿para quién trabaja Dallas? Ni siquiera la tortura lo hará hablar... y no se detendrá hasta que se haga justicia.",
+  "tmdbGenres": [
+   {
+    "id": 28,
+    "name": "Acción"
+   }
+  ],
+  "runtimeMinutes": 85,
+  "posterPath": "/4Yrpqrkic2BKr100gzBXTHmUukg.jpg",
+  "backdropPath": "/i7nnmCTnjK50vNqbMfVtmoVULWJ.jpg",
+  "rating": 5,
+  "castSummary": [
+   {
+    "name": "Tony Schiena",
+    "character": "Dallas"
+   },
+   {
+    "name": "AnnaLynne McCord",
+    "character": "Iris"
+   },
+   {
+    "name": "Sean Patrick Flanery",
+    "character": "Antano"
+   },
+   {
+    "name": "Jack Kesy",
+    "character": "Vinny"
+   },
+   {
+    "name": "Cuba Gooding Jr.",
+    "character": "Blue"
+   },
+   {
+    "name": "Bruce Dern",
+    "character": "Doris"
+   },
+   {
+    "name": "Litzy Domínguez",
+    "character": "Trish"
+   },
+   {
+    "name": "Chuck Zito",
+    "character": "Lemmy"
+   },
+   {
+    "name": "Randall Batinkoff",
+    "character": "Detective Moore"
+   },
+   {
+    "name": "Jeff Fahey",
+    "character": "Voner"
+   }
+  ],
+  "directors": [
+   "Tony Schiena"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:54Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:54Z"
+  }
+ },
+ {
+  "tmdbId": 471856,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Dobles vidas",
+  "originalTitle": "Doubles vies",
+  "year": "2018",
+  "synopsis": "A Alain, un exitoso editor parisino, y a Léonard, uno de sus autores de toda la vida, les cuesta aceptar por completo el mundo digital actual... y puede que la crisis de la mediana edad. Cuando se reúnen para debatir sobre el nuevo manuscrito de Léonard, Alain debe encontrar una manera elegante de decirle a Léonard que se está quedando atrás, de exponerle sus dudas, mientras que la esposa de Alain, Selena, cree que por fin Léonard ha conseguido realizar su obra maestra.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 35,
+    "name": "Comedia"
+   },
+   {
+    "id": 10749,
+    "name": "Romance"
+   }
+  ],
+  "runtimeMinutes": 107,
+  "posterPath": "/smuEMXM38APTVRDn7O75dkJKqB1.jpg",
+  "backdropPath": "/96FSuNGiuHAJnDsxlVExafH6LZy.jpg",
+  "rating": 5.4,
+  "castSummary": [
+   {
+    "name": "Guillaume Canet",
+    "character": "Alain"
+   },
+   {
+    "name": "Juliette Binoche",
+    "character": "Selena"
+   },
+   {
+    "name": "Vincent Macaigne",
+    "character": "Léonard"
+   },
+   {
+    "name": "Christa Théret",
+    "character": "Laure"
+   },
+   {
+    "name": "Nora Hamzawi",
+    "character": "Valérie"
+   },
+   {
+    "name": "Pascal Greggory",
+    "character": "Marc-Antoine"
+   },
+   {
+    "name": "Laurent Poitrenaux",
+    "character": "Author, at Alain"
+   },
+   {
+    "name": "Sigrid Bouaziz",
+    "character": "Editor"
+   },
+   {
+    "name": "Lionel Dray",
+    "character": "Editor"
+   },
+   {
+    "name": "Nicolas Bouchaud",
+    "character": "David"
+   }
+  ],
+  "directors": [
+   "Olivier Assayas"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:55Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:55Z"
+  }
+ },
+ {
+  "tmdbId": 221650,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Los subdesarrollados",
+  "originalTitle": "Los subdesarrollados",
+  "year": "1968",
+  "synopsis": "La I.I.S.S. (International Investigation Spanish Section) es una agencia clandestina de detectives, especializada en \"infidelidades matrimoniales\". Julio, el creador de la agencia, utiliza las técnicas más avanzadas. Su ayudante Timoteo se dedica a la investigación en el tiempo libre que le deja su profesión de bombero y, por supuesto, robándole horas al sueño, por lo que se suele quedar dormido en los momentos más inoportunos.",
+  "tmdbGenres": [
+   {
+    "id": 35,
+    "name": "Comedia"
+   }
+  ],
+  "runtimeMinutes": 99,
+  "posterPath": "/f8RKLMildS9Q0v6C9q60YGBpPqJ.jpg",
+  "backdropPath": "/aJHgYbvFlfbJbfUcVbZyA5WcBRz.jpg",
+  "rating": 6.8,
+  "castSummary": [
+   {
+    "name": "Tony Leblanc",
+    "character": "Julio García Gutiérrez"
+   },
+   {
+    "name": "Alfredo Landa",
+    "character": "Timoteo Fonseca"
+   },
+   {
+    "name": "Laura Valenzuela",
+    "character": "Ana Vidal Ramírez"
+   },
+   {
+    "name": "Lina Morgan",
+    "character": "Rosita"
+   },
+   {
+    "name": "Manolo Gómez Bur",
+    "character": "Ramón Aguirre Sacristán"
+   },
+   {
+    "name": "Venancio Muro",
+    "character": "Cobrador del gas"
+   },
+   {
+    "name": "María Silva",
+    "character": "Laly"
+   },
+   {
+    "name": "Luchy Soto",
+    "character": "Doña Acacia"
+   },
+   {
+    "name": "Erasmo Pascual",
+    "character": "Don Alejandro"
+   },
+   {
+    "name": "Marisol González",
+    "character": "Angelines"
+   }
+  ],
+  "directors": [
+   "Fernando Merino"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:55Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:55Z"
+  }
+ },
+ {
+  "tmdbId": 28893,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "La galaxia del terror",
+  "originalTitle": "Galaxy of Terror",
+  "year": "1981",
+  "synopsis": "Marooned, un desolado planeta oscuro de Morganthus es el último lugar del que se tuvo noticias de la tripulación de la nave espacial Remus. Desde la Tierra responden a la llamada de ayuda procedente de la nave, pero ante la ausencia de respuesta se organiza una misión de rescate comandada por el capitán Trantor, el joven Camprer y Alluma, una humana sumamente sensible a la presencia de fuerzas de vida extraterrestre.",
+  "tmdbGenres": [
+   {
+    "id": 12,
+    "name": "Aventura"
+   },
+   {
+    "id": 27,
+    "name": "Terror"
+   },
+   {
+    "id": 28,
+    "name": "Acción"
+   },
+   {
+    "id": 878,
+    "name": "Ciencia ficción"
+   }
+  ],
+  "runtimeMinutes": 81,
+  "posterPath": "/dk3VIzNURNk3FXpMvKAzFxEFkPz.jpg",
+  "backdropPath": "/ejcK06TXgfZFafpv6g5q70sQ6D6.jpg",
+  "rating": 5.253,
+  "castSummary": [
+   {
+    "name": "Edward Albert",
+    "character": "Cabren"
+   },
+   {
+    "name": "Erin Moran",
+    "character": "Alumna"
+   },
+   {
+    "name": "Ray Walston",
+    "character": "Kore"
+   },
+   {
+    "name": "Bernard Behrens",
+    "character": "Commander Ilvar"
+   },
+   {
+    "name": "Zalman King",
+    "character": "Baelon"
+   },
+   {
+    "name": "Robert Englund",
+    "character": "Ranger"
+   },
+   {
+    "name": "Taaffe O'Connell",
+    "character": "Dameia"
+   },
+   {
+    "name": "Sid Haig",
+    "character": "Quuhod"
+   },
+   {
+    "name": "Grace Zabriskie",
+    "character": "Captain Trantor"
+   },
+   {
+    "name": "Jack Blessing",
+    "character": "Cos"
+   }
+  ],
+  "directors": [
+   "Bruce D. Clark"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:55Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:55Z"
+  }
+ },
+ {
+  "tmdbId": 663870,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Jinetes de la justicia",
+  "originalTitle": "Retfærdighedens ryttere",
+  "year": "2020",
+  "synopsis": "El militar Markus debe regresar a casa con su hija adolescente, Mathilde, cuando su esposa muere en un trágico accidente de tren. Todo parece ser a causa de la mala suerte, hasta que Otto, experto en matemáticas y también pasajero de tren siniestrado, aparece con sus dos excéntricos colegas, Lennart y Emmenthaler. Otto está convencido de que alguien está detrás de todo esto.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 28,
+    "name": "Acción"
+   },
+   {
+    "id": 35,
+    "name": "Comedia"
+   },
+   {
+    "id": 53,
+    "name": "Suspense"
+   }
+  ],
+  "runtimeMinutes": 116,
+  "posterPath": "/2SfoAbAcXCcNb1V3GpPPJG6OLFB.jpg",
+  "backdropPath": "/7XZsVVnqTsMJXg3J4CHzeV2Lro9.jpg",
+  "rating": 7.3,
+  "castSummary": [
+   {
+    "name": "Mads Mikkelsen",
+    "character": "Markus"
+   },
+   {
+    "name": "Nikolaj Lie Kaas",
+    "character": "Otto"
+   },
+   {
+    "name": "Lars Brygmann",
+    "character": "Lennart"
+   },
+   {
+    "name": "Nicolas Bro",
+    "character": "Emmenthaler"
+   },
+   {
+    "name": "Andrea Heick Gadeberg",
+    "character": "Mathilde"
+   },
+   {
+    "name": "Gustav Lindh",
+    "character": "Bodashka"
+   },
+   {
+    "name": "Roland Møller",
+    "character": "Kurt"
+   },
+   {
+    "name": "Albert Rudbeck Lindhardt",
+    "character": "Sirius"
+   },
+   {
+    "name": "Morten Suurballe",
+    "character": "Gert"
+   },
+   {
+    "name": "Jesper Ole Feit Andersen",
+    "character": "Leif"
+   }
+  ],
+  "directors": [
+   "Anders Thomas Jensen"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:56Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:56Z"
+  }
+ },
+ {
+  "tmdbId": 11587,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "El exorcista III",
+  "originalTitle": "The Exorcist III",
+  "year": "1990",
+  "synopsis": "Una mujer que se arrastra por el techo. Un criminal muerto hace tiempo que asesina víctima tras víctima. Las llamas estallan, las serpientes se deslizan, la tierra se abre revelando el tormentoso infierno. El demonio ha vuelto... pero el sacerdote Damien Karras vuelve a notar la presencia del maligno, y pedirá la ayuda del escéptico detective Kinderman para derrotarle.",
+  "tmdbGenres": [
+   {
+    "id": 27,
+    "name": "Terror"
+   }
+  ],
+  "runtimeMinutes": 109,
+  "posterPath": "/b0S5zj0vA6XsPB3jcMTNaBRN5n5.jpg",
+  "backdropPath": "/2JnyyxTibd5ZdMKMePY7zSyedmi.jpg",
+  "rating": 6.302,
+  "castSummary": [
+   {
+    "name": "George C. Scott",
+    "character": "Lt. William 'Bill' Kinderman"
+   },
+   {
+    "name": "Ed Flanders",
+    "character": "Father Joseph Kevin Dyer"
+   },
+   {
+    "name": "Brad Dourif",
+    "character": "James Venamun / The Gemini Killer"
+   },
+   {
+    "name": "Jason Miller",
+    "character": "Father Damien Karras / Patient X"
+   },
+   {
+    "name": "Nicol Williamson",
+    "character": "Father Morning"
+   },
+   {
+    "name": "Scott Wilson",
+    "character": "Dr. Temple"
+   },
+   {
+    "name": "Nancy Fish",
+    "character": "Nurse Allerton"
+   },
+   {
+    "name": "George DiCenzo",
+    "character": "Stedman"
+   },
+   {
+    "name": "Don Gordon",
+    "character": "Ryan"
+   },
+   {
+    "name": "Lee Richardson",
+    "character": "University President"
+   }
+  ],
+  "directors": [
+   "William Peter Blatty"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:56Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:56Z"
+  }
+ },
+ {
+  "tmdbId": 37645,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "22 balas",
+  "originalTitle": "L'Immortel",
+  "year": "2010",
+  "synopsis": "Un antiguo miembro de la mafia que lleva 3 años retirado, viviendo una plácida vida dedicado a su mujer y a sus hijos, es atacado una mañana por unos hombres y dado por muerto después de recibir 22 balas. Pero sobrevivirá milagrosamente y buscará a Tony Zacchia, el único hombre capaz de atreverse a matarlo. Tony ha cometido solo un error, fallar en su intento.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 53,
+    "name": "Suspense"
+   },
+   {
+    "id": 80,
+    "name": "Crimen"
+   }
+  ],
+  "runtimeMinutes": 115,
+  "posterPath": "/jgFebehDmRJLr1SoI52gnpuyDZp.jpg",
+  "backdropPath": "/ulv4h7NglaqDl68RZKnpvOPqT2t.jpg",
+  "rating": 6.69,
+  "castSummary": [
+   {
+    "name": "Jean Reno",
+    "character": "Charly Matteï"
+   },
+   {
+    "name": "Kad Merad",
+    "character": "Tony Zacchia"
+   },
+   {
+    "name": "Marina Foïs",
+    "character": "Marie Goldman"
+   },
+   {
+    "name": "Jean-Pierre Darroussin",
+    "character": "Martin Beaudinard"
+   },
+   {
+    "name": "JoeyStarr",
+    "character": "Pistachio"
+   },
+   {
+    "name": "Richard Berry",
+    "character": "Aurelio Rampoli"
+   },
+   {
+    "name": "Claude Gensac",
+    "character": "Mrs. Fontarosa"
+   },
+   {
+    "name": "Joséphine Berry",
+    "character": "Eva Matteï"
+   },
+   {
+    "name": "Max Baissette de Malglaive",
+    "character": "Anatole Matteï"
+   },
+   {
+    "name": "Venantino Venantini",
+    "character": "Padovano"
+   }
+  ],
+  "directors": [
+   "Richard Berry"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:56Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:56Z"
+  }
+ },
+ {
+  "tmdbId": 507086,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Jurassic World: Dominion",
+  "originalTitle": "Jurassic World Dominion",
+  "year": "2022",
+  "synopsis": "Cuatro años después de la destrucción de Isla Nublar, los dinosaurios conviven – y cazan – con los seres humanos en todo el mundo. Este frágil equilibrio cambiará el futuro y decidirá, de una vez por todas, si los seres humanos seguirán en la cúspide de los depredadores en un planeta que comparten con los animales más temibles de la creación.",
+  "tmdbGenres": [
+   {
+    "id": 12,
+    "name": "Aventura"
+   },
+   {
+    "id": 53,
+    "name": "Suspense"
+   },
+   {
+    "id": 878,
+    "name": "Ciencia ficción"
+   }
+  ],
+  "runtimeMinutes": 147,
+  "posterPath": "/sXeWfpT1EhG7f4uBouqraOhmouH.jpg",
+  "backdropPath": "/9hk5iiycq7ukRAAXQiJT9HZX3SX.jpg",
+  "rating": 6.583,
+  "castSummary": [
+   {
+    "name": "Chris Pratt",
+    "character": "Owen Grady"
+   },
+   {
+    "name": "Bryce Dallas Howard",
+    "character": "Claire Dearing"
+   },
+   {
+    "name": "Laura Dern",
+    "character": "Ellie Sattler"
+   },
+   {
+    "name": "Sam Neill",
+    "character": "Alan Grant"
+   },
+   {
+    "name": "Jeff Goldblum",
+    "character": "Ian Malcolm"
+   },
+   {
+    "name": "DeWanda Wise",
+    "character": "Kayla Watts"
+   },
+   {
+    "name": "Mamoudou Athie",
+    "character": "Ramsay Cole"
+   },
+   {
+    "name": "Isabella Sermon",
+    "character": "Maisie Lockwood / Young Charlotte Lockwood"
+   },
+   {
+    "name": "Campbell Scott",
+    "character": "Lewis Dodgson"
+   },
+   {
+    "name": "BD Wong",
+    "character": "Henry Wu"
+   }
+  ],
+  "directors": [
+   "Colin Trevorrow"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:57Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:57Z"
+  }
+ },
+ {
+  "tmdbId": 289727,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "¿Cómo se escribe amor?",
+  "originalTitle": "The Rewrite",
+  "year": "2014",
+  "synopsis": "Keith Michaels (Hugh Grant), un guionista en horas bajas que en el año 1988 llegó a ganar un Oscar al mejor guión, se encuentra tan desesperado que acepta un trabajo como profesor de escritura en una pequeña población lejos de Los Angeles, al norte del estado de Nueva York. Allí conocerá a una madre soltera (Marisa Tomei).",
+  "tmdbGenres": [
+   {
+    "id": 35,
+    "name": "Comedia"
+   },
+   {
+    "id": 10749,
+    "name": "Romance"
+   }
+  ],
+  "runtimeMinutes": 106,
+  "posterPath": "/bA5AC264j15T0LZJDX1B5gz4G4o.jpg",
+  "backdropPath": "/aikBhzg2hT853U876DZglf6qlGN.jpg",
+  "rating": 6.029,
+  "castSummary": [
+   {
+    "name": "Hugh Grant",
+    "character": "Keith Michaels"
+   },
+   {
+    "name": "Marisa Tomei",
+    "character": "Holly Carpenter"
+   },
+   {
+    "name": "Bella Heathcote",
+    "character": "Karen Gabney"
+   },
+   {
+    "name": "J.K. Simmons",
+    "character": "Hal Lerner"
+   },
+   {
+    "name": "Chris Elliott",
+    "character": "Jim Harper"
+   },
+   {
+    "name": "Allison Janney",
+    "character": "Professor Weldon"
+   },
+   {
+    "name": "Whit Baldwin",
+    "character": "Doug"
+   },
+   {
+    "name": "Vanessa Wasche",
+    "character": "Rona"
+   },
+   {
+    "name": "Enid Graham",
+    "character": "Trina"
+   },
+   {
+    "name": "Shannon Marie Sullivan",
+    "character": "Sue"
+   }
+  ],
+  "directors": [
+   "Marc Lawrence"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:57Z",
+  "sources": {
+   "tmdbCheckDay": "20261023",
+   "payloadFetchedAt": "2026-10-21T23:15:57Z"
+  }
+ },
+ {
+  "tmdbId": 143747,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Baño de sangre al salir el sol",
+  "originalTitle": "Mille dollari sul nero",
+  "year": "1966",
+  "synopsis": "Johnny Liston tras haber cumplido una condena de doce años por un asesinato que no cometió se encuentra con que su hermano, Sartana, alentado por su propia madre, se ha convertido en un temible forajido que, al más puro estilo mafioso, extorsiona a los habitantes de la región prometiéndoles seguridad a cambio del pago de unas cantidades abusivas. Johnny se dispondrá a cambiar esta situación, hecho que le llevará al enfrentamiento con su hermano.",
+  "tmdbGenres": [
+   {
+    "id": 37,
+    "name": "Western"
+   }
+  ],
+  "runtimeMinutes": 100,
+  "posterPath": "/qnDkIcqvjAqr0lNNh5WLHHTJWsj.jpg",
+  "backdropPath": "/w8b9kSQy83n427qPQPWvpYQa9A0.jpg",
+  "rating": 5.1,
+  "castSummary": [
+   {
+    "name": "Anthony Steffen",
+    "character": "Johnny Liston"
+   },
+   {
+    "name": "Gianni Garko",
+    "character": "Sartana Liston"
+   },
+   {
+    "name": "Erika Blanc",
+    "character": "Joselita/Joschita Rogers"
+   },
+   {
+    "name": "Franco Fantasia",
+    "character": "Sheriff"
+   },
+   {
+    "name": "Sieghardt Rupp",
+    "character": "Ralph"
+   },
+   {
+    "name": "Angelika Ott",
+    "character": "Manuela Holt"
+   },
+   {
+    "name": "Daniela Igliozzi",
+    "character": "Mary"
+   },
+   {
+    "name": "Fortunato Arena",
+    "character": "Townsman"
+   },
+   {
+    "name": "Sal Borgese",
+    "character": "Mexican in bar"
+   },
+   {
+    "name": "Carla Calò",
+    "character": "Rhonda Liston"
+   }
+  ],
+  "directors": [
+   "Alberto Cardone"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:57Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:57Z"
+  }
+ },
+ {
+  "tmdbId": 395938,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "AmeriGeddon",
+  "originalTitle": "AmeriGeddon",
+  "year": "2016",
+  "synopsis": "Una advertencia desesperada de un despertar de lo que podría ser nuestro futuro cuando una organización terrorista globalista alineada con las Naciones Unidas desactiva la red de energía de Estados Unidos e instituye la Ley Marcial. Se necesitará una dedicada familia de patriotas armados con fuertes habilidades de supervivencia y los restos de la Segunda Enmienda para salvar a Estados Unidos y reclamar su libertad.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 28,
+    "name": "Acción"
+   }
+  ],
+  "runtimeMinutes": 99,
+  "posterPath": "/47SDujdaNHdK4lrkcfS6HVM0u9z.jpg",
+  "backdropPath": "/6OsRCfP25pcy7yWOVrUA7t8ADuZ.jpg",
+  "rating": 4,
+  "castSummary": [
+   {
+    "name": "India Eisley",
+    "character": "Penny"
+   },
+   {
+    "name": "Dina Meyer",
+    "character": "Kelly"
+   },
+   {
+    "name": "Diane Ladd",
+    "character": "Betty"
+   },
+   {
+    "name": "Alex E. Jones",
+    "character": "Senator Reed"
+   },
+   {
+    "name": "Marshall R. Teague",
+    "character": "Col. Crane"
+   },
+   {
+    "name": "Jonny Cruz",
+    "character": "Timmes"
+   },
+   {
+    "name": "Mike Norris",
+    "character": "Cliff"
+   },
+   {
+    "name": "Spencer Neville",
+    "character": "Brandon"
+   },
+   {
+    "name": "Billy Tilk",
+    "character": "Bubba"
+   },
+   {
+    "name": "David Knight",
+    "character": "Himself"
+   }
+  ],
+  "directors": [
+   "Mike Norris"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:57Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:57Z"
+  }
+ },
+ {
+  "tmdbId": 1291712,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Las catadoras de Hitler",
+  "originalTitle": "Le assaggiatrici",
+  "year": "2025",
+  "synopsis": "Otoño de 1943. La joven Rosa huye de un Berlín bombardeado y se refugia en un pueblo donde viven sus suegros. Rosa descubre rápidamente que en el bosque adyacente se encuentra el cuartel general de Hitler, la llamada 'Guarida del Lobo'. El Führer ve enemigos por todas partes. Su obsesión es que lo envenenen. Una mañana Rose es recogida junto a otras jóvenes del pueblo para probar la comida que le preparan a Hitler.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 36,
+    "name": "Historia"
+   }
+  ],
+  "runtimeMinutes": 123,
+  "posterPath": "/t0L4h1PMFBzQLQETruTCH4VcpqK.jpg",
+  "backdropPath": "/wAow3w58FGNdWUMpPdddOtnM3A0.jpg",
+  "rating": 6.7,
+  "castSummary": [
+   {
+    "name": "Elisa Schlott",
+    "character": "Rosa"
+   },
+   {
+    "name": "Max Riemelt",
+    "character": "Ziegler"
+   },
+   {
+    "name": "Alma Hasun",
+    "character": "Elfriede"
+   },
+   {
+    "name": "Emma Falck",
+    "character": "Leni"
+   },
+   {
+    "name": "Olga von Luckwald",
+    "character": "Heike"
+   },
+   {
+    "name": "Thea Rasche",
+    "character": "Augustine"
+   },
+   {
+    "name": "Berit Vander",
+    "character": "Ulla"
+   },
+   {
+    "name": "Kriemhild Hamann",
+    "character": "Sabine"
+   },
+   {
+    "name": "Esther Gemsch",
+    "character": "Herta"
+   },
+   {
+    "name": "Jürgen Wink",
+    "character": "Joseph"
+   }
+  ],
+  "directors": [
+   "Silvio Soldini"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:58Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:58Z"
+  }
+ },
+ {
+  "tmdbId": 1447881,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Morir no siempre sale bien",
+  "originalTitle": "Morir no siempre sale bien",
+  "year": "2026",
+  "synopsis": "El marido y el hermano de Rosario se han quedado sin trabajo tras un despido improcedente. Para pagar sus deudas, deciden secuestrar el cadáver de su jefe y pedir un rescate. Pero Inés, la adinerada mujer del muerto, y sus hijos tienen otros planes. A pesar de pertenecer a mundos totalmente distintos, ambas familias se verán obligadas a intercambiar mucho más que un cuerpo.",
+  "tmdbGenres": [
+   {
+    "id": 35,
+    "name": "Comedia"
+   }
+  ],
+  "runtimeMinutes": 97,
+  "posterPath": "/la72AK13gJTvU5OfBquwJSuIhdJ.jpg",
+  "backdropPath": "/bT1GVyqPk0Y0FlZf0xqYR2jo3fW.jpg",
+  "rating": 0,
+  "castSummary": [
+   {
+    "name": "Tamara Casellas"
+   },
+   {
+    "name": "Ana Wagener"
+   },
+   {
+    "name": "Juan Carlos Vellido"
+   },
+   {
+    "name": "Pau Durà"
+   },
+   {
+    "name": "Carmen Arrufat"
+   },
+   {
+    "name": "Paula Muñoz"
+   },
+   {
+    "name": "Daniel Pérez Prada"
+   },
+   {
+    "name": "Raúl Prieto"
+   },
+   {
+    "name": "Roberto Hoyo"
+   },
+   {
+    "name": "Jorge Motos"
+   }
+  ],
+  "directors": [
+   "Claudia Pinto Emperador"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:58Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:58Z"
+  }
+ },
+ {
+  "tmdbId": 75552,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "El valle de la furia",
+  "originalTitle": "The Mountain Men",
+  "year": "1980",
+  "synopsis": "Bill Tyler y Henry Frapp, dos veteranos tramperos, que llevan una dura vida en las montañas, deben enfrentarse a menudo a los ataques de los indios. Sin embargo, nunca se habían tenido que enfrentar a alguien tan vengativo y perverso como Águila Poderosa, el jefe de los Pies Negros, cuya ira provocan al prestarle ayuda a la mujer que lo ha abandonado.",
+  "tmdbGenres": [
+   {
+    "id": 12,
+    "name": "Aventura"
+   },
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 37,
+    "name": "Western"
+   }
+  ],
+  "runtimeMinutes": 102,
+  "posterPath": "/ir17LgCnaKnYjI7xUElx87K7mMs.jpg",
+  "backdropPath": "/piZ9uASkg1x1FhQsNU9pAqjGBA7.jpg",
+  "rating": 5.9,
+  "castSummary": [
+   {
+    "name": "Charlton Heston",
+    "character": "Bill Tyler"
+   },
+   {
+    "name": "Brian Keith",
+    "character": "Henry Frapp"
+   },
+   {
+    "name": "Victoria Racimo",
+    "character": "Running Moon"
+   },
+   {
+    "name": "Stephen Macht",
+    "character": "Heavy Eagle"
+   },
+   {
+    "name": "Seymour Cassel",
+    "character": "La Bont"
+   },
+   {
+    "name": "David Ackroyd",
+    "character": "Medicine Wolf"
+   },
+   {
+    "name": "Cal Bellini",
+    "character": "Cross Otter"
+   },
+   {
+    "name": "John Glover",
+    "character": "Nathan Wyeth"
+   },
+   {
+    "name": "William Lucking",
+    "character": "Jim Walter"
+   },
+   {
+    "name": "Ken Ruta",
+    "character": "Fontenelle"
+   }
+  ],
+  "directors": [
+   "Richard Lang"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:58Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:58Z"
+  }
+ },
+ {
+  "tmdbId": 10496,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Bats (Murciélagos)",
+  "originalTitle": "Bats",
+  "year": "1999",
+  "synopsis": "Murciélagos mutados, resultado de un experimento genético fracasado del gobierno, se han vuelto inteligentes y carnívoros y atacan a la gente de un pueblo cerca de Gallup, Texas. La zoóloga -especialista en murciélagos- Sheila Casper y su ayudante Jimmy llegan al pueblo para ayudar, pero no pueden evitar que los militares se entrometan",
+  "tmdbGenres": [
+   {
+    "id": 27,
+    "name": "Terror"
+   },
+   {
+    "id": 53,
+    "name": "Suspense"
+   },
+   {
+    "id": 878,
+    "name": "Ciencia ficción"
+   }
+  ],
+  "runtimeMinutes": 91,
+  "posterPath": "/idDunOJs2BKePjFgp8pwJ47Muky.jpg",
+  "backdropPath": "/z7oaOABTOvKK01XqA1BlE9VybYc.jpg",
+  "rating": 4.607,
+  "castSummary": [
+   {
+    "name": "Lou Diamond Phillips",
+    "character": "Sheriff Emmett Kimsey"
+   },
+   {
+    "name": "Dina Meyer",
+    "character": "Dr. Sheila Casper"
+   },
+   {
+    "name": "Bob Gunton",
+    "character": "Dr. Alexander McCabe"
+   },
+   {
+    "name": "Leon",
+    "character": "Jimmy Sands"
+   },
+   {
+    "name": "Carlos Jacott",
+    "character": "Dr. Tobe Hodge"
+   },
+   {
+    "name": "David McConnell",
+    "character": "Deputy Wesley Munn"
+   },
+   {
+    "name": "Marcia Dangerfield",
+    "character": "Mayor Amanda Branson"
+   },
+   {
+    "name": "Oscar Rowland",
+    "character": "Dr. Swanbeck"
+   },
+   {
+    "name": "Juliana Johnson",
+    "character": "Emma"
+   },
+   {
+    "name": "Ned Bellamy",
+    "character": "Major Reid"
+   }
+  ],
+  "directors": [
+   "Louis Morneau"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:58Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:58Z"
+  }
+ },
+ {
+  "tmdbId": 11599,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Suzhou River",
+  "originalTitle": "苏州河",
+  "year": "2000",
+  "synopsis": "Mardar es un joven mensajero que va por la ciudad con su moto repartiendo paquetes. Conoce bien la ciudad y parte de su éxito en el negocio es que nunca hace preguntas. Un día un contrabandista de alcohol le pide que lleve a su hija de 16 años, Moudan, a casa de su tía. En el trayecto, ambos se sienten atraídos...",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 10749,
+    "name": "Romance"
+   }
+  ],
+  "runtimeMinutes": 83,
+  "posterPath": "/pYEgO3iggIT9nGsDmCE4oBICl0W.jpg",
+  "backdropPath": "/vZKQAdBg4AqTxoqRIH4R2AEw59F.jpg",
+  "rating": 7.337,
+  "castSummary": [
+   {
+    "name": "Zhou Xun",
+    "character": "Meimei / Moudan"
+   },
+   {
+    "name": "Jia Hongsheng",
+    "character": "Mardar"
+   },
+   {
+    "name": "Nai An",
+    "character": "Xiao Hong"
+   },
+   {
+    "name": "姚安濂",
+    "character": "Boss"
+   },
+   {
+    "name": "Zhongkai Hua",
+    "character": "Lao B."
+   }
+  ],
+  "directors": [
+   "娄烨"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:59Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:59Z"
+  }
+ },
+ {
+  "tmdbId": 157079,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Pecados del pasado",
+  "originalTitle": "Past Sins",
+  "year": "2006",
+  "synopsis": "Donna Erickson, una prestigiosa abogada adicta al trabajo, debe defender el caso de una mujer cuyo ADN ha sido encontrado en un asesinato cometido hace 20 años. La mujer deberá volver al pasado para descubrir la verdad, y saber si su cliente es una asesina o simplemente la superviviente de una conspiración letal.",
+  "tmdbGenres": [
+   {
+    "id": 18,
+    "name": "Drama"
+   },
+   {
+    "id": 53,
+    "name": "Suspense"
+   },
+   {
+    "id": 9648,
+    "name": "Misterio"
+   },
+   {
+    "id": 10770,
+    "name": "Película de TV"
+   }
+  ],
+  "runtimeMinutes": 120,
+  "posterPath": "/oHZz6PEGTDRH11UykFHs4cmDUTW.jpg",
+  "rating": 5,
+  "castSummary": [
+   {
+    "name": "Lauralee Bell",
+    "character": "Donna Erickson"
+   },
+   {
+    "name": "Rebecca Jenkins",
+    "character": "Janice Bradford"
+   },
+   {
+    "name": "Woody Jeffreys",
+    "character": "Glen Garrison"
+   },
+   {
+    "name": "Peter Hall",
+    "character": "Ted Bradford"
+   },
+   {
+    "name": "Michael Kopsa",
+    "character": "Ray Lee Cobb"
+   },
+   {
+    "name": "Philip Granger",
+    "character": "DA Will Crawford"
+   },
+   {
+    "name": "Timothy Webber",
+    "character": "Leo Rudd"
+   },
+   {
+    "name": "Rachel Cairns",
+    "character": "Gloria Bradford"
+   },
+   {
+    "name": "Kevin McNulty",
+    "character": "Dale Beckman"
+   },
+   {
+    "name": "Kelly-Ruth Mercier",
+    "character": "Zoe Walden"
+   }
+  ],
+  "directors": [
+   "David Winning"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:59Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:59Z"
+  }
+ },
+ {
+  "tmdbId": 154091,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "Tres tejanos",
+  "originalTitle": "Streets of Laredo",
+  "year": "1949",
+  "synopsis": "Texas, año 1878. Jim, Lorn y Wahoo son asaltantes de diligencias. Huyendo de sus perseguidores, se separan durante algún tiempo, pero Jim y Wahoo no consiguen dar con su amigo. En un intento por encontrarle se alistan en los rangers, donde les admiten sin preguntarles por su pasado. Pero ya no son los mismos...",
+  "tmdbGenres": [
+   {
+    "id": 37,
+    "name": "Western"
+   }
+  ],
+  "runtimeMinutes": 120,
+  "posterPath": "/yz97ZUuV3rJWm9JGE6RPBNg5jsI.jpg",
+  "backdropPath": "/wteSagR94wlBEeGsrl87DeLQOwv.jpg",
+  "rating": 6,
+  "castSummary": [
+   {
+    "name": "William Holden",
+    "character": "Jim Dawkins"
+   },
+   {
+    "name": "Macdonald Carey",
+    "character": "Lorn Reming"
+   },
+   {
+    "name": "Mona Freeman",
+    "character": "Rannie Carter"
+   },
+   {
+    "name": "William Bendix",
+    "character": "Wahoo Jones"
+   },
+   {
+    "name": "Stanley Ridges",
+    "character": "Major Bailey"
+   },
+   {
+    "name": "Alfonso Bedoya",
+    "character": "Charley Calico"
+   },
+   {
+    "name": "Ray Teal",
+    "character": "Cantrel"
+   },
+   {
+    "name": "Clem Bevans",
+    "character": "Pop Lint"
+   },
+   {
+    "name": "James Bell",
+    "character": "Ike"
+   },
+   {
+    "name": "Dick Foote",
+    "character": "Pipes"
+   }
+  ],
+  "directors": [
+   "Leslie Fenton"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:15:59Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:15:59Z"
+  }
+ },
+ {
+  "tmdbId": 74064,
+  "tmdbType": "movie",
+  "contentType": "movie",
+  "title": "El desafío de Pancho Villa",
+  "originalTitle": "El desafío de Pancho Villa",
+  "year": "1972",
+  "synopsis": "En 1916, durante la Revolución mexicana, el general Pancho Villa logra escapar de las garras del general Goyo, su mayor enemigo, solo para enfrentarse a un problema aún mayor cuando conoce a McDermott, un misterioso aventurero que promete conseguirle armas y municiones para aprovisionar a sus tropas.",
+  "tmdbGenres": [
+   {
+    "id": 37,
+    "name": "Western"
+   }
+  ],
+  "runtimeMinutes": 92,
+  "posterPath": "/c0ldcLdkQ0xZ2uc5V2Dq0j7cfNb.jpg",
+  "backdropPath": "/ltkrU89OY9aslJqyy2Uy7fhtMPu.jpg",
+  "rating": 4.9,
+  "castSummary": [
+   {
+    "name": "Telly Savalas",
+    "character": "Pancho Villa"
+   },
+   {
+    "name": "Clint Walker",
+    "character": "Scotty"
+   },
+   {
+    "name": "José María Prada",
+    "character": "Luis"
+   },
+   {
+    "name": "Ángel del Pozo",
+    "character": "Lieutenant Eager"
+   },
+   {
+    "name": "Anne Francis",
+    "character": "Flo"
+   },
+   {
+    "name": "Luis Dávila",
+    "character": "McDermott"
+   },
+   {
+    "name": "Alberto Dalbés",
+    "character": "Captain Mendoza"
+   },
+   {
+    "name": "Antonio Casas",
+    "character": "General Goyo"
+   },
+   {
+    "name": "Mónica Randall",
+    "character": "Lupe"
+   },
+   {
+    "name": "Barta Barri",
+    "character": "Alfonso"
+   }
+  ],
+  "directors": [
+   "Eugenio Martín"
+  ],
+  "metadataSource": "tmdb",
+  "lastEnrichedAt": "2026-10-21T23:16:04Z",
+  "sources": {
+   "tmdbCheckDay": "20261020",
+   "payloadFetchedAt": "2026-10-21T23:16:04Z"
+  }
+ }
+]

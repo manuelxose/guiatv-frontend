@@ -23,6 +23,13 @@ export async function verifyCanary({ fetch: get = fetch, origin, entries, expect
       add('not_served_as_entity', !isEntity, isEntity ? 'still an entity page' : `status ${response.status}`, path);
       continue;
     }
+    // Phase 3D legacy guard: while the legacy page is indexable (its film airs today or tomorrow) the API deliberately answers
+    // "disabled" and the legacy page renders. That is the canary working, not failing; anything else without the marker still fails.
+    const robots = response.headers.get('x-robots-tag') ?? '';
+    if (!isEntity && response.status === 200 && /^index\b/.test(robots) && !/noindex/.test(robots)) {
+      add('legacy_guard_fallback', true, 'indexable legacy page served (guard)', path);
+      continue;
+    }
     add('status_200', response.status === 200, String(response.status), path);
     add('entity_marker', isEntity, String(response.headers.get(ENTITY_HEADER)), path);
     add('noindex_header', /noindex/.test(response.headers.get('x-robots-tag') ?? '') && /follow/.test(response.headers.get('x-robots-tag') ?? ''), String(response.headers.get('x-robots-tag')), path);

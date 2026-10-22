@@ -12,7 +12,7 @@ import { EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
 import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
-import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
+import { generateCollectionPageSchema, generateItemListSchema, serializeJsonLd } from '../../../utils/utils';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
 import { UnifiedAsyncStateComponent } from '../../../components/unified-async-state/unified-async-state.component';
 import { UnifiedSkeletonBlockComponent } from '../../../components/unified-skeleton-block/unified-skeleton-block.component';
@@ -158,7 +158,7 @@ export class CategoryComponent implements OnInit, OnDestroy {
     ];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

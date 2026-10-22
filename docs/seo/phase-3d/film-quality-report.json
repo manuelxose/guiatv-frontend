@@ -1,0 +1,1987 @@
+{
+  "basis": "scratch rehearsal on fixtures (committed TMDB checks + public API snapshot); no production database read",
+  "digest": "03fa15694ddbca41f52962ea50352acedfade5e62100a6ad024e0f84dca4f5e2",
+  "films": [
+    {
+      "candidateId": "la_cura_del_bienestar|movie|movie:340837|2017",
+      "title": "La cura del bienestar",
+      "canonicalPath": "/peliculas/la-cura-del-bienestar",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 491,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 2,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 2,
+        "channels": [
+          "AMC"
+        ],
+        "next": "2026-10-23T17:29:00+02:00",
+        "evidence": {
+          "20261023_amc_20261023172900": "catalogue_media",
+          "20261023_amc_20261023215000": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "measured",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:54Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "venganza_en_las_vegas|movie|movie:1081620|2023",
+      "title": "Venganza en Las Vegas",
+      "canonicalPath": "/peliculas/venganza-en-las-vegas",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 350,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 2,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 2,
+        "channels": [
+          "XTRM"
+        ],
+        "next": "2026-10-23T07:23:00+02:00",
+        "evidence": {
+          "20261023_xtrm_20261023072300": "catalogue_media",
+          "20261023_xtrm_20261023104500": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "measured",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:54Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "dobles_vidas|movie|movie:471856|2018",
+      "title": "Dobles vidas",
+      "canonicalPath": "/peliculas/dobles-vidas",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 474,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "Sundance TV"
+        ],
+        "next": "2026-10-23T15:27:00+02:00",
+        "evidence": {
+          "20261023_sundance_tv_20261023152700": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "measured",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:55Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "los_subdesarrollados|movie|movie:221650|1968",
+      "title": "Los subdesarrollados",
+      "canonicalPath": "/peliculas/los-subdesarrollados",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 431,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "Somos"
+        ],
+        "next": "2026-10-23T23:06:00+02:00",
+        "evidence": {
+          "20261023_somos_20261023230600": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "measured",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:55Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "la_galaxia_del_terror|movie|movie:28893|1981",
+      "title": "La galaxia del terror",
+      "canonicalPath": "/peliculas/la-galaxia-del-terror",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 420,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 4,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "DARK"
+        ],
+        "next": "2026-10-23T12:19:00+02:00",
+        "evidence": {
+          "20261023_dark_20261023121900": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:55Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "jinetes_de_la_justicia|movie|movie:663870|2020",
+      "title": "Jinetes de la justicia",
+      "canonicalPath": "/peliculas/jinetes-de-la-justicia",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 377,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 4,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "M+ Indie"
+        ],
+        "next": "2026-10-23T22:00:00+02:00",
+        "evidence": {
+          "20261023_movistar_indie_20261023220000": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:56Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "el_exorcista_iii|movie|movie:11587|1990",
+      "title": "El exorcista III",
+      "canonicalPath": "/peliculas/el-exorcista-iii",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 371,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "DARK"
+        ],
+        "next": "2026-10-23T13:37:00+02:00",
+        "evidence": {
+          "20261023_dark_20261023133700": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:56Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "22_balas|movie|movie:37645|2010",
+      "title": "22 balas",
+      "canonicalPath": "/peliculas/22-balas",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 362,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "AXN Movies"
+        ],
+        "next": "2026-10-23T09:26:00+02:00",
+        "evidence": {
+          "20261023_axn_movies_20261023092600": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "measured",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:56Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "jurassic_world_dominion|movie|movie:507086|2022",
+      "title": "Jurassic World: Dominion",
+      "canonicalPath": "/peliculas/jurassic-world-dominion",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 344,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 1,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 1,
+        "channels": [
+          "M+ Acción"
+        ],
+        "next": "2026-10-23T16:00:00+02:00",
+        "evidence": {
+          "20261023_movistar_accion_20261023160000": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:57Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "como_se_escribe_amor|movie|movie:289727|2014",
+      "title": "¿Cómo se escribe amor?",
+      "canonicalPath": "/peliculas/como-se-escribe-amor",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 324,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 2,
+        "genres": 2,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 2,
+        "channels": [
+          "M+ Comedia"
+        ],
+        "next": "2026-10-23T04:31:00+02:00",
+        "evidence": {
+          "20261023_movistar_comedia_20261023043100": "catalogue_media",
+          "20261023_movistar_comedia_20261023043200": "catalogue_media"
+        },
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": true,
+        "measuredAt": "2026-10-21T23:15:57Z"
+      },
+      "consolidation": {
+        "decision": "keep_legacy",
+        "reasons": [
+          "legacy_indexable_now"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "evidence_joined_broadcasts",
+          "channel_links",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "low",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "pass",
+          "source_attributed": "pass",
+          "original_value": "pass",
+          "adsense_risk": "pass"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks"
+        ]
+      },
+      "verdict": "hold_legacy",
+      "verdictBlockers": [
+        "consolidation:legacy_indexable_now"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable"
+      ]
+    },
+    {
+      "candidateId": "bano_de_sangre_al_salir_el_sol|movie|movie:143747|1966",
+      "title": "Baño de sangre al salir el sol",
+      "canonicalPath": "/peliculas/bano-de-sangre-al-salir-el-sol",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 449,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:57Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "amerigeddon|movie|movie:395938|2016",
+      "title": "AmeriGeddon",
+      "canonicalPath": "/peliculas/amerigeddon",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 418,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 2,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "measured",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:57Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "las_catadoras_de_hitler|movie|movie:1291712|2025",
+      "title": "Las catadoras de Hitler",
+      "canonicalPath": "/peliculas/las-catadoras-de-hitler",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 418,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 2,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:58Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "morir_no_siempre_sale_bien|movie|movie:1447881|2026",
+      "title": "Morir no siempre sale bien",
+      "canonicalPath": "/peliculas/morir-no-siempre-sale-bien",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 376,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:58Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "el_valle_de_la_furia|movie|movie:75552|1980",
+      "title": "El valle de la furia",
+      "canonicalPath": "/peliculas/el-valle-de-la-furia",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 353,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:58Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "bats_murcielagos|movie|movie:10496|1999",
+      "title": "Bats (Murciélagos)",
+      "canonicalPath": "/peliculas/bats-murcielagos",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 337,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 3,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:58Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "suzhou_river|movie|movie:11599|2000",
+      "title": "Suzhou River",
+      "canonicalPath": "/peliculas/suzhou-river",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 315,
+        "castCount": 5,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 2,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:59Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "pecados_del_pasado|movie|movie:157079|2006",
+      "title": "Pecados del pasado",
+      "canonicalPath": "/peliculas/pecados-del-pasado",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 314,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": false,
+        "broadcasts": 0,
+        "genres": 4,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:59Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "tres_tejanos|movie|movie:154091|1949",
+      "title": "Tres tejanos",
+      "canonicalPath": "/peliculas/tres-tejanos",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 312,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:15:59Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    },
+    {
+      "candidateId": "el_desafio_de_pancho_villa|movie|movie:74064|1972",
+      "title": "El desafío de Pancho Villa",
+      "canonicalPath": "/peliculas/el-desafio-de-pancho-villa",
+      "entityId": null,
+      "enrichment": {
+        "outcome": "written",
+        "warnings": []
+      },
+      "facts": {
+        "synopsisChars": 301,
+        "castCount": 10,
+        "hasDirector": true,
+        "hasPoster": true,
+        "hasBackdrop": true,
+        "broadcasts": 0,
+        "genres": 1,
+        "hasRuntime": true,
+        "hasOriginalTitle": true
+      },
+      "broadcasts": {
+        "count": 0,
+        "channels": [],
+        "next": null,
+        "evidence": {},
+        "rejected": {}
+      },
+      "legacy": {
+        "status": 200,
+        "robots": "noindex, follow",
+        "robotsBasis": "predicted_from_airings",
+        "indexable": false,
+        "measuredAt": "2026-10-21T23:16:04Z"
+      },
+      "consolidation": {
+        "decision": "serve_entity",
+        "reasons": [
+          "legacy_noindex",
+          "no_content_regression",
+          "same_canonical_path"
+        ],
+        "regressions": [],
+        "gains": [
+          "runtime",
+          "genres",
+          "original_title",
+          "source_attribution"
+        ]
+      },
+      "quality": {
+        "tier": "blocked",
+        "adsenseRisk": "medium",
+        "indexable": false,
+        "criteria": {
+          "identity_verified": "unknown",
+          "title_accurate": "pass",
+          "year_reliable": "unknown",
+          "description_reliable": "pass",
+          "no_duplicate_of_epg": "unknown",
+          "no_duplicate_entity": "pass",
+          "legacy_consolidated": "fail",
+          "metadata_complete": "pass",
+          "internal_links_ready": "unknown",
+          "canonical_consistent": "pass",
+          "ssr_reliable": "unknown",
+          "user_useful": "fail",
+          "source_attributed": "pass",
+          "original_value": "fail",
+          "adsense_risk": "unknown"
+        },
+        "blockers": [
+          "identity_verified: AI-attested under the owner's authorisation (basis ai): not verified by a named person",
+          "year_reliable: year comes from tmdb_overwrite provenance: the same source as the match, not independent evidence",
+          "no_duplicate_of_epg: no EPG description to compare with",
+          "legacy_consolidated: a live legacy page serves the same work: two indexable pages for one work",
+          "internal_links_ready: inbound links not measured",
+          "ssr_reliable: fewer than 20 SSR checks",
+          "user_useful: no upcoming broadcast to point to",
+          "original_value: TMDB text only: no scheduled broadcast and no editorial text",
+          "adsense_risk: short text, or third-party text with no schedule or editorial content beside it"
+        ]
+      },
+      "verdict": "hold_quality",
+      "verdictBlockers": [
+        "original_value",
+        "user_useful"
+      ],
+      "indexingBlockers": [
+        "identity_verified",
+        "year_reliable",
+        "no_duplicate_of_epg",
+        "legacy_consolidated",
+        "internal_links_ready",
+        "ssr_reliable",
+        "user_useful",
+        "original_value",
+        "adsense_risk"
+      ]
+    }
+  ],
+  "summary": {
+    "films": 20,
+    "verdict": {
+      "hold_legacy": 10,
+      "hold_quality": 10
+    },
+    "consolidation": {
+      "keep_legacy": 10,
+      "serve_entity": 10
+    },
+    "adsenseRisk": {
+      "low": 10,
+      "medium": 10
+    },
+    "tier": {
+      "blocked": 20
+    },
+    "indexable": 0,
+    "enrichment": {
+      "written": 20
+    }
+  },
+  "evaluatedAt": "2026-10-21T23:31:04.000Z",
+  "fixtures": {
+    "catalogRows": 20,
+    "airings": 13,
+    "legacyPages": 20
+  }
+}

@@ -33,3 +33,29 @@ jobs:
           ENTITY_EXPECTATION: ${{ vars.ENTITY_EXPECTATION || 'off' }}
           UPTIME_WEBHOOK_URL: ${{ secrets.UPTIME_WEBHOOK_URL }}
         run: node scripts/uptime-probe.mjs --origin https://guiaprogramaciontv.com
+
+  # Visibility that needs no webhook and no e-mail: one open issue while the site is failing, closed when it recovers.
+  # The step summary of each run (above) carries the per-check table. This job only touches issues of this repository.
+  report:
+    needs: probe
+    if: always() && needs.probe.result != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      TITLE: 'Production uptime alert'
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Open, update or close the alert issue
+        run: |
+          open=$(gh issue list --state open --search "$TITLE in:title" --json number,title --jq "[.[] | select(.title == \"$TITLE\")][0].number // empty")
+          if [ "${{ needs.probe.result }}" = "failure" ]; then
+            if [ -n "$open" ]; then gh issue comment "$open" --body "Still failing: $RUN_URL"
+            else gh issue create --title "$TITLE" --body "The external probe of https://guiaprogramaciontv.com failed: $RUN_URL. Runbook: docs/ops/VPS-RELIABILITY-RUNBOOK.md. This issue closes itself when the probe passes again."; fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Recovered: $RUN_URL"
+          fi

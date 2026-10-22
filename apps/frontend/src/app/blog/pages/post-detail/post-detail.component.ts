@@ -12,9 +12,7 @@ import { UnifiedPortalShellComponent } from '../../../components/unified-portal-
 import { getCatalogPlatformByKey } from '../../../data/catalog-platforms.data';
 import { CatalogItem, CatalogService } from '../../../services/catalog.service';
 import { MetaService } from '../../../services/meta.service';
-import {
-  generateEditorialArticleSchema,
-} from '../../../utils/utils';
+import { generateEditorialArticleSchema, serializeJsonLd } from '../../../utils/utils';
 import { EditorialPostPageState } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
 import { EditorialPostCardComponent } from '../../components/editorial-post-card/editorial-post-card.component';
@@ -308,7 +306,7 @@ export class PostDetailComponent implements OnInit, OnDestroy {
     ];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

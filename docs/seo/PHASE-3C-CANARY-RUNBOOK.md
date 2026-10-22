@@ -50,7 +50,23 @@ CONTENT_ENTITIES_ENABLED=true CONTENT_IDENTITY_WRITES=guiatv A certify … --app
 
 Expect `refused: 0`, then `A status` shows `certified` for all; baseline +N documents in `content_attestations` only. Public effect: none (no flag serves anything yet).
 
+## 4b. Metadata enrichment (Phase 3D; new write step, needs its own written approval)
+
+Certified entities hold identity only. Before any public canary, copy the catalogue's TMDB facts onto them (title, original title, year, runtime, genres, synopsis, artwork paths, credits, with provenance and freshness):
+
+```bash
+A enrich --manifest manifest.json                       # dry run: a plan or refusal reason per film, nothing written
+A enrich --manifest manifest.json --apply               # needs CONTENT_ENTITIES_ENABLED + CONTENT_IDENTITY_WRITES=<db>
+A enrich --manifest manifest.json --apply --refresh-catalogue   # only for rows never fully fetched from TMDB (calls TMDB through MediaCatalogService; writes media_catalog like a legacy page view; needs TMDB_API_KEY)
+A quality-report --manifest manifest.json --legacy legacy-snapshot.json --out report/   # read-only: broadcasts, consolidation and quality per film
+A enrich --manifest manifest.json --apply --invalidate  # withdraws the copy (identity and attestations untouched)
+```
+
+It changes only `metadata.*`, `originalTitle` (when empty) and bumps `version`; certification stays valid (tested). A film refused (`source_not_enriched`, `title_mismatch`, `year_mismatch`, `tmdb_type_mismatch` …) is left bare and listed; nothing is guessed. Re-running is idempotent; a changed catalogue row or a 30-day-old copy is a deterministic refresh.
+
 ## 5. Public canary (later, separate approval 6)
+
+Phase 3D adds a **read-time legacy guard**: an allowlisted entity is served only while its legacy page would not be indexable (the film has no airing today or tomorrow in the read model); otherwise the request falls back to the legacy page exactly as if the canary were off (`legacy_indexable` in the admin stats). A read-model failure also falls back. So the canary can never replace an indexable page, and an entity page appears and disappears with the schedule; this is expected. SSR caches the legacy answer for up to 10 minutes fresh / 30 stale, so a page may return to the entity view a little after the guard allows it. Check `/v2/admin/entities/canary` `totals.legacy_indexable`.
 
 ```bash
 A allowlist --manifest manifest.json --approved-by "<person>" --out /etc/guiatv/entity-canary.json     # all or nothing

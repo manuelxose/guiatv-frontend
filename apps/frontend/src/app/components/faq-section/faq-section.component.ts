@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { generateFAQSchema } from '../../utils/utils';
+import { generateFAQSchema, serializeJsonLd } from '../../utils/utils';
 
 export interface FaqItem {
   question: string;
@@ -58,7 +58,7 @@ export class FaqSectionComponent implements OnChanges {
     }
     const schema = generateFAQSchema(this.items);
     this.safeLdJson = this.sanitizer.bypassSecurityTrustHtml(
-      `<script type="application/ld+json">${JSON.stringify(schema)}</script>`
+      `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`
     );
   }
 }

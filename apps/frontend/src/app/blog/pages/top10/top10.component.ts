@@ -7,7 +7,7 @@ import { APP_PATHS } from '../../../config/route-map';
 import { MetaService } from '../../../services/meta.service';
 import { EditorialCategory, EditorialPost } from '../../models/editorial.models';
 import { EditorialService } from '../../services/editorial.service';
-import { generateCollectionPageSchema, generateItemListSchema } from '../../../utils/utils';
+import { generateCollectionPageSchema, generateItemListSchema, serializeJsonLd } from '../../../utils/utils';
 import { UnifiedPortalShellComponent } from '../../../components/unified-portal-shell/unified-portal-shell.component';
 import { EditorialMastheadComponent } from '../../components/editorial-masthead/editorial-masthead.component';
 import { PortalContextNavComponent } from '../../../components/portal-context-nav/portal-context-nav.component';
@@ -164,7 +164,7 @@ export class Top10Component implements OnInit, OnDestroy {
     ];
     this.safeLdHtml = this.sanitizer.bypassSecurityTrustHtml(
       schemas
-        .map((schema) => `<script type="application/ld+json">${JSON.stringify(schema)}</script>`)
+        .map((schema) => `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`)
         .join('')
     );
   }

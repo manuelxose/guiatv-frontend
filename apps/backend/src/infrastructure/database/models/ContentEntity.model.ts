@@ -70,7 +70,25 @@ const ContentEntitySchema = new Schema<ContentEntityRecord>(
     },
     metadata: {
       type: new Schema(
-        { synopsis: ProvenancedValueSchema, genres: ProvenancedValueSchema, images: ProvenancedValueSchema },
+        {
+          synopsis: ProvenancedValueSchema,
+          genres: ProvenancedValueSchema,
+          images: ProvenancedValueSchema,
+          runtimeMinutes: ProvenancedValueSchema,
+          credits: ProvenancedValueSchema,
+          // Phase 3D: what the copy was validated against, so a refresh is deterministic.
+          enrichment: new Schema(
+            {
+              version: { type: Number, required: true, min: 1, validate: Number.isInteger },
+              mediaId: { type: String, required: true, maxlength: 128 },
+              tmdb: { type: TmdbRefSchema, required: true },
+              hash: { type: String, required: true, match: /^[0-9a-f]{64}$/ },
+              checkedAt: { type: Date, required: true },
+              sourceUpdatedAt: { type: Date },
+            },
+            strictSub
+          ),
+        },
         strictSub
       ),
       default: () => ({}),
