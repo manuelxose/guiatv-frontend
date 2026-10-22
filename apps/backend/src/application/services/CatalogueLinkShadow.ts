@@ -63,6 +63,7 @@ export function catalogueLinkSnapshot() {
     totals,
     lastRun,
     latencyMs: { samples: sorted.length, p50: percentile(sorted, 0.5), p95: percentile(sorted, 0.95) },
+    mediaIdGuard: guard,
   };
 }
 
@@ -72,11 +73,12 @@ export function resetCatalogueLinkStats(): void {
   runs = 0;
   errors = 0;
   durations.length = 0;
+  guard = { runs: 0, errors: 0, checked: 0, kept: 0, dropped: {} };
 }
 
 export type CatalogueRowReader = (tmdbIds: number[]) => Promise<LinkRow[]>;
 
-const readRows: CatalogueRowReader = async (tmdbIds) => {
+export const readCatalogueRows: CatalogueRowReader = async (tmdbIds) => {
   const docs = await MediaCatalogModel.find(
     { tmdbType: { $in: ['movie', 'tv'] }, tmdbId: { $in: tmdbIds } },
     { tmdbId: 1, tmdbType: 1, title: 1, originalTitle: 1, normalizedTitle: 1 }
@@ -86,6 +88,55 @@ const readRows: CatalogueRowReader = async (tmdbIds) => {
     .exec();
   return (docs as any[]).map((d) => ({ id: String(d._id), tmdbId: d.tmdbId, tmdbType: d.tmdbType, title: d.title, originalTitle: d.originalTitle, normalizedTitle: d.normalizedTitle }));
 };
+
+async function readInBatches(ids: number[], reader: CatalogueRowReader, started: number): Promise<{ rows: LinkRow[]; queries: number }> {
+  const rows: LinkRow[] = [];
+  let queries = 0;
+  for (let i = 0; i < ids.length; i += BATCH) {
+    if (performance.now() - started > RUN_MAX_MS) throw new Error('catalogue read deadline exceeded');
+    rows.push(...(await reader(ids.slice(i, i + BATCH))));
+    queries += 1;
+  }
+  return { rows, queries };
+}
+
+/** Catalogue rows for these TMDB ids, batched and deadline-bounded like the shadow read. Throws on read failure. */
+export async function readCatalogueRowsFor(tmdbIds: number[], reader: CatalogueRowReader = readCatalogueRows): Promise<LinkRow[]> {
+  return (await readInBatches([...new Set(tmdbIds)], reader, performance.now())).rows;
+}
+
+let guard = { runs: 0, errors: 0, checked: 0, kept: 0, dropped: {} as Record<string, number> };
+
+/**
+ * M03-L2: always on. Before a read model is stored, every built programme that carries a `mediaId` keeps it only when the
+ * linker accepts it as already linked: the row exists, is valid, carries the programme's TMDB id and, for Cine/Series, the
+ * matching kind. Anything else (a Series airing on a movie row, a dangling or foreign row, no TMDB id) loses the `mediaId`
+ * in the built airing only — the stored programme is never written. A read failure keeps the airings as they are (no worse
+ * than before) and is counted; the read-time joiner still refuses type mismatches.
+ */
+export async function guardExistingMediaIds(programs: LinkProgram[], options: { reader?: CatalogueRowReader } = {}): Promise<void> {
+  const linked = programs.filter((p) => p.mediaId);
+  guard.runs += 1;
+  if (!linked.length) return;
+  let rows: LinkRow[];
+  try {
+    rows = await readCatalogueRowsFor(linked.map((p) => p.tmdbId).filter((v): v is number => Number.isInteger(v) && (v as number) > 0), options.reader);
+  } catch (error) {
+    guard.errors += 1;
+    log.warn('Existing mediaId guard could not read the catalogue; airings left unchanged', { error: (error as Error).message });
+    return;
+  }
+  const ctx = buildLinkContext(linked, rows);
+  for (const program of linked) {
+    guard.checked += 1;
+    const d = linkCatalogueRow(program, ctx);
+    if (d.decision === 'ALREADY_LINKED') guard.kept += 1;
+    else {
+      guard.dropped[d.reason] = (guard.dropped[d.reason] ?? 0) + 1;
+      delete program.mediaId;
+    }
+  }
+}
 
 /** No-op in `off` mode. In `shadow`, evaluates `programs` and records aggregate counters; never throws and never mutates. */
 export async function runCatalogueLinkShadow(
@@ -98,14 +149,8 @@ export async function runCatalogueLinkShadow(
     const ids = [...new Set(programs.map((p) => p.tmdbId).filter((v): v is number => Number.isInteger(v) && (v as number) > 0))];
     const truncated = ids.length > MAX_TMDB_IDS;
     const wanted = truncated ? ids.slice(0, MAX_TMDB_IDS) : ids;
-    const reader = options.reader ?? readRows;
-    const rows: LinkRow[] = [];
-    let queries = 0;
-    for (let i = 0; i < wanted.length; i += BATCH) {
-      if (performance.now() - started > RUN_MAX_MS) throw new Error('catalogue read deadline exceeded');
-      rows.push(...(await reader(wanted.slice(i, i + BATCH))));
-      queries += 1;
-    }
+    const reader = options.reader ?? readCatalogueRows;
+    const { rows, queries } = await readInBatches(wanted, reader, started);
     // ponytail: programmes whose TMDB id was cut by MAX_TMDB_IDS are skipped, not rejected; raise the cap or chunk builds if `truncated` is ever true.
     const covered = truncated ? new Set(wanted) : null;
     const scope = covered ? programs.filter((p) => !p.tmdbId || covered.has(p.tmdbId)) : programs;

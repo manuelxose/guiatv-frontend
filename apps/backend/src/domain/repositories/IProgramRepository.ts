@@ -100,6 +100,8 @@ export interface IProgramRepository {
     tmdbId: number;
     /** The media-catalogue row the same stored programme recorded with that `tmdbId`; absent for rows enriched before it was kept. */
     mediaId?: string;
+    /** `trustFlags.tmdbKind` the stored programme was enriched as, when recorded. */
+    tmdbKind?: 'movie' | 'series';
     image: string;
     description?: string;
     year?: string;

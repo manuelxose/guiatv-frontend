@@ -180,7 +180,8 @@ export async function backfillMediaCatalog(options: BackfillOptions): Promise<vo
         }
 
         const result = await ProgramModel.updateMany(
-          { tmdbId: candidate.tmdbId, $or: [{ mediaId: { $exists: false } }, { mediaId: null }] },
+          // M03-L2: a TMDB id alone names a movie or a show; only link programmes enriched as the row's kind.
+          { tmdbId: candidate.tmdbId, 'trustFlags.tmdbKind': candidate.tmdbType === 'tv' ? 'series' : 'movie', $or: [{ mediaId: { $exists: false } }, { mediaId: null }] },
           { $set: { mediaId: entry.id } }
         ).exec();
         programsLinked += result.modifiedCount || 0;

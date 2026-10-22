@@ -20,6 +20,7 @@ export const LINK_REASONS = [
   'wrong_content_type',
   'title_key_mismatch',
   'conflicting_media_id',
+  'cross_type_media_id',
   'tmdb_id_shared_by_other_titles',
   'duplicate_candidates',
   'ambiguous_content_type',
@@ -98,11 +99,13 @@ export function linkCatalogueRow(program: LinkProgram, ctx: LinkContext): LinkDe
 
   const candidates = ctx.rowsByTmdbId.get(tmdbId) ?? [];
   const mediaId = program.mediaId ? String(program.mediaId) : undefined;
+  const want = expectedType(program.editorialCategory);
   if (mediaId) {
+    // M03-L2: a present id is not proof; its row must carry this TMDB id and, when the category names one, the same kind.
     const row = candidates.find((c) => c.id === mediaId);
-    return row && isValidRow(row)
-      ? make('ALREADY_LINKED', 'existing_media_id_valid', { tmdbId, mediaId, ...(row.tmdbType ? { tmdbType: row.tmdbType } : {}) })
-      : make('REJECTED', 'conflicting_media_id', { tmdbId, mediaId });
+    if (!row || !isValidRow(row)) return make('REJECTED', 'conflicting_media_id', { tmdbId, mediaId });
+    if (want && row.tmdbType !== want) return make('REJECTED', 'cross_type_media_id', { tmdbId, mediaId, tmdbType: row.tmdbType! });
+    return make('ALREADY_LINKED', 'existing_media_id_valid', { tmdbId, mediaId, tmdbType: row.tmdbType! });
   }
 
   const titleKey = titleIdentityKey(program.title);
@@ -110,7 +113,6 @@ export function linkCatalogueRow(program: LinkProgram, ctx: LinkContext): LinkDe
   const base = { tmdbId, titleKey, candidateCount: candidates.length };
   if (!candidates.length) return make('REJECTED', 'missing_catalogue_row', base);
 
-  const want = expectedType(program.editorialCategory);
   const valid = candidates.filter(isValidRow);
   const pool = want ? valid.filter((c) => c.tmdbType === want) : valid;
   if (!pool.length) {
