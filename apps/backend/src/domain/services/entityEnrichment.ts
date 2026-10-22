@@ -105,6 +105,7 @@ export function enrichmentRefusals(entity: ContentEntityRecord, source: Enrichme
 
 const uniq = (values: string[]) => [...new Set(values.map(clean).filter(Boolean))];
 
+/** ponytail: caps of 5 directors and 10 cast members keep the stored copy and the public DTO small; the legacy page shows the same 10. Raise both together with `castOf` in ContentEntityReport. */
 /** The copyable fields of a source that passed `enrichmentRefusals`. Absent stays absent. */
 export function fieldsFromSource(source: EnrichmentSource): EnrichedFields {
   const fields: EnrichedFields = {};

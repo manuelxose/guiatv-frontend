@@ -15,11 +15,15 @@
  */
 import { titleIdentityKey } from '@/domain/services/contentIdentity';
 import type { ContentEntityRecord } from '@/domain/repositories/IContentIdentityRepository';
+import { Logger } from '@/shared/utils/logger';
 import { TVReadAiringModel } from '@/infrastructure/database/models/TVReadAiring.model';
 
+const logger = new Logger('EntityBroadcast');
 export const GUIDE_TIME_ZONE = 'Europe/Madrid';
 export const BROADCAST_WINDOW_DAYS = 7;
 export const BROADCAST_MAX_ITEMS = 8;
+// ponytail: one bounded read of at most 40 airings (9 days of one film: a handful in practice). If a work ever has more, the
+// legacy-window count could miss today/tomorrow rows; the upgrade is a second query restricted to those two dates.
 const QUERY_LIMIT = 40;
 
 export type BroadcastEvidence = 'entity_ref' | 'catalogue_media' | 'tmdb_title';
@@ -182,7 +186,8 @@ export class EntityBroadcastService {
         legacyIndexableNow: selection.legacyWindowRows > 0,
         selection,
       };
-    } catch {
+    } catch (error) {
+      logger.warn('Broadcast read failed; answering unavailable', { message: String((error as Error)?.message || error).slice(0, 200) });
       return { broadcasts: { status: 'unavailable', items: [], ...base }, legacyIndexableNow: 'unknown' };
     }
   }

@@ -9,8 +9,9 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const out = path.resolve(root, process.argv.includes('--out') ? process.argv[process.argv.indexOf('--out') + 1] : 'docs/seo/phase-3d/fixtures');
 const payloads = JSON.parse(fs.readFileSync(path.join(root, 'docs/seo/phase-3d/legacy-payloads-20261022.json'), 'utf8'));
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'docs/seo/phase-3c/canary-manifest.json'), 'utf8'));

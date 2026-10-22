@@ -186,6 +186,8 @@ export interface BuildOptions {
   maxEvidenceAgeDays?: number;
   /** `YYYYMMDD` the evidence replay actually ran; anchors `freshUntil` (default: the latest replay day, capped at today). */
   evidenceProducedDay?: string;
+  /** Extra warnings the builder cannot know (what a partial refresh did not cover); they are part of the document, not of the digest. */
+  extraWarnings?: string[];
 }
 
 /** The admit file: the exact verdict lines of the approved batch, in manifest order. A write run is given this file and nothing else. */
@@ -248,7 +250,7 @@ export function buildCanaryManifest(o: BuildOptions): { manifest: CanaryManifest
       candidateId: s.item.verdict.candidateId, title: s.item.verdict.title,
       reasons: s.content !== 'ready' ? s.needs : eligible(s) ? ['beyond_ceiling'] : ['replaces_indexed_legacy_page'],
     })),
-    warnings: WARNINGS, digest: '', admitSha256: '',
+    warnings: [...WARNINGS, ...(o.extraWarnings ?? [])], digest: '', admitSha256: '',
   };
   manifest.digest = manifestDigest(manifest);
   manifest.admitSha256 = sha256(admitLines(entities, verdicts));

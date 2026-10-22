@@ -5,7 +5,7 @@
  * Offline (no database):
  *   node dist/scripts/content-certify.js owner-keygen <dir>                  the OWNER runs this on their own machine; the private key never leaves it
  *   node dist/scripts/content-certify.js manifest --day <traces>:<verdicts> [--day …] --ledger <ledger.jsonl> --sheet <sheet.csv>
- *       [--probe <probes.json>] [--tmdb <tmdb-checks.json> …] [--size N] [--allow-indexed-legacy] [--evidence-produced YYYYMMDD] [--out manifest.json] [--admit-out admit.jsonl] [--pool-out pool.json] [--now ISO]
+ *       [--probe <probes.json>] [--tmdb <tmdb-checks.json> …] [--size N] [--allow-indexed-legacy] [--evidence-produced YYYYMMDD] [--warning <text> …] [--out manifest.json] [--admit-out admit.jsonl] [--pool-out pool.json] [--now ISO]
  *                                                                           builds the bounded canary manifest (≤ 25) and the admit file
  *   node dist/scripts/content-certify.js authorize --manifest <m.json> --private-key <owner-private.pem> --owner <name> --statement <text>
  *       [--id oa_…] [--execute-days 7] [--valid-days 30] --out <authorization.json>        OWNER ONLY: signs exactly this manifest
@@ -27,7 +27,7 @@
  *       [--phase3d <fixtures dir> [--phase3d-out <dir>]]                    also enriches the batch from fixtures, joins broadcasts and writes the per-film quality report
  *
  * Phase 3D (metadata enrichment and the per-film report; the copy is validated against the media catalogue, never invented):
- *   node dist/scripts/content-certify.js enrich --manifest <m.json> [--apply] [--refresh-catalogue] [--force] [--invalidate]
+ *   node dist/scripts/content-certify.js enrich --manifest <m.json> [--apply] [--refresh-catalogue] [--force] [--invalidate]   (--invalidate is also a dry run until --apply)
  *                                                                           dry run by default: the plan or refusal reason per film, nothing written. --apply copies the catalogue's TMDB facts
  *                                                                           onto the stored entities (needs the write flags; identity and attestations are untouched). --refresh-catalogue first
  *                                                                           calls TMDB through MediaCatalogService for rows never fully fetched (needs --apply and TMDB_API_KEY). --invalidate withdraws the copy
@@ -115,7 +115,7 @@ function offline(command: string, args: string[]): boolean {
     const now = option(args, '--now') ? new Date(option(args, '--now') as string) : new Date();
     const days = loadDays(args);
     if (!days.length) throw new Error('usage: manifest --day <traces.jsonl>:<verdicts-YYYYMMDD.jsonl> [--day …] --ledger … --sheet …');
-    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || CERTIFICATION_HARD_CAP, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy'), evidenceProducedDay: option(args, '--evidence-produced') });
+    const built = buildCanaryManifest({ days, review: loadReview(args), probes: probeFile ? readJson<LegacyProbe[]>(probeFile) : undefined, tmdbChecks: options(args, '--tmdb').flatMap((f) => readJson<TmdbSearchCheck[]>(f)), size: Number(option(args, '--size')) || CERTIFICATION_HARD_CAP, now, allowIndexedLegacy: args.includes('--allow-indexed-legacy'), evidenceProducedDay: option(args, '--evidence-produced'), extraWarnings: options(args, '--warning') });
     const out = option(args, '--out');
     if (out) fs.writeFileSync(out, JSON.stringify(built.manifest, null, 2) + '\n');
     const admit = option(args, '--admit-out');
@@ -157,7 +157,7 @@ function offline(command: string, args: string[]): boolean {
 }
 
 async function database(command: string, args: string[]) {
-  const writes = command === 'revoke' || command === 'revoke-batch' || ((command === 'certify' || command === 'rollback-batch' || command === 'enrich') && args.includes('--apply')) || (command === 'enrich' && args.includes('--invalidate'));
+  const writes = command === 'revoke' || command === 'revoke-batch' || ((command === 'certify' || command === 'rollback-batch' || command === 'enrich') && args.includes('--apply'));
   if (command === 'enrich' && args.includes('--refresh-catalogue') && !args.includes('--apply')) throw new Error('--refresh-catalogue calls TMDB and writes the catalogue: it needs --apply');
   const guard = writes || command === 'rehearse' ? null : installReadOnlyGuard();
   await connectMongoDB();
@@ -229,7 +229,7 @@ async function database(command: string, args: string[]) {
       const rows: Array<Record<string, unknown>> = [];
       for (const { e, entity } of await idsOf()) {
         if (!entity) { rows.push({ candidateId: e.candidateId, outcome: 'entity_not_written' }); continue; }
-        if (invalidate) { rows.push({ candidateId: e.candidateId, entityId: entity.entityId, outcome: apply || writes ? await enrichment.invalidate(entity.entityId) : entity.metadata?.enrichment ? 'would_clear' : 'nothing_to_clear' }); continue; }
+        if (invalidate) { rows.push({ candidateId: e.candidateId, entityId: entity.entityId, outcome: apply ? await enrichment.invalidate(entity.entityId) : entity.metadata?.enrichment ? 'would_clear' : 'nothing_to_clear' }); continue; }
         const r = await enrichment.enrich(entity.entityId, new Date(), { apply, force: args.includes('--force') });
         rows.push({
           candidateId: e.candidateId, entityId: entity.entityId, outcome: r.outcome,

@@ -3,7 +3,7 @@
 | File | What |
 |---|---|
 | `legacy-payloads-20261022.json` | public API snapshot of the 20 canary films' legacy pages (2026-10-21T23:15Z); the only source of the fixtures besides the committed TMDB checks |
-| `fixtures/` | `catalog.json` (media-catalogue rows), `airings.json` (read-model rows), `legacy-snapshot.json`; built by `node scripts/phase-3d-fixture.mjs`, no database, no network |
+| `fixtures/` (the "measured" robots of 6 pages are hard-coded in the builder from the 2026-10-21 GETs; the rest is predicted) | `catalog.json` (media-catalogue rows), `airings.json` (read-model rows), `legacy-snapshot.json`; built by `node scripts/phase-3d-fixture.mjs`, no database, no network |
 | `film-quality-report.json` / `.md` | per-film enrichment, broadcasts, legacy consolidation decision and publication quality, from the scratch rehearsal |
 | `canary-manifest.json`, `canary-admit.jsonl`, `canary-legacy-probes.json` | the refreshed manifest (10 films) and its inputs; see `EVIDENCE-REFRESH.md` |
 | `EVIDENCE-REFRESH.md` | what was refreshed, what could not be, and how to finish |

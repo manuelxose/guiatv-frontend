@@ -12,9 +12,9 @@ Written for: the owner, who must sign any new grant. The Phase 3C evidence expir
 |---|---|---|
 | Legacy URL status of the 20 | **yes** | public API snapshot of each legacy page, 2026-10-21T23:15Z (`legacy-payloads-20261022.json`); robots predicted with `catalogRobotsPolicy` (airings ⇒ index) and **measured on 6 pages, 6/6 equal to the prediction**; probes merged into `canary-legacy-probes.json` (the other 72 probes are the 3C ones, untouched) |
 | Canonical paths | **yes** | the legacy payload's `detailPath` equals the manifest path for 20/20; the scratch rehearsal stores exactly the manifest paths |
-| Metadata identity | **yes** | TMDB id equals for 20/20; title equal for 20/20; release year within ±1 for 20/20; the enrichment gate (type, id, title key, year) accepted 20/20 on scratch |
+| Metadata identity | **partly (fixture)** | TMDB id, title and year (±1) equal between the manifest and the public payload for 20/20; the enrichment gate accepted 20/20 on scratch from catalogue rows **assembled from the committed TMDB checks and the payloads**, not read from production |
 | AI ledger bindings | **yes (offline)** | ledger chain and head hash verified when the manifest is rebuilt (`ContentCanaryManifest.test` reproduces both digests from the committed ledger); the grant still pins this head |
-| Broadcast association | **yes** | 13 broadcasts joined on TMDB id + catalogue row + title key; equals the 13 airings the legacy pages list; every one carries identity evidence |
+| Broadcast association | **partly (fixture)** | the join code was exercised on the 13 airings the legacy payloads list, with the catalogue row id injected, so 13 = 13 holds by construction; production airings and the 7-day window were not read |
 | Publication quality | **yes** | `film-quality-report.md` (below) |
 | Rollback readiness | **yes** | scratch rehearsal: revoke and rollback leave only the audit trail (20 attestations + 20 revocations) |
 | Accepted verdicts and TMDB checks (the replay) | **no** | the replay needs production database reads; the session's authorisation classifier refused them (as in 3B/3C), so the freshness of the verdicts stays **2026-10-25** (`--evidence-produced 20261021` pins it; a later rebuild cannot make the replay look younger) |
@@ -35,4 +35,4 @@ If the digest differs from the one the owner signed, stop: a new grant is needed
 
 ## Per-film outcome (scratch rehearsal on the 20 films)
 
-See `film-quality-report.md` (and `.json`, reproducible by `ContentEnrichmentRehearsal.mongo.test`). Summary: 20/20 enrich; **10 held for the legacy page** (indexable now, entity would replace it) and **10 held for quality** (legacy page is noindex, but with no scheduled broadcast the entity page is only the TMDB text and facts: no original value, AdSense risk medium). **No film is `show_noindex` today and none is an index candidate.**
+See `film-quality-report.md` (and `.json`, reproducible by `ContentEnrichmentRehearsal.mongo.test`). Summary: 20/20 enrich (fixture); **10 held for the legacy page** (indexable now, entity would replace it) and **10 held for quality** (legacy page is noindex, but no broadcast appears in the today/tomorrow-only snapshot, so the entity page would be only the TMDB text and facts: no original value, AdSense risk medium; the 7-day view was not readable). The manifest authorises identity writes, not publication; it carries these limits in its `warnings`. **No film is `show_noindex` today and none is an index candidate.**

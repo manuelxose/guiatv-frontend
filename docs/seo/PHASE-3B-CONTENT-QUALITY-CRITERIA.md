@@ -28,9 +28,9 @@ Identity verification answers *"is this the right work?"*. These criteria answer
 | 10 | `canonical_consistent` | the canonical audit (`canonical-audit`, `canary-check`) finds nothing for the entity and its path | a path with two owners can never be indexed safely |
 | 11 | `ssr_reliable` | ≥ 20 SSR checks and ≥ 99 % correct (200, one self-canonical, noindex while in canary) | soft-404s and render timeouts cost crawl trust |
 | 12 | `user_useful` | a substantial description (criterion 4, not a copy) **and** at least one upcoming broadcast | what the visitor gets that the EPG grid alone does not: the story and where to watch it |
+| 13 | `adsense_risk` | `low`: substantial text **plus** manual editorial text or a real programme schedule. `medium` is `unknown` | AdSense "low value content": scaled, thin or duplicated pages |
 | 14 | `source_attributed` | the copied facts carry a recorded source and the page shows TMDB's required notice and the freshness date (Phase 3D) | third-party data without attribution breaks the source's terms and reads as scraped |
 | 15 | `original_value` | a person's text ≥ 300 characters, or at least one **evidence-joined** upcoming broadcast with a channel link (Phase 3D) | a long TMDB synopsis alone is not original value: the page's own contribution is the schedule |
-| 13 | `adsense_risk` | `low`: substantial text **plus** manual editorial text or a real programme schedule. `medium` is `unknown` | AdSense "low value content": scaled, thin or duplicated pages |
 
 ### AdSense / helpful-content risk
 

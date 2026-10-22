@@ -1246,7 +1246,9 @@
     "entity_metadata_empty_at_admission: admission stores title, year, TMDB id and path only; a public canary page would show title and year until a sourced metadata copy exists, so \"content ready\" means the facts exist upstream (catalogue, TMDB), not on the entity",
     "entity_page_answers_at_the_legacy_url: a served entity page replaces the legacy page at the same URL; entries marked indexableToday=true would lose a rich indexable page for a noindex one",
     "year_provenance_unmeasured: EPG_YEAR_PROVENANCE is off, so no year is independently confirmed; this blocks indexing, not the noindex canary",
-    "review_basis_ai: every label behind the batch is an owner-authorised AI review; nothing here is human-validated precision"
+    "review_basis_ai: every label behind the batch is an owner-authorised AI review; nothing here is human-validated precision",
+    "partial_refresh_2026_10_22: the verdict replay and the TMDB checks are the 3B/3C ones (not re-run: production reads were refused); only the legacy status of the 20 films of the previous batch was refreshed (2026-10-21T23:15Z public API snapshot; 6 pages measured, 14 predicted from airings); the other 72 probes are the 3C ones",
+    "phase_3d_quality: the per-film report (docs/seo/phase-3d/film-quality-report.md) holds these 10 films for quality (no scheduled broadcast in a today/tomorrow-only snapshot, so no original value beyond the TMDB text): this manifest authorises identity writes, not publication"
   ],
   "digest": "f5341ad87458d4c90b7eb23a6a69aa8a9c2cb0e34c3c82bda980f12e66bc47ef",
   "admitSha256": "4d7d08eaf8bc5eb0b363942eeeb7d1bdb0820f970232889be3902dacd8d7fe20"

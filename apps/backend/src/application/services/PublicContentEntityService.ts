@@ -2,7 +2,7 @@ import { Logger } from '@/shared/utils/logger';
 import type { CertificationReader } from './ContentCertification';
 import { ContentIdentityService, normalizeReviewerName } from './ContentIdentityService';
 import type { ContentEntityRecord } from '@/domain/repositories/IContentIdentityRepository';
-import { TMDB_ATTRIBUTION } from '@/domain/services/entityEnrichment';
+import { TMDB_ATTRIBUTION, TMDB_IMAGE_PATH } from '@/domain/services/entityEnrichment';
 import type { EntityBroadcastService, EntityBroadcasts } from './EntityBroadcastService';
 
 const logger = new Logger('PublicContentEntity');
@@ -75,14 +75,20 @@ export class PublicContentEntityService {
     if (entity.metadata?.synopsis) dto.synopsis = entity.metadata.synopsis.value;
     if (entity.metadata?.genres) dto.genres = entity.metadata.genres.value;
     if (entity.metadata?.runtimeMinutes) dto.runtimeMinutes = entity.metadata.runtimeMinutes.value;
+    // Re-checked here, not only at enrichment: a value written another way (a `manual` copy) must not become a URL unchecked.
     const images = entity.metadata?.images?.value;
-    if (images?.posterPath || images?.backdropPath) {
-      dto.images = {
-        ...(images.posterPath ? { poster: `${TMDB_IMAGE_BASE}/w500${images.posterPath}` } : {}),
-        ...(images.backdropPath ? { backdrop: `${TMDB_IMAGE_BASE}/w1280${images.backdropPath}` } : {}),
+    const poster = images?.posterPath && TMDB_IMAGE_PATH.test(images.posterPath) ? images.posterPath : undefined;
+    const backdrop = images?.backdropPath && TMDB_IMAGE_PATH.test(images.backdropPath) ? images.backdropPath : undefined;
+    if (poster || backdrop) {
+      dto.images = { ...(poster ? { poster: `${TMDB_IMAGE_BASE}/w500${poster}` } : {}), ...(backdrop ? { backdrop: `${TMDB_IMAGE_BASE}/w1280${backdrop}` } : {}) };
+    }
+    const credits = entity.metadata?.credits?.value;
+    if (credits) {
+      dto.credits = {
+        directors: (credits.directors ?? []).map(String).slice(0, 5),
+        cast: (credits.cast ?? []).slice(0, 10).map((c) => ({ name: String(c.name), ...(c.character ? { character: String(c.character) } : {}) })),
       };
     }
-    if (entity.metadata?.credits) dto.credits = entity.metadata.credits.value;
     const stamp = entity.metadata?.enrichment;
     if (stamp && stamp.tmdb.type === 'movie') dto.tmdbId = stamp.tmdb.id;
     if (stamp) dto.attribution = { source: 'tmdb', updatedAt: new Date(stamp.sourceUpdatedAt ?? stamp.checkedAt).toISOString(), notice: TMDB_ATTRIBUTION };

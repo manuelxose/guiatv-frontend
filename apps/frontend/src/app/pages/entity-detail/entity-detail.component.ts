@@ -15,7 +15,7 @@ import { EntityBroadcastListComponent } from '../../components/entity-broadcast-
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { WhereToWatchComponent } from '../../components/where-to-watch/where-to-watch.component';
-import { broadcastDisplay, buildMovieSchema, ENTITY_CANONICAL_PATH, formatRuntime, kindLabel, PublicEntity } from './entity-detail.model';
+import { broadcastDisplay, buildMovieSchema, ENTITY_CANONICAL_PATH, formatRuntime, GUIDE_TIME_ZONE, kindLabel, PublicEntity } from './entity-detail.model';
 
 const SITE = 'https://guiaprogramaciontv.com';
 /** The relative times on the page are re-measured this often in the browser (never on the server: a timer would hold the render). */
@@ -239,7 +239,7 @@ export class EntityDetailComponent implements OnInit {
     this.now = this.server && generated && !Number.isNaN(generated.getTime()) ? generated : new Date();
     this.kind = kindLabel(data.kind);
     this.runtime = formatRuntime(data.runtimeMinutes);
-    this.updated = data.attribution ? new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.attribution.updatedAt)) : '';
+    this.updated = data.attribution ? new Intl.DateTimeFormat('es-ES', { timeZone: GUIDE_TIME_ZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.attribution.updatedAt)) : '';
     const hub = data.kind === 'series' ? { name: 'Series', url: APP_PATHS.series } : data.kind === 'movie' ? { name: 'Películas', url: APP_PATHS.movies } : { name: 'Programas', url: APP_PATHS.live };
     this.breadcrumbItems = [{ name: 'Inicio', url: '/' }, hub, { name: data.title, url: data.canonicalPath }];
     const schema = buildMovieSchema(data, SITE);
