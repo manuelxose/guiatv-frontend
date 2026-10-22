@@ -1,0 +1,9 @@
+200 0.376952 354605/ canon=https://guiaprogramaciontv.com/ robots=index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1 xrt=x-robots-tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+200 0.283948 352909/canales/la-1 canon=https://guiaprogramaciontv.com/canales/la-1 robots=index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1 xrt=x-robots-tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+200 0.222071 231987/programas/chicago-pd canon=https://guiaprogramaciontv.com/programas/chicago-pd robots=index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1 xrt=x-robots-tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+200 0.232082 224047/peliculas/gladiator canon=https://guiaprogramaciontv.com/peliculas/gladiator robots=index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1 xrt=x-robots-tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+200 0.291278 452747/programacion-tv/en-directo canon=https://guiaprogramaciontv.com/programacion-tv/en-directo robots=index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1 xrt=x-robots-tag: index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1
+200 0.122975 619/sitemap.xml canon= robots= xrt=
+200 0.115509 470/robots.txt canon= robots= xrt=
+200 0.219591 482/v2/health canon= robots= xrt=
+200 0.143010 57635/v2/tv/read?view=day&date=today&limit=20 canon= robots= xrt=

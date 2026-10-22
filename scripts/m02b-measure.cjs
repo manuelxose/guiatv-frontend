@@ -68,7 +68,8 @@ async function main() {
     // ---- identity quality (strict, in the order the joiner applies) ----
     const titleKeysByTmdb = new Map();
     for (const a of airings) { const s = titleKeysByTmdb.get(a.program.tmdbId) ?? new Set(); s.add(titleIdentityKey(a.program.title) ?? '∅'); titleKeysByTmdb.set(a.program.tmdbId, s); }
-    const reasons = {}; const missingDetail = {}; const crossTab = {}; const mismatchKinds = {}; const mismatchSamples = {}; const unlinkedProjection = { rowWithMatchingTitleKey: 0, rowWithDifferentTitleKey: 0 };
+    const reasons = {}; const missingDetail = {}; const crossTab = {}; const linkability = { airings: {}, identities: {}, byCategory: {} }; const linkIds = { linkable: new Set() }; const seenIdent = {};
+    const mismatchKinds = {}; const mismatchSamples = {}; const unlinkedProjection = { rowWithMatchingTitleKey: 0, rowWithDifferentTitleKey: 0 };
     const verified = new Map(); // tmdbId -> { row, airings: [] }
     for (const a of airings) {
       const p = a.program; const tmdbId = p.tmdbId; const upcoming = new Date(a.airing?.end) > now;
@@ -77,6 +78,24 @@ async function main() {
       if (!p.mediaId) { why = 'missing_media_id'; inc(missingDetail, candidates.length === 0 ? 'no_catalogue_row_for_tmdb' : candidates.length === 1 ? 'single_row_exists_unlinked' : 'multiple_rows_exist_unlinked');
         // projection only (a TMDB id plus a matching title would still need the linking evidence the joiner requires)
         const tk0 = titleIdentityKey(p.title);
+        // M02-C: strict linkability (design input only; nothing is written): same-type, unique row, title key, no shared-id conflict
+        {
+          const want = p.editorialCategory === 'Cine' ? 'movie' : p.editorialCategory === 'Series' ? 'tv' : null;
+          const valid = candidates.filter((c) => c.title?.trim() && c.normalizedTitle?.trim());
+          const pool = want ? valid.filter((c) => c.tmdbType === want) : valid;
+          let verdict;
+          if (!tk0) verdict = 'blocked_airing_title_has_no_key';
+          else if (candidates.length === 0) verdict = 'blocked_no_row';
+          else if (pool.length === 0) verdict = valid.length < candidates.length ? 'blocked_only_invalid_rows' : 'blocked_no_row_of_expected_type';
+          else if (pool.length > 1) verdict = 'blocked_several_rows_same_type';
+          else if (!want && new Set(candidates.map((c) => c.tmdbType)).size > 1) verdict = 'blocked_type_unknown_and_movie_and_tv_rows';
+          else if (![titleIdentityKey(pool[0].title), titleIdentityKey(pool[0].originalTitle)].includes(tk0)) verdict = 'blocked_title_key_differs';
+          else if (titleKeysByTmdb.get(tmdbId).size > 1) verdict = 'blocked_tmdb_id_shared_by_other_titles';
+          else verdict = 'linkable';
+          inc(linkability.airings, verdict); inc((linkability.byCategory[p.editorialCategory ?? '∅'] ??= {}), verdict);
+          const idk = `${tmdbId}|${tk0}`; if (!seenIdent[idk]) { seenIdent[idk] = 1; inc(linkability.identities, verdict); }
+          if (verdict === 'linkable') linkIds.linkable.add(idk);
+        }
         if (candidates.length === 1) inc(unlinkedProjection, [titleIdentityKey(candidates[0].title), titleIdentityKey(candidates[0].originalTitle)].includes(tk0) && tk0 ? 'rowWithMatchingTitleKey' : 'rowWithDifferentTitleKey'); }
       else {
         const row = byId.get(String(p.mediaId));
@@ -108,7 +127,7 @@ async function main() {
     }
     const tv = [...verified.values()].filter((e) => e.row.tmdbType === 'tv'); const mv = [...verified.values()].filter((e) => e.row.tmdbType === 'movie');
     const sum = (l) => l.reduce((n, e) => n + e.airings.length, 0);
-    report.identity = { outcomes: reasons, unlinkedProjection, titleKeyMismatchKinds: mismatchKinds, titleKeyMismatchSamples: mismatchSamples, missingMediaIdDetail: missingDetail, categoryByRowType: crossTab,
+    report.linkability = { ...linkability, note: 'airings = airings without mediaId; identities = distinct (tmdbId, title key) pairs; projection assumes every linkable airing would be linked' }; report.identity = { outcomes: reasons, unlinkedProjection, titleKeyMismatchKinds: mismatchKinds, titleKeyMismatchSamples: mismatchSamples, missingMediaIdDetail: missingDetail, categoryByRowType: crossTab,
       verifiedUpcoming: { movies: mv.length, movieBroadcasts: sum(mv), broadcastsPerMovie: mv.length ? Math.round((10 * sum(mv)) / mv.length) / 10 : null, series: tv.length, seriesBroadcasts: sum(tv), broadcastsPerSeries: tv.length ? Math.round((10 * sum(tv)) / tv.length) / 10 : null },
       tmdbIdsWithMultipleTitleKeys: [...titleKeysByTmdb.values()].filter((s) => s.size > 1).length, verifiedMoviesOnSharedTmdbId: mv.filter((e) => e.conflicted).length, distinctTmdbIds: titleKeysByTmdb.size };
 

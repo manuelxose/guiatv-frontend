@@ -1,0 +1,484 @@
+[
+  {
+    "path": "/peliculas/3-dias-para-matar",
+    "measuredAt": "2026-10-22T12:06:41.571Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/3-dias-para-matar"
+    ],
+    "title": "3 días para matar: dónde ver | Guía TV",
+    "description": "Un agente secreto gravemente enfermo acepta una misión peligrosa a cambio de un fármaco experimental, que quizás pueda salvarlo si sobrevive a los efectos…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "3 días para matar",
+      "url": "https://guiaprogramaciontv.com/peliculas/3-dias-para-matar",
+      "description": "Un agente secreto gravemente enfermo acepta una misión peligrosa a cambio de un fármaco experimental, que quizás pueda salvarlo si sobrevive a los efectos secundarios.",
+      "image": "https://image.tmdb.org/t/p/original/oL4Ycdowo8BFyDvNeMImcpiarIH.jpg",
+      "datePublished": "2014",
+      "director": {
+        "@type": "Person",
+        "name": "McG"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Kevin Costner"
+        },
+        {
+          "@type": "Person",
+          "name": "Amber Heard"
+        },
+        {
+          "@type": "Person",
+          "name": "Hailee Steinfeld"
+        },
+        {
+          "@type": "Person",
+          "name": "Connie Nielsen"
+        },
+        {
+          "@type": "Person",
+          "name": "Tómas Lemarquis"
+        },
+        {
+          "@type": "Person",
+          "name": "Richard Sammel"
+        },
+        {
+          "@type": "Person",
+          "name": "Marc Andréoni"
+        },
+        {
+          "@type": "Person",
+          "name": "Bruno Ricci"
+        },
+        {
+          "@type": "Person",
+          "name": "Jonas Bloquet"
+        },
+        {
+          "@type": "Person",
+          "name": "Ériq Ebouaney"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 6.107,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/3-das-para-matar",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "64acda48221cbb89",
+      "synopsisChars": 167,
+      "tmdbId": 192102,
+      "slug": "3-dias-para-matar",
+      "detailPath": "/peliculas/3-dias-para-matar",
+      "airings": [
+        "axn|1792702080000",
+        "axn|1792702080000",
+        "axn|1792702200000",
+        "axn|1792702200000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/los-otros",
+    "measuredAt": "2026-10-22T12:06:44.753Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/los-otros"
+    ],
+    "title": "Los Otros: dónde ver | Guía TV",
+    "description": "Grace educa sola a sus hijos en un aislado caserón victoriano bajo estrictas normas religiosas. Los tres nuevos sirvientes deben aprender una regla vital, la…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Los Otros",
+      "url": "https://guiaprogramaciontv.com/peliculas/los-otros",
+      "description": "Grace educa sola a sus hijos en un aislado caserón victoriano bajo estrictas normas religiosas. Los tres nuevos sirvientes deben aprender una regla vital, la casa estará siempre en penumbra y nunca se abrirá una puerta si no se ha cerrado la anterior  porque los niños sufren una extraña alergia a la luz del día.",
+      "image": "https://image.tmdb.org/t/p/original/rbBe9WQ1OqCxzgwskOTnaY6JdUA.jpg",
+      "datePublished": "2001",
+      "director": {
+        "@type": "Person",
+        "name": "Alejandro Amenábar"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Nicole Kidman"
+        },
+        {
+          "@type": "Person",
+          "name": "Alakina Mann"
+        },
+        {
+          "@type": "Person",
+          "name": "James Bentley"
+        },
+        {
+          "@type": "Person",
+          "name": "Fionnula Flanagan"
+        },
+        {
+          "@type": "Person",
+          "name": "Christopher Eccleston"
+        },
+        {
+          "@type": "Person",
+          "name": "Eric Sykes"
+        },
+        {
+          "@type": "Person",
+          "name": "Elaine Cassidy"
+        },
+        {
+          "@type": "Person",
+          "name": "Keith Allen"
+        },
+        {
+          "@type": "Person",
+          "name": "Renée Asherson"
+        },
+        {
+          "@type": "Person",
+          "name": "Michelle Fairley"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 7.618,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/los-otros",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "45bfbc1d4cf066c4",
+      "synopsisChars": 313,
+      "tmdbId": 1933,
+      "slug": "los-otros",
+      "detailPath": "/peliculas/los-otros",
+      "airings": [
+        "dark|1792764540000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/gladiator",
+    "measuredAt": "2026-10-22T12:06:48.146Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/gladiator"
+    ],
+    "title": "Gladiator: dónde ver | Guía TV",
+    "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Gladiator",
+      "url": "https://guiaprogramaciontv.com/peliculas/gladiator",
+      "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide transferir el poder a Máximo, bravo general de sus ejércitos y hombre de inquebrantable lealtad al imperio. Pero su hijo Cómodo, que aspiraba al trono, no lo acepta y trata de asesinar a Máximo.",
+      "image": "https://image.tmdb.org/t/p/original/Ar7QuJ7sJEiC0oP3I8fKBKIQD9u.jpg",
+      "datePublished": "2000",
+      "director": {
+        "@type": "Person",
+        "name": "Ridley Scott"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Russell Crowe"
+        },
+        {
+          "@type": "Person",
+          "name": "Joaquin Phoenix"
+        },
+        {
+          "@type": "Person",
+          "name": "Connie Nielsen"
+        },
+        {
+          "@type": "Person",
+          "name": "Oliver Reed"
+        },
+        {
+          "@type": "Person",
+          "name": "Richard Harris"
+        },
+        {
+          "@type": "Person",
+          "name": "Derek Jacobi"
+        },
+        {
+          "@type": "Person",
+          "name": "Djimon Hounsou"
+        },
+        {
+          "@type": "Person",
+          "name": "David Schofield"
+        },
+        {
+          "@type": "Person",
+          "name": "John Shrapnel"
+        },
+        {
+          "@type": "Person",
+          "name": "Tomas Arana"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 8.232,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/gladiator",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "eac7cb301a67627d",
+      "synopsisChars": 353,
+      "tmdbId": 98,
+      "slug": "gladiator",
+      "detailPath": "/peliculas/gladiator",
+      "airings": [
+        "canal_hollywood|1792785600000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/programas/chicago-pd",
+    "measuredAt": "2026-10-22T12:06:51.338Z",
+    "inSitemap": true,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/programas/chicago-pd"
+    ],
+    "title": "Chicago P.D.: dónde ver | Guía TV",
+    "description": "Narra las historias del Distrito 21 del Departamento de Policía de Chicago, hombres y mujeres que lo dan todo para proteger su comunidad El distrito 21 está…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "TVSeries"
+    ],
+    "movie": null,
+    "moviesCount": 0,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/series/big-bang",
+      "/series/big-bang-t4-e10-la-hiptesis-del-parsito-aliengena",
+      "/series/big-bang-t4-e7-la-insuficiencia-de-la-disculpa",
+      "/series/big-bang-t4-e8-la-excitacin-de-21-segundos",
+      "/series/big-bang-t4-e9-la-complejidad-del-novio",
+      "/series/breaking-bad",
+      "/series/dagsrevyen",
+      "/series/friends",
+      "/series/ley-y-orden-unidad-de-victimas-especiales",
+      "/series/lo-que-hacemos-en-las-sombras",
+      "/series/los-simpson",
+      "/series/los-simpson-t14-e5-buscando-refugio",
+      "/series/los-simpson-t36-e15-uno-para-todos",
+      "/series/los-simpson-t36-e16-p-d-te-odio",
+      "/series/running-man",
+      "/series/south-park",
+      "/series/the-bear",
+      "/series/visionquest",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "4b4ef1583ce2cd09",
+      "synopsisChars": 382,
+      "tmdbId": 58841,
+      "slug": "chicago-pd",
+      "detailPath": "/series/chicago-pd",
+      "airings": [
+        "neox|1792619220000",
+        "neox|1792661760000",
+        "neox|1792670400000",
+        "neox|1792671900000",
+        "neox|1792672020000",
+        "neox|1792673700000",
+        "neox|1792675320000",
+        "neox|1792677000000",
+        "neox|1792678440000",
+        "neox|1792679400000",
+        "neox|1792679940000",
+        "neox|1792680780000",
+        "neox|1792681440000"
+      ],
+      "genres": 3,
+      "durationMinutes": 51,
+      "cast": 6,
+      "enrichment": null
+    }
+  }
+]
