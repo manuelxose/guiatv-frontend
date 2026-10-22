@@ -38,7 +38,7 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 ### M01-B — Controlled Phase 3E production deployment
 - **Objective**: ship `main` (3E + 3F) to production with every legacy flag unset. **Scope**: `gh workflow run deploy-artifact.yml --ref main`, post-deploy smoke: existing routes, `/sitemap.xml`, canonical/robots of a sample, `/v2/health/metrics` shows `legacyEnrichment` with epoch `off`, 0 new 5xx. **Non-goals**: any flag, switching `deploy.yml` to artifacts, post-boot unit.
-- **Status**: Eng ✔ · CI ✔ · Merge ✔ (`ba2a0a8` incl. 3E, 3F, B1) · M01-B2 pre-flight CONDITIONAL GO (2026-10-22) · Deploy ○ (**M01-B2-DEPLOY**, owner authorization pending: `gh workflow run deploy-artifact.yml --ref main`; rollback `20261022010257`) · Act –
+- **Status**: Eng ✔ · CI ✔ · Merge ✔ (`ba2a0a8` incl. 3E, 3F, B1) · M01-B2 pre-flight CONDITIONAL GO (2026-10-22) · Deploy ✔ (**M01-B2-DEPLOY** PASS 2026-10-22: run 39769605049, `66be5ec`, release `20261022132028`; rollback `20261022010257` kept; next **M02-B**) · Act –
 - **Depends**: M01-A, M02-A, M01-B1. **Skills**: engineering:deploy-checklist. **Acceptance**: production serves the new commit; payloads of sampled pages identical to flag-off baseline; metrics block present. **Evidence**: workflow run URL, smoke output. **Blockers**: owner approval of deploy and window; Contabo instability unresolved. **Rollback**: `sudo guiatv-ops.sh rollback <previous-release-id>` (id recorded in M01-A); triggers in `docs/release-workflow.md`. **NO-GO** until M01-A and M02-A.
 
 ### M02-B — Real catalogue and EPG measurement
