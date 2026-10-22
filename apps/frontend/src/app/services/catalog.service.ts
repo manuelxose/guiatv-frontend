@@ -1,3 +1,4 @@
+import type { EntityBroadcasts } from '../pages/entity-detail/entity-detail.model';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, concat, of } from 'rxjs';
@@ -50,8 +51,17 @@ export interface CatalogUserInteraction {
   watchedAt?: string;
 }
 
+/** Phase 3E: verified additions the API attaches to a legacy detail payload (absent when the feature is off or the checks failed). */
+export interface CatalogLegacyEnrichment {
+  version: 1;
+  metadata?: { originalTitle?: string; runtimeMinutes?: number; genres?: string[] };
+  broadcasts?: EntityBroadcasts;
+  attribution?: { notice: string; updatedAt: string };
+}
+
 export interface CatalogItem {
   catalogId: string;
+  enrichment?: CatalogLegacyEnrichment;
   source: 'program' | 'tmdb';
   contentType: CatalogContentType;
   title: string;

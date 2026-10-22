@@ -78,7 +78,7 @@ export type EnrichmentPlan =
 const clean = (text: string | undefined) => (text ?? '').replace(/\s+/g, ' ').trim();
 
 /** The title keys a catalogue row answers to: its localised and its original title. */
-const sourceKeys = (s: EnrichmentSource) => new Set([titleIdentityKey(s.title), titleIdentityKey(s.originalTitle)].filter((k): k is string => Boolean(k)));
+export const sourceKeys = (s: EnrichmentSource) => new Set([titleIdentityKey(s.title), titleIdentityKey(s.originalTitle)].filter((k): k is string => Boolean(k)));
 
 /** Why this catalogue row is not provably the entity's work; empty = it is. Never decides from title similarity alone. */
 export function enrichmentRefusals(entity: ContentEntityRecord, source: EnrichmentSource | null): EnrichmentRefusal[] {

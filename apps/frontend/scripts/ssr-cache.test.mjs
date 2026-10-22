@@ -85,3 +85,12 @@ test('bounded size: oldest entry goes first', () => {
   assert.equal(cache.get('/a'), null);
   assert.ok(cache.get('/d'));
 });
+
+test('clear drops every rendered page (a rollout state change never serves a mixed set)', () => {
+  const { cache } = setup();
+  cache.settle('/peliculas/a', { statusCode: 200, html: page(), cacheable: true });
+  cache.settle('/series/b', { statusCode: 200, html: page(), cacheable: true });
+  cache.clear();
+  assert.equal(cache.get('/peliculas/a'), null);
+  assert.equal(cache.get('/series/b'), null);
+});

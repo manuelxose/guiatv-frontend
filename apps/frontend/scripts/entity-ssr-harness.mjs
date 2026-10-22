@@ -48,12 +48,19 @@ export function entityFixture(over = {}) {
 
 /**
  * `pages` maps a request path to an entity (200), or to `{ status, code }` for an error answer. Anything else is a
- * 404 ENTITY_NOT_FOUND. `/v2/entities/resolve` is the only route that matters; the rest of the API answers 404.
+ * 404 ENTITY_NOT_FOUND (`{ status: 404, code: 'ENTITY_PUBLIC_READ_DISABLED' }` is the legacy fallback signal). `api` adds exact-path answers; the rest answers 404.
  */
-export async function startBackend(pages) {
+export async function startBackend(pages, api = {}) {
   const backend = createServer((req, res) => {
     const url = new URL(req.url, 'http://localhost');
     res.setHeader('Content-Type', 'application/json');
+    // Other API answers by exact path (Phase 3E: the legacy catalogue payload). A function is called with the request; `{ status, code }` is an error.
+    const other = api[url.pathname];
+    if (other !== undefined) {
+      const body = typeof other === 'function' ? other(url) : other;
+      if (body && body.status) { res.writeHead(body.status); res.end(JSON.stringify({ success: false, error: { code: body.code } })); return; }
+      res.writeHead(200); res.end(JSON.stringify({ success: true, data: body })); return;
+    }
     const hit = url.pathname === '/v2/entities/resolve' ? pages[url.searchParams.get('path')] : undefined;
     if (hit && hit.status) { res.writeHead(hit.status); res.end(JSON.stringify({ success: false, error: { code: hit.code } })); return; }
     res.writeHead(hit ? 200 : 404);
