@@ -127,7 +127,7 @@ test('theme consistency: text keeps its contrast against its surface in light an
 test('states: empty schedule, unreadable schedule, bare entity, very long title, gone and failing', async ({ page }, info) => {
   let response = await open(page, 'sin-emisiones');
   expect(response.status()).toBe(200);
-  await expect(page.getByText('No hay emisiones programadas en los próximos 7 días')).toBeVisible();
+  await expect(page.getByText('No hay emisiones programadas en la programación disponible')).toBeVisible();
   await expect(page.getByRole('link', { name: 'Qué ver hoy en TV' }).first()).toHaveAttribute('href', '/programacion-tv/que-ver-hoy');
 
   await open(page, 'agenda-caida');

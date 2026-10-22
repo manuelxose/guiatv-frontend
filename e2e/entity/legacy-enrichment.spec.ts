@@ -97,7 +97,7 @@ test('the enriched legacy page keeps its SEO surface and gains the verified sche
 
 test('empty and unreadable schedules', async ({ page }) => {
   await open(page, 'empty');
-  await expect(page.getByText('No hay emisiones programadas en los próximos 7 días')).toBeVisible();
+  await expect(page.getByText('No hay emisiones programadas en la programación disponible')).toBeVisible();
   await open(page, 'unreadable');
   await expect(page.locator('app-entity-broadcast-list')).toHaveCount(0);
   await expect(page.getByText('AMC').first()).toBeVisible();

@@ -445,6 +445,7 @@ export class MongoProgramRepository implements IProgramRepository {
   async findEnrichedByTitles(titles: string[]): Promise<Array<{
     title: string;
     tmdbId: number;
+    mediaId?: string;
     image: string;
     description?: string;
     year?: string;
@@ -471,7 +472,7 @@ export class MongoProgramRepository implements IProgramRepository {
             },
           ],
         },
-        { title: 1, normalizedTitle: 1, titleAliases: 1, tmdbId: 1, image: 1, description: 1, year: 1, rating: 1, genreTags: 1, _id: 0 }
+        { title: 1, normalizedTitle: 1, titleAliases: 1, tmdbId: 1, mediaId: 1, image: 1, description: 1, year: 1, rating: 1, genreTags: 1, _id: 0 }
       )
         .lean()
         .exec() as ProgramDoc[];
@@ -481,6 +482,7 @@ export class MongoProgramRepository implements IProgramRepository {
         .map((d) => ({
           title: String(d.title),
           tmdbId: d.tmdbId as number,
+          ...(typeof (d as any).mediaId === 'string' && (d as any).mediaId ? { mediaId: (d as any).mediaId as string } : {}),
           image: String(d.image),
           description: d.description as string | undefined,
           year: (d as any).year as string | undefined,

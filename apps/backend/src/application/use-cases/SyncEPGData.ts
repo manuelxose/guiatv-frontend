@@ -857,19 +857,20 @@ export class SyncEPGData {
    * Returns a map from normalized title → enriched fields, used to avoid redundant API calls.
    */
   private async loadExistingEnrichment(programs: Program[]): Promise<Map<string, {
-    tmdbId: number; image: string; description?: string; year?: string; rating?: string; genreTags?: string[];
+    tmdbId: number; mediaId?: string; image: string; description?: string; year?: string; rating?: string; genreTags?: string[];
   }>> {
       const uniqueTitles = [...new Set(programs.map((p) => p.title))];
     if (!uniqueTitles.length) return new Map();
 
     try {
       const existing = await this.programRepository.findEnrichedByTitles(uniqueTitles);
-      const map = new Map<string, { tmdbId: number; image: string; description?: string; year?: string; rating?: string; genreTags?: string[] }>();
+      const map = new Map<string, { tmdbId: number; mediaId?: string; image: string; description?: string; year?: string; rating?: string; genreTags?: string[] }>();
       for (const entry of existing) {
         buildProgramTitleAliases(entry.title).forEach((alias) => {
           if (alias && !map.has(alias)) {
             map.set(alias, {
               tmdbId: entry.tmdbId,
+              mediaId: entry.mediaId,
               image: entry.image,
               description: entry.description,
               year: entry.year,
@@ -950,6 +951,7 @@ export class SyncEPGData {
                 rating: dbHit.rating || program.rating,
                 year: dbHit.year || program.year,
                 tmdbId: dbHit.tmdbId,
+                ...(dbHit.mediaId ? { mediaId: dbHit.mediaId } : {}),
                 genreTags: dbHit.genreTags,
                 trustFlags: {
                   ...(program.trustFlags || {}),
@@ -1020,6 +1022,7 @@ export class SyncEPGData {
               rating: dbHit2.rating || program.rating,
               year: dbHit2.year || program.year,
               tmdbId: dbHit2.tmdbId,
+              ...(dbHit2.mediaId ? { mediaId: dbHit2.mediaId } : {}),
               genreTags: dbHit2.genreTags,
               trustFlags: {
                 ...(program.trustFlags || {}),

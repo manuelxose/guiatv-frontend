@@ -71,7 +71,7 @@ import {
         }
         @default {
           <p class="mt-4 rounded-[var(--radius-md)] border border-[var(--portal-border)] bg-[var(--portal-surface)] p-4 text-sm text-[var(--portal-text-soft)]">
-            No hay emisiones programadas en los próximos 7 días.
+            No hay emisiones programadas en la programación disponible.
             <a [routerLink]="paths.explore" class="font-semibold text-[var(--portal-text)] underline underline-offset-4">Qué ver hoy en TV</a>
           </p>
         }

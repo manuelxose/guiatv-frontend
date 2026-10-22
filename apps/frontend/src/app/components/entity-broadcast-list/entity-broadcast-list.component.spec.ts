@@ -53,7 +53,7 @@ describe('EntityBroadcastListComponent', () => {
 
   it('empty and unavailable states are distinct and never claim a schedule', () => {
     const empty = render(list('none'));
-    expect(empty.textContent).toContain('No hay emisiones programadas en los próximos 7 días');
+    expect(empty.textContent).toContain('No hay emisiones programadas en la programación disponible');
     expect(empty.querySelector('a')!.getAttribute('href')).toBe('/programacion-tv/que-ver-hoy');
     TestBed.resetTestingModule();
     const down = render(list('unavailable'));

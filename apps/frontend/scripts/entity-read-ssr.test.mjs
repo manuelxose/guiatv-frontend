@@ -131,7 +131,7 @@ test('entity SSR: enriched movie page has the facts, broadcasts, attribution, on
     assert.ok(ld(html).flat().some((j) => j['@type'] === 'BreadcrumbList'));
 
     const empty = await (await fetch(`${ssr.origin}/peliculas/sin-emisiones`)).text();
-    assert.match(empty, /No hay emisiones programadas en los próximos 7 días/);
+    assert.match(empty, /No hay emisiones programadas en la programación disponible/);
     const down = await (await fetch(`${ssr.origin}/peliculas/agenda-caida`)).text();
     assert.match(down, /No hemos podido comprobar la programación/);
     assert.doesNotMatch(down, /No hay emisiones programadas/);

@@ -1,0 +1,64 @@
+{
+ "basis": "production public API GET /v2/tv/read (category=Cine / Series, view=day, 50 per page, paced 0.8 s) and /v2/catalog/slug/movie/<slug>, measured 2026-10-22 ~09:00 Madrid; no database access",
+ "limits": [
+  "The public tv/read DTO does not expose program.mediaId, so the share of airings tied to a catalogue row is NOT measurable here (see legacy-enrichment-preflight).",
+  "Airing counts are the guide as served today; they are measurements of that moment, not of other days."
+ ],
+ "Cine": {
+  "airingsByDate": {
+   "20261022": 609,
+   "20261023": 542,
+   "20261024": 425
+  },
+  "airings": 1576,
+  "withTmdbId": 922,
+  "withTmdbIdShare": 58.5,
+  "distinctTmdbIds": 585,
+  "tmdbIdsWithMoreThanOneAiringTitleKey": 9,
+  "withoutTmdbId": 654,
+  "legacyIndexableNow": 421,
+  "withAiringBeyondLegacyWindow": 42,
+  "scheduledOnlyBeyondLegacyWindow": 164
+ },
+ "Series": {
+  "airingsByDate": {
+   "20261022": 1269,
+   "20261023": 924,
+   "20261024": 639
+  },
+  "airings": 2832,
+  "withTmdbId": 1564,
+  "withTmdbIdShare": 55.2,
+  "distinctTmdbIds": 200,
+  "tmdbIdsWithMoreThanOneAiringTitleKey": 33,
+  "withoutTmdbId": 1268
+ },
+ "epgHorizon": {
+  "datesWithAirings": {
+   "20261022": 12791,
+   "20261023": 9744,
+   "20261024": 6831,
+   "20261025": 0,
+   "20261026": 0,
+   "20261029": 0,
+   "20261101": 0
+  },
+  "conclusion": "the production guide holds today + 2 days; a 7-day window never fills. Day 3 is also partial (6831 vs 9744 the day before)."
+ },
+ "wrongEpgMatchesObserved": [
+  {
+   "tmdbId": 168259,
+   "titles": [
+    "Fast & Furious 6 (A todo gas 6)",
+    "Fast & Furious 7 (A todo gas 7)"
+   ]
+  },
+  {
+   "tmdbId": 50619,
+   "titles": [
+    "La saga Crepúsculo: Amanecer - Parte 1",
+    "La saga Crepúsculo: Amanecer - Parte 2"
+   ]
+  }
+ ]
+}

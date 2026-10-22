@@ -1,0 +1,653 @@
+[
+  {
+    "path": "/peliculas/bikeriders-la-ley-del-asfalto",
+    "measuredAt": "2026-10-22T08:57:29.567Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/bikeriders-la-ley-del-asfalto"
+    ],
+    "title": "Bikeriders. La ley del asfalto: dónde ver | Guía TV",
+    "description": "Ambientada en los años 60, sigue el ascenso de un club de motoristas del medio oeste, &quot;Los Vándalos&quot;. El club pasa, en el transcurso de una década, de ser un…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Bikeriders. La ley del asfalto",
+      "url": "https://guiaprogramaciontv.com/peliculas/bikeriders-la-ley-del-asfalto",
+      "description": "Ambientada en los años 60, sigue el ascenso de un club de motoristas del medio oeste, \"Los Vándalos\". El club pasa, en el transcurso de una década, de ser un lugar de reunión para forasteros locales a convertirse en una banda más siniestra, que amenaza el modo de vida único del grupo original.",
+      "image": "https://image.tmdb.org/t/p/original/kwGvFyRtGSSm8AFfnRNXoZTQmJj.jpg",
+      "datePublished": "2024",
+      "director": {
+        "@type": "Person",
+        "name": "Jeff Nichols"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Jodie Comer"
+        },
+        {
+          "@type": "Person",
+          "name": "Austin Butler"
+        },
+        {
+          "@type": "Person",
+          "name": "Tom Hardy"
+        },
+        {
+          "@type": "Person",
+          "name": "Michael Shannon"
+        },
+        {
+          "@type": "Person",
+          "name": "Mike Faist"
+        },
+        {
+          "@type": "Person",
+          "name": "Boyd Holbrook"
+        },
+        {
+          "@type": "Person",
+          "name": "Damon Herriman"
+        },
+        {
+          "@type": "Person",
+          "name": "Beau Knapp"
+        },
+        {
+          "@type": "Person",
+          "name": "Emory Cohen"
+        },
+        {
+          "@type": "Person",
+          "name": "Karl Glusman"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 6.692,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/bikeriders-la-ley-del-asfalto",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "236398c2aace13a0",
+      "synopsisChars": 294,
+      "tmdbId": 1008409,
+      "slug": "bikeriders-la-ley-del-asfalto",
+      "detailPath": "/peliculas/bikeriders-la-ley-del-asfalto",
+      "airings": [
+        "amc|1792786200000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/california-suite",
+    "measuredAt": "2026-10-22T08:57:31.761Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/california-suite"
+    ],
+    "title": "California Suite: dónde ver | Guía TV",
+    "description": "Cinco parejas que han ido a Los Ángeles por diversos motivos se alojan en un famoso hotel, en el que vivirán curiosas experiencias.",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "California Suite",
+      "url": "https://guiaprogramaciontv.com/peliculas/california-suite",
+      "description": "Cinco parejas que han ido a Los Ángeles por diversos motivos se alojan en un famoso hotel, en el que vivirán curiosas experiencias.",
+      "image": "https://image.tmdb.org/t/p/original/blEloSAWpCRamzP0ezJaeSYCc2m.jpg",
+      "datePublished": "1978",
+      "director": {
+        "@type": "Person",
+        "name": "Herbert Ross"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Jane Fonda"
+        },
+        {
+          "@type": "Person",
+          "name": "Alan Alda"
+        },
+        {
+          "@type": "Person",
+          "name": "Maggie Smith"
+        },
+        {
+          "@type": "Person",
+          "name": "Michael Caine"
+        },
+        {
+          "@type": "Person",
+          "name": "Walter Matthau"
+        },
+        {
+          "@type": "Person",
+          "name": "Elaine May"
+        },
+        {
+          "@type": "Person",
+          "name": "Herb Edelman"
+        },
+        {
+          "@type": "Person",
+          "name": "Denise Galik"
+        },
+        {
+          "@type": "Person",
+          "name": "Richard Pryor"
+        },
+        {
+          "@type": "Person",
+          "name": "Bill Cosby"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 5.9,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/california-suite",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "7dce642b4995b6a3",
+      "synopsisChars": 131,
+      "tmdbId": 26686,
+      "slug": "california-suite",
+      "detailPath": "/peliculas/california-suite",
+      "airings": [
+        "movistar_clasicos|1792699200000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/gladiator",
+    "measuredAt": "2026-10-22T08:57:33.924Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/gladiator"
+    ],
+    "title": "Gladiator: dónde ver | Guía TV",
+    "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Gladiator",
+      "url": "https://guiaprogramaciontv.com/peliculas/gladiator",
+      "description": "En el año 180, el Imperio Romano domina todo el mundo conocido. Tras una gran victoria sobre los bárbaros del norte, el anciano emperador Marco Aurelio decide transferir el poder a Máximo, bravo general de sus ejércitos y hombre de inquebrantable lealtad al imperio. Pero su hijo Cómodo, que aspiraba al trono, no lo acepta y trata de asesinar a Máximo.",
+      "image": "https://image.tmdb.org/t/p/original/Ar7QuJ7sJEiC0oP3I8fKBKIQD9u.jpg",
+      "datePublished": "2000",
+      "director": {
+        "@type": "Person",
+        "name": "Ridley Scott"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Russell Crowe"
+        },
+        {
+          "@type": "Person",
+          "name": "Joaquin Phoenix"
+        },
+        {
+          "@type": "Person",
+          "name": "Connie Nielsen"
+        },
+        {
+          "@type": "Person",
+          "name": "Oliver Reed"
+        },
+        {
+          "@type": "Person",
+          "name": "Richard Harris"
+        },
+        {
+          "@type": "Person",
+          "name": "Derek Jacobi"
+        },
+        {
+          "@type": "Person",
+          "name": "Djimon Hounsou"
+        },
+        {
+          "@type": "Person",
+          "name": "David Schofield"
+        },
+        {
+          "@type": "Person",
+          "name": "John Shrapnel"
+        },
+        {
+          "@type": "Person",
+          "name": "Tomas Arana"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 8.232,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/gladiator",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "eac7cb301a67627d",
+      "synopsisChars": 353,
+      "tmdbId": 98,
+      "slug": "gladiator",
+      "detailPath": "/peliculas/gladiator",
+      "airings": [
+        "canal_hollywood|1792785600000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/una-quinta-portuguesa",
+    "measuredAt": "2026-10-22T08:57:36.097Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/una-quinta-portuguesa"
+    ],
+    "title": "Una quinta portuguesa: dónde ver | Guía TV",
+    "description": "La desaparición de su mujer deja a Fernando, un tranquilo profesor de geografía, completamente devastado. Sin rumbo, suplanta la identidad de otro hombre como…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Una quinta portuguesa",
+      "url": "https://guiaprogramaciontv.com/peliculas/una-quinta-portuguesa",
+      "description": "La desaparición de su mujer deja a Fernando, un tranquilo profesor de geografía, completamente devastado. Sin rumbo, suplanta la identidad de otro hombre como jardinero de una quinta portuguesa, donde establece una inesperada amistad con la dueña, adentrándose en una nueva vida que no le pertenece.",
+      "image": "https://image.tmdb.org/t/p/original/aVURAVMksgcpTWQEPJ2Nnu1XlXH.jpg",
+      "datePublished": "2025",
+      "director": {
+        "@type": "Person",
+        "name": "Avelina Prat"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Manolo Solo"
+        },
+        {
+          "@type": "Person",
+          "name": "Maria de Medeiros"
+        },
+        {
+          "@type": "Person",
+          "name": "Бранка Катић"
+        },
+        {
+          "@type": "Person",
+          "name": "Rita Cabaço"
+        },
+        {
+          "@type": "Person",
+          "name": "Xavi Mira"
+        },
+        {
+          "@type": "Person",
+          "name": "Morgan Blasco"
+        },
+        {
+          "@type": "Person",
+          "name": "Gonçalo Dantas"
+        },
+        {
+          "@type": "Person",
+          "name": "Rui Morisson"
+        },
+        {
+          "@type": "Person",
+          "name": "Ivan Barnev"
+        },
+        {
+          "@type": "Person",
+          "name": "Luísa Cruz"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 6.7,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/peliculas/una-quinta-portuguesa",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "318a10c2f31983ea",
+      "synopsisChars": 299,
+      "tmdbId": 1440171,
+      "slug": "una-quinta-portuguesa",
+      "detailPath": "/peliculas/una-quinta-portuguesa",
+      "airings": [
+        "m_los_goya|1792668900000",
+        "movistar_cine_espanol|1792669080000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  },
+  {
+    "path": "/peliculas/los-subdesarrollados",
+    "measuredAt": "2026-10-22T08:57:38.275Z",
+    "inSitemap": false,
+    "status": 200,
+    "xRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "metaRobots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+    "canonical": [
+      "https://guiaprogramaciontv.com/peliculas/los-subdesarrollados"
+    ],
+    "title": "Los subdesarrollados: dónde ver | Guía TV",
+    "description": "La I.I.S.S. (International Investigation Spanish Section) es una agencia clandestina de detectives, especializada en &quot;infidelidades matrimoniales&quot;. Julio, el…",
+    "h1": 1,
+    "jsonLdValid": true,
+    "jsonLdTypes": [
+      "BreadcrumbList",
+      "Movie"
+    ],
+    "movie": {
+      "@context": "https://schema.org",
+      "@type": "Movie",
+      "name": "Los subdesarrollados",
+      "url": "https://guiaprogramaciontv.com/peliculas/los-subdesarrollados",
+      "description": "La I.I.S.S. (International Investigation Spanish Section) es una agencia clandestina de detectives, especializada en \"infidelidades matrimoniales\". Julio, el creador de la agencia, utiliza las técnicas más avanzadas. Su ayudante Timoteo se dedica a la investigación en el tiempo libre que le deja su profesión de bombero y, por supuesto, robándole horas al sueño, por lo que se suele quedar dormido en los momentos más inoportunos.",
+      "image": "https://image.tmdb.org/t/p/original/aJHgYbvFlfbJbfUcVbZyA5WcBRz.jpg",
+      "datePublished": "1968",
+      "director": {
+        "@type": "Person",
+        "name": "Fernando Merino"
+      },
+      "actor": [
+        {
+          "@type": "Person",
+          "name": "Tony Leblanc"
+        },
+        {
+          "@type": "Person",
+          "name": "Alfredo Landa"
+        },
+        {
+          "@type": "Person",
+          "name": "Laura Valenzuela"
+        },
+        {
+          "@type": "Person",
+          "name": "Lina Morgan"
+        },
+        {
+          "@type": "Person",
+          "name": "Manolo Gómez Bur"
+        },
+        {
+          "@type": "Person",
+          "name": "Venancio Muro"
+        },
+        {
+          "@type": "Person",
+          "name": "María Silva"
+        },
+        {
+          "@type": "Person",
+          "name": "Luchy Soto"
+        },
+        {
+          "@type": "Person",
+          "name": "Erasmo Pascual"
+        },
+        {
+          "@type": "Person",
+          "name": "Marisol González"
+        }
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": 6.8,
+        "bestRating": 10,
+        "worstRating": 0
+      },
+      "inLanguage": "es"
+    },
+    "moviesCount": 1,
+    "links": [
+      "/",
+      "/avisolegal",
+      "/comparador-streaming",
+      "/cookies",
+      "/deportes/futbol",
+      "/developers",
+      "/embed",
+      "/guias",
+      "/iniciar-sesion",
+      "/peliculas/cambio-de-roles",
+      "/peliculas/fall-2-deadpoint",
+      "/peliculas/insidious-fuera-del-mas-alla",
+      "/peliculas/la-odisea",
+      "/peliculas/los-subdesarrollados",
+      "/peliculas/masterplan",
+      "/peliculas/matchbox-la-pelicula",
+      "/peliculas/proyecto-salvacion",
+      "/peliculas/spider-man-brand-new-day",
+      "/perfil",
+      "/plataformas",
+      "/politica-editorial",
+      "/prensa",
+      "/privacidad",
+      "/programacion-tv/en-directo",
+      "/programacion-tv/peliculas",
+      "/programacion-tv/que-ver-hoy",
+      "/programacion-tv/series",
+      "/registro",
+      "/sitemap",
+      "/sobre-nosotros",
+      "/tendencias"
+    ],
+    "scriptBreakout": true,
+    "api": {
+      "synopsisHash": "b354e7aa893d4825",
+      "synopsisChars": 431,
+      "tmdbId": 221650,
+      "slug": "los-subdesarrollados",
+      "detailPath": "/peliculas/los-subdesarrollados",
+      "airings": [
+        "somos|1792789560000"
+      ],
+      "genres": 0,
+      "durationMinutes": null,
+      "cast": 10,
+      "enrichment": null
+    }
+  }
+]

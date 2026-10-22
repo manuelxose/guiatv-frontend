@@ -46,6 +46,11 @@ export interface LegacyEnrichmentContext {
   slugBound?: boolean;
 }
 
+let active: LegacyEnrichmentService | undefined;
+
+/** Operator view (served by `/v2/health/metrics`): the rollout epoch and the outcome counters of the running service. */
+export const legacyEnrichmentSnapshot = () => ({ epoch: legacyEnrichmentPolicy.epoch(), counters: { ...(active?.counters ?? {}) } });
+
 export class LegacyEnrichmentService {
   private readonly catalog: LegacyEnrichmentDeps['catalog'];
   private readonly reader: IBroadcastReader;
@@ -65,6 +70,7 @@ export class LegacyEnrichmentService {
     this.reader = deps.reader ?? new MongoBroadcastReader(this.timeoutMs);
     this.policy = deps.policy ?? legacyEnrichmentPolicy;
     this.clock = deps.clock ?? (() => new Date());
+    active = this;
   }
 
   private count(outcome: string) { this.counters[outcome] = (this.counters[outcome] ?? 0) + 1; }
