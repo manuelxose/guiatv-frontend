@@ -1,0 +1,255 @@
+{
+ "generatedAt": "2026-10-22T12:34:41.576Z",
+ "dates": [
+  "20261021",
+  "20261022",
+  "20261023",
+  "20261024",
+  "20261025",
+  "20261026",
+  "20261027",
+  "20261028",
+  "20261029"
+ ],
+ "window": {
+  "evaluated": 3725,
+  "alreadyLinked": 977,
+  "linkable": 2150,
+  "ambiguous": 6,
+  "rejected": {
+   "missing_tmdb_id": 0,
+   "missing_catalogue_row": 0,
+   "invalid_catalogue_row": 12,
+   "invalid_title_key": 4,
+   "wrong_content_type": 221,
+   "title_key_mismatch": 290,
+   "conflicting_media_id": 2,
+   "tmdb_id_shared_by_other_titles": 63,
+   "duplicate_candidates": 6,
+   "ambiguous_content_type": 0
+  },
+  "tmdbIds": 1009,
+  "catalogueRows": 1031,
+  "queries": 3,
+  "truncated": false,
+  "ms": 330.1,
+  "unlinked": 2746
+ },
+ "perDate": {
+  "20261021": {
+   "evaluated": 814,
+   "alreadyLinked": 210,
+   "linkable": 477,
+   "ambiguous": 6,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 2,
+    "invalid_title_key": 0,
+    "wrong_content_type": 55,
+    "title_key_mismatch": 57,
+    "conflicting_media_id": 1,
+    "tmdb_id_shared_by_other_titles": 6,
+    "duplicate_candidates": 6,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 326,
+   "catalogueRows": 335,
+   "queries": 1,
+   "truncated": false,
+   "ms": 75.86
+  },
+  "20261022": {
+   "evaluated": 1099,
+   "alreadyLinked": 301,
+   "linkable": 638,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 2,
+    "invalid_title_key": 3,
+    "wrong_content_type": 53,
+    "title_key_mismatch": 94,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 8,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 410,
+   "catalogueRows": 425,
+   "queries": 1,
+   "truncated": false,
+   "ms": 76.52
+  },
+  "20261023": {
+   "evaluated": 1035,
+   "alreadyLinked": 264,
+   "linkable": 627,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 5,
+    "invalid_title_key": 1,
+    "wrong_content_type": 57,
+    "title_key_mismatch": 78,
+    "conflicting_media_id": 1,
+    "tmdb_id_shared_by_other_titles": 2,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 405,
+   "catalogueRows": 418,
+   "queries": 1,
+   "truncated": false,
+   "ms": 73.2
+  },
+  "20261024": {
+   "evaluated": 777,
+   "alreadyLinked": 202,
+   "linkable": 447,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 3,
+    "invalid_title_key": 0,
+    "wrong_content_type": 56,
+    "title_key_mismatch": 61,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 8,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 342,
+   "catalogueRows": 351,
+   "queries": 1,
+   "truncated": false,
+   "ms": 64.19
+  },
+  "20261025": {
+   "evaluated": 0,
+   "alreadyLinked": 0,
+   "linkable": 0,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 0,
+    "invalid_title_key": 0,
+    "wrong_content_type": 0,
+    "title_key_mismatch": 0,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 0,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 0,
+   "catalogueRows": 0,
+   "queries": 0,
+   "truncated": false,
+   "ms": 0.2
+  },
+  "20261026": {
+   "evaluated": 0,
+   "alreadyLinked": 0,
+   "linkable": 0,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 0,
+    "invalid_title_key": 0,
+    "wrong_content_type": 0,
+    "title_key_mismatch": 0,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 0,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 0,
+   "catalogueRows": 0,
+   "queries": 0,
+   "truncated": false,
+   "ms": 0.01
+  },
+  "20261027": {
+   "evaluated": 0,
+   "alreadyLinked": 0,
+   "linkable": 0,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 0,
+    "invalid_title_key": 0,
+    "wrong_content_type": 0,
+    "title_key_mismatch": 0,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 0,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 0,
+   "catalogueRows": 0,
+   "queries": 0,
+   "truncated": false,
+   "ms": 0.01
+  },
+  "20261028": {
+   "evaluated": 0,
+   "alreadyLinked": 0,
+   "linkable": 0,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 0,
+    "invalid_title_key": 0,
+    "wrong_content_type": 0,
+    "title_key_mismatch": 0,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 0,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 0,
+   "catalogueRows": 0,
+   "queries": 0,
+   "truncated": false,
+   "ms": 0.01
+  },
+  "20261029": {
+   "evaluated": 0,
+   "alreadyLinked": 0,
+   "linkable": 0,
+   "ambiguous": 0,
+   "rejected": {
+    "missing_tmdb_id": 0,
+    "missing_catalogue_row": 0,
+    "invalid_catalogue_row": 0,
+    "invalid_title_key": 0,
+    "wrong_content_type": 0,
+    "title_key_mismatch": 0,
+    "conflicting_media_id": 0,
+    "tmdb_id_shared_by_other_titles": 0,
+    "duplicate_candidates": 0,
+    "ambiguous_content_type": 0
+   },
+   "tmdbIds": 0,
+   "catalogueRows": 0,
+   "queries": 0,
+   "truncated": false,
+   "ms": 0.01
+  }
+ },
+ "readOnlyGuard": {
+  "total": 18,
+  "counts": {
+   "find:tv_read_airings": 1,
+   "getMore:": 10,
+   "find:media_catalog": 7
+  }
+ }
+}

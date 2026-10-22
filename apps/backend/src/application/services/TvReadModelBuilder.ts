@@ -25,6 +25,7 @@ import {
   TvTitleResolutionState,
 } from '@/shared/utils/tvMetadata';
 import { ProgramDeduplicator } from './ProgramDeduplicator';
+import { runCatalogueLinkShadow } from './CatalogueLinkShadow';
 import { getPrimaryEpgSourceUrl, isTdtChannelsSourceUrl } from '@/shared/config/epgSources';
 
 export interface ResolvedProgramEntry {
@@ -405,6 +406,8 @@ export class TvReadModelBuilder {
 
     });
     const airings = Array.from(airingsById.values());
+    // M03-L1: no-op unless EPG_CATALOGUE_LINK_MODE=shadow; reads the built programme fields (resolved category), never mutates.
+    await runCatalogueLinkShadow(airings.map((airing) => airing.program));
 
     await TVReadAiringModel.deleteMany({ date }).exec();
     if (airings.length) {

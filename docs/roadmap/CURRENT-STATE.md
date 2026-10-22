@@ -201,3 +201,15 @@ Evidence: `artifacts/m02-b/` (`measure-20261022.json`, `candidates-20261022.json
 
 **Outstanding risks**: mediaId fix unmeasured until the 18:00 sync; `/v2/tv/read` tail latency and bot-burst 503s (M02-B); no rollback drill; `main` ruleset unapplied; host key unpinned (`accept-new`); snapshot-tool false positive; owner decision pending on whether derived links may satisfy `requireCatalogueRow`.
 
+## M03-L1 addendum — conservative linker, shadow mode (2026-10-22 ~12:30Z)
+
+**Merge**: PR #58 (head `80c7948`, verify green) squash-merged as `1ccb350`.
+
+**Re-measure after the 18:00 sync: blocked by the schedule.** At 12:30Z the last airing write was 10:21Z (12:20 CEST sync), so the post-sync cohort does not exist yet; numbers equal the M02-C baseline: 3 725 airings with TMDB id, 979 with mediaId, **catalogueRowShare 26.3 %**, 2 746 missing, 417 projected copies by the 3F fix. Re-run `scripts/m02b-measure.cjs` after 16:00Z.
+
+**Linker** (rules exactly as `IDENTITY-LINKING-DESIGN.md`; fuzzy similarity is never evidence, an existing `mediaId` is never touched; a derived link is a weaker tier than a sync-time link). Production shadow check (`scripts/m03l1-shadow-validate.cjs`, candidate dist staged in `/var/tmp`, read-only guard: 18 commands, all finds): window cohort agrees with `m02b-measure` **exactly** (linkable 2 150, all categories equal); per-date (builder) cohorts 477 / 638 / 627 / 447 linkable for 21–24 Oct. Latency: 54–87 ms per date (read + evaluate, nice 19) vs 77–128 s per production rebuild → ≈0.1 % added; window run 392 ms, 3 queries, 1 031 projected rows, 120 MB RSS for the whole script.
+
+**Remaining conflicts**: 290 title-key differences, 221 series whose TMDB id only has a movie row, 63 TMDB ids shared by other titles, 12 invalid-only, 6 duplicates, 4 keyless titles, 2 airings whose `mediaId` points at a row with another TMDB id.
+
+**Activation**: `EPG_CATALOGUE_LINK_MODE` unset in production (= off).
+
