@@ -15,11 +15,13 @@ const { installReadOnlyGuard } = dist('scripts/readOnlyGuard.js');
 const { connectMongoDB, disconnectMongoDB } = dist('config/mongodb.js');
 const { titleIdentityKey } = dist('domain/services/contentIdentity.js');
 const { broadcastWindowDates } = dist('application/services/EntityBroadcastService.js');
+// Present from release 20261022161030 on; absent in older releases (projection then skipped).
+const { guardExistingMediaIds, catalogueLinkSnapshot } = (() => { try { return dist('application/services/CatalogueLinkShadow.js'); } catch { return {}; } })();
 
 const arg = (n) => (process.argv.includes(n) ? process.argv[process.argv.indexOf(n) + 1] : undefined);
 const inc = (o, k) => { o[k] = (o[k] ?? 0) + 1; };
 const MAXMS = 30_000;
-const DEPLOY_AT = new Date(arg('--deployed-at') ?? '2026-10-22T13:03:12Z');
+const DEPLOY_AT = new Date(arg('--deployed-at') ?? '2026-10-22T14:11:00Z'); // M03-L2 release 20261022161030
 const crossed = (category, rowType) => (category === 'Cine' && rowType === 'tv') || (category === 'Series' && rowType === 'movie');
 
 async function main() {
@@ -79,7 +81,19 @@ async function main() {
       else if (k === t) storedCensus.kindMatchesRow++;
       else { storedCensus.kindMismatchesRow++; inc(storedCensus.mismatchBySource, p.trustFlags?.tmdbSource ?? '∅'); }
     }
-    const report = { generatedAt: now.toISOString(), dates, airingsWithMediaId: airings.length, crossType: s, storedProgrammes: storedCensus, readOnlyGuard: guard.summary() };
+    // Projection: what the deployed build-time guard keeps for these airings (in-memory copies; nothing is written).
+    let guardProjection = null;
+    if (guardExistingMediaIds) {
+      const all = await db.collection('tv_read_airings').find({ date: { $in: dates }, 'program.tmdbId': { $type: 'number' } }, { projection: { updatedAt: 1, 'program.title': 1, 'program.tmdbId': 1, 'program.mediaId': 1, 'program.editorialCategory': 1 }, maxTimeMS: MAXMS }).toArray();
+      const copies = all.map((a) => ({ ...a.program }));
+      await guardExistingMediaIds(copies);
+      const kept = copies.filter((p) => p.mediaId);
+      const rowsKept = new Map((await db.collection('media_catalog').find({ _id: { $in: [...new Set(kept.map((p) => p.mediaId))].map((id) => new mongoose.Types.ObjectId(id)) } }, { projection: { tmdbType: 1 }, maxTimeMS: MAXMS }).toArray()).map((r) => [String(r._id), r.tmdbType]));
+      guardProjection = { withTmdb: all.length, rawMediaIdNow: all.filter((a) => a.program.mediaId).length, mediaIdAfterGuard: kept.length,
+        crossTypeAfterGuard: kept.filter((p) => crossed(p.editorialCategory, rowsKept.get(p.mediaId))).length, guard: catalogueLinkSnapshot().mediaIdGuard,
+        airingsBuiltAfterDeploy: all.filter((a) => a.updatedAt && new Date(a.updatedAt) >= DEPLOY_AT).length };
+    }
+    const report = { generatedAt: now.toISOString(), dates, airingsWithMediaId: airings.length, crossType: s, storedProgrammes: storedCensus, guardProjection, readOnlyGuard: guard.summary() };
     const out = arg('--out'); if (out) fs.writeFileSync(out, `${JSON.stringify(report, null, 1)}\n`);
     console.log(JSON.stringify(report));
   } finally { await disconnectMongoDB(); }

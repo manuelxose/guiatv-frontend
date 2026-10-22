@@ -1,0 +1,110 @@
+{
+ "generatedAt": "2026-10-22T14:40:24.444Z",
+ "dates": [
+  "20261021",
+  "20261022",
+  "20261023",
+  "20261024",
+  "20261025",
+  "20261026",
+  "20261027",
+  "20261028",
+  "20261029"
+ ],
+ "airingsWithMediaId": 1366,
+ "crossType": {
+  "airings": 199,
+  "byCategoryRowType": {
+   "Series|movie": 197,
+   "Cine|tv": 2
+  },
+  "byDate": {
+   "20261021": 49,
+   "20261022": 49,
+   "20261023": 50,
+   "20261024": 51
+  },
+  "airingVsRowTmdbId": {
+   "same": 198,
+   "different": 1
+  },
+  "rowSource": {
+   "epg": 199
+  },
+  "rowTitleKeyMatchesAiring": {
+   "yes": 196,
+   "no": 3
+  },
+  "tmdbIdAlsoHasRowOfExpectedType": {
+   "no": 198,
+   "yes": 1
+  },
+  "stored": {
+   "programmesFound": 209,
+   "programmesMissing": 0,
+   "storedMediaIdEqualsAiring": 201,
+   "storedMediaIdDiffers": 0,
+   "storedMediaIdAbsent": 8,
+   "storedCategory": {
+    "Series": 200,
+    "Sin clasificar": 1,
+    "∅": 1,
+    "Cine": 5,
+    "Deportes": 2
+   },
+   "tmdbKind": {
+    "series": 200,
+    "∅": 4,
+    "movie": 5
+   },
+   "tmdbSource": {
+    "db_cache": 202,
+    "∅": 4,
+    "api_primary": 3
+   },
+   "programmeCreatedBeforeDeploy": 209,
+   "programmeCreatedAfterDeploy": 0
+  },
+  "distinctBadMediaIds": 3,
+  "distinctTmdbIds": 4
+ },
+ "storedProgrammes": {
+  "withMediaId": 4581,
+  "danglingRow": 0,
+  "kindMatchesRow": 4253,
+  "kindMismatchesRow": 201,
+  "noKind": 127,
+  "noKindBySource": {
+   "db_cache": 127
+  },
+  "mismatchBySource": {
+   "db_cache": 201
+  }
+ },
+ "guardProjection": {
+  "withTmdb": 3949,
+  "rawMediaIdNow": 1366,
+  "mediaIdAfterGuard": 1164,
+  "crossTypeAfterGuard": 0,
+  "guard": {
+   "runs": 1,
+   "errors": 0,
+   "checked": 1366,
+   "kept": 1164,
+   "dropped": {
+    "cross_type_media_id": 198,
+    "conflicting_media_id": 4
+   }
+  },
+  "airingsBuiltAfterDeploy": 0
+ },
+ "readOnlyGuard": {
+  "total": 26,
+  "counts": {
+   "find:tv_read_airings": 2,
+   "getMore:": 17,
+   "find:media_catalog": 5,
+   "find:programs": 2
+  }
+ }
+}
