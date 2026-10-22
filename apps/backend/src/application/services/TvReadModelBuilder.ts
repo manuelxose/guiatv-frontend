@@ -25,6 +25,7 @@ import {
   TvTitleResolutionState,
 } from '@/shared/utils/tvMetadata';
 import { ProgramDeduplicator } from './ProgramDeduplicator';
+import { runCatalogueLinkShadow } from './CatalogueLinkShadow';
 import { getPrimaryEpgSourceUrl, isTdtChannelsSourceUrl } from '@/shared/config/epgSources';
 
 export interface ResolvedProgramEntry {
@@ -136,6 +137,7 @@ export class TvReadModelBuilder {
       primarySourceUrl
     );
     const titleResolutions = this.buildTitleResolutionMap(scopedResolvedEntries);
+    await runCatalogueLinkShadow(scopedResolvedEntries.map((entry) => entry.program));
     const brands = new Map<string, any>();
     const airingsById = new Map<string, any>();
     const identityYears = new Map<string, unknown>();

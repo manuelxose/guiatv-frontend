@@ -49,7 +49,12 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 ### M02-C — Integrate, deploy, validate (2026-10-22)
 - **Status**: PR #57 merged `7b30fa6` ✔ · deployed ✔ (run 39775322728, `20261022140539`, parity ✔, flags unchanged) · catalogue fix verified in prod (751 + 274 rows) ✔ · mediaId before/after ○ (needs the 18:00 CEST sync) · identity-linking design ✔ (`IDENTITY-LINKING-DESIGN.md`).
-- **Next**: M03-L1 shadow-mode linker (see design) — not started, owner go required. M03-A stays blocked on the linker and on the owner decision about derived links.
+- **Next**: M03-L1 shadow-mode linker (see design) — done 2026-10-22 (below). M03-A stays blocked on the linker and on the owner decision about derived links.
+
+### M03-L1 — Conservative EPG→catalogue linker, shadow mode (2026-10-22)
+- **What**: pure `linkCatalogueRow` (`apps/backend/src/domain/services/catalogueLinker.ts`; LINKABLE / ALREADY_LINKED / REJECTED / AMBIGUOUS + reason code + evidence, rule `tmdb-type-titlekey-unique` v1) and `runCatalogueLinkShadow` called once per `TvReadModelBuilder.rebuildDate` behind `EPG_CATALOGUE_LINK_MODE` = `off` (default; unknown → off + one warning) | `shadow` (batched indexed reads ≤500 ids/query, ≤5 000 ids/run, counters + p50/p95 on `/v2/health/metrics` `catalogueLink`; nothing persisted, airings byte-identical, never fails the build).
+- **Measured (prod, read-only, candidate dist, 12:30Z, before the 18:00 sync)**: shadow vs `m02b-measure` on the same window: linkable **2 150 = 2 150**, every rejection category identical (title key 290, wrong type 221, shared TMDB id 63, invalid rows 12, duplicates 6, no key 4); 977 already linked + 2 conflicting `mediaId` (= m02b `catalogue_tmdb_mismatch`). Overhead 54–87 ms per date vs 77–128 s per rebuild (≈0.1 %), 1 query per date. `artifacts/m03-l1/`.
+- **Status**: Eng ✔ · Tests ✔ · Measured ✔ · Merge/Deploy: see CURRENT-STATE · Act: flag **off** (shadow not enabled persistently). Persisting derived links and letting them satisfy `requireCatalogueRow` remain owner decisions.
 
 ### M03-A — Candidate enrichment verification
 - **Objective**: final allowlist of 3–5 `/peliculas/` paths. **Scope**: pick candidates the preflight accepts with `verifiedBroadcasts > 0`; swap from the 25 reserves; re-take before-snapshots if > a few hours old. **Non-goals**: title-only matches, `scope=all`, series/programmes.

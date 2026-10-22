@@ -5,6 +5,7 @@ import { asyncHandler } from '../../shared/utils/asyncHandler';
 import { successResponse } from '../../shared/types/ApiResponse';
 import { runtimeMetricsSnapshot } from '../../shared/utils/runtimeMetrics';
 import { legacyEnrichmentPolicy } from '../../application/services/LegacyEnrichmentPolicy';
+import { catalogueLinkSnapshot } from '../../application/services/CatalogueLinkShadow';
 import { legacyEnrichmentSnapshot } from '../../application/services/LegacyEnrichmentService';
 import { ChatSocketHub } from '../realtime/ChatSocketHub';
 
@@ -82,7 +83,7 @@ export const createHealthRoutes = (): Router => {
   );
 
   router.get('/metrics', (_req: Request, res: Response) => {
-    res.status(200).json(successResponse({ ...runtimeMetricsSnapshot(), legacyEnrichment: legacyEnrichmentSnapshot() }, { cached: false }));
+    res.status(200).json(successResponse({ ...runtimeMetricsSnapshot(), legacyEnrichment: legacyEnrichmentSnapshot(), catalogueLink: catalogueLinkSnapshot() }, { cached: false }));
   });
 
   return router;
