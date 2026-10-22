@@ -68,7 +68,8 @@ test('the film page: header, facts, broadcasts, credits and attribution, single 
   await expect(cards.first()).toContainText('AMC');
   await expect(cards.first().getByRole('link', { name: 'AMC' })).toHaveAttribute('href', '/canales/amc');
   await expect(cards.first()).toContainText(/en [23] h/);
-  await expect(cards.nth(1)).toContainText('en 3 días');
+  // The fixture is relative to the current instant; Madrid midnight can make the calendar-day label 2 or 3.
+  await expect(cards.nth(1)).toContainText(/en [23] días/);
   await expect(cards.first()).toContainText('2 h 20 min');
   await expect(page.locator('p', { hasText: 'Dirección:' })).toContainText('Gore Verbinski');
   await expect(page.getByText('Datos e imágenes de TMDB.')).toBeVisible();
