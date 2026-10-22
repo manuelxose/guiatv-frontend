@@ -70,7 +70,10 @@ test('legacy page parity and enrichment through the real read model', { skip: !m
     // The verified broadcasts: the legacy window saw only today and tomorrow; the enrichment adds the 7-day view on catalogue evidence.
     assert.deepEqual(enrichment!.broadcasts!.items.map((i) => i.airingId), ['soon', 'later']);
     assert.equal(enrichment!.broadcasts!.windowDays, 7);
-    assert.deepEqual(enrichment!.metadata, { originalTitle: 'A Cure for Wellness', runtimeMinutes: 147, genres: ['Terror'] });
+    // M03.2: the base TMDB detail now carries genres and runtime itself, so only the original title is a gap.
+    assert.deepEqual(off.genres, ['Terror']);
+    assert.equal(off.durationMinutes, 147);
+    assert.deepEqual(enrichment!.metadata, { originalTitle: 'A Cure for Wellness' });
 
     // By id, same result.
     const byId = await build(ON, repo).getDetail('tmdb:movie:340837');
