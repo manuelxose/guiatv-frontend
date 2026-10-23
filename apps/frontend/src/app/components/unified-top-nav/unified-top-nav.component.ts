@@ -1,12 +1,15 @@
 import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
+import { A11yModule } from '@angular/cdk/a11y';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   HostListener,
   PLATFORM_ID,
   ViewChild,
   computed,
+  effect,
   inject,
   input,
   output,
@@ -46,7 +49,7 @@ export interface UnifiedTopNavShortcut {
 @Component({
   selector: 'app-unified-top-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule, UnifiedSearchComponent, NotificationBellComponent],
+  imports: [CommonModule, A11yModule, RouterModule, UnifiedSearchComponent, NotificationBellComponent],
   templateUrl: './unified-top-nav.component.html',
   styleUrl: './unified-top-nav.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +93,15 @@ export class UnifiedTopNavComponent {
     hint: destination.hint,
     iconPath: destination.iconPath,
   }));
+
+  constructor() {
+    effect(() => {
+      if (!this.viewport.isMobile() && this.mobileSearchOpen()) {
+        this.closeMobileSearch();
+      }
+    });
+    inject(DestroyRef).onDestroy(() => this.setDocumentScrollLocked(false));
+  }
 
   get currentStatusLabel(): string {
     if (this.activeTab() === 'streaming') {
