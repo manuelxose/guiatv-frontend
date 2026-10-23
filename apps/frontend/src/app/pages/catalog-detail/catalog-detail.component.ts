@@ -21,7 +21,7 @@ import { MetaService } from '../../services/meta.service';
 import { buildProgramCatalogId, buildTmdbCatalogId } from '../../utils/catalog';
 import { catalogRobotsPolicy } from '../../utils/catalog-indexability';
 import { fillLegacyGaps, scheduleView, ScheduleView } from '../../utils/legacy-enrichment';
-import { broadcastPublication, GUIDE_TIME_ZONE } from '../entity-detail/entity-detail.model';
+import { broadcastPublication, broadcastTiming, GUIDE_TIME_ZONE } from '../entity-detail/entity-detail.model';
 import { generateTVSeriesSchema, generateMovieSchema, generateBreadcrumbSchema, serializeJsonLd } from '../../utils/utils';
 import { UnifiedSkeletonBlockComponent } from '../../components/unified-skeleton-block/unified-skeleton-block.component';
 import { UnifiedAsyncStateComponent } from '../../components/unified-async-state/unified-async-state.component';
@@ -119,7 +119,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   {{ contentTypeLabel(content.contentType) }}
                 </span>
                 <span
-                  *ngIf="content.liveNow"
+                  *ngIf="content.contentType !== 'program' && content.liveNow"
                   class="rounded-[var(--radius-pill)] border border-transparent bg-[var(--accent-live-strong)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.28em] text-white"
                 >
                   En directo
@@ -146,6 +146,14 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
                   {{ content.rating | number:'1.0-1' }}/10
                 </span>
               </div>
+
+              <p *ngIf="content.contentType === 'program' && programmeTiming(content) as timing" class="text-sm font-semibold text-[var(--hero-text-muted)]" aria-live="polite">
+                {{ timing.text }} · Horario peninsular (Madrid).
+                <span *ngIf="content.end">Fin: {{ formatTime(content.end!) }}</span>
+              </p>
+              <a *ngIf="content.contentType === 'program' && content.channel?.id" [routerLink]="channelPath(content.channel!.id)" class="inline-block text-sm font-semibold text-[var(--hero-text)] underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4">
+                Ver programación de {{ content.channel?.name || 'este canal' }}
+              </a>
 
               <p class="max-w-3xl text-base leading-7 text-[var(--hero-text-muted)]">
                 {{ content.synopsis || 'Sinopsis no disponible.' }}
@@ -503,6 +511,11 @@ export class CatalogDetailComponent implements OnInit, OnDestroy {
       minute: '2-digit',
       timeZone: GUIDE_TIME_ZONE,
     });
+  }
+
+  programmeTiming(item: CatalogItem): ReturnType<typeof broadcastTiming> | null {
+    if (!item.start || !item.end || !Number.isFinite(Date.parse(item.start)) || !Number.isFinite(Date.parse(item.end)) || Date.parse(item.end) <= Date.parse(item.start)) return null;
+    return broadcastTiming({ start: item.start, end: item.end }, this.now);
   }
 
   originalTitle(item: CatalogItem): string {

@@ -94,15 +94,21 @@ const TICK_MS = 30_000;
             <div class="mx-auto max-w-7xl space-y-10 px-4 pb-16 pt-8 sm:px-6 lg:space-y-14 lg:px-8 lg:pt-10">
               @if (content.broadcasts) {
                 <app-entity-broadcast-list [broadcasts]="content.broadcasts" [now]="now" [entityTitle]="content.title" />
+              } @else if (content.kind === 'show' || content.kind === 'event') {
+                <section aria-labelledby="programme-schedule-title">
+                  <h2 id="programme-schedule-title" class="text-xl font-bold">Emisiones en TV</h2>
+                  <p class="mt-3 text-sm text-[var(--portal-text-soft)]">No disponemos de un horario verificado para este programa. Consulta la guía para descubrir qué se emite.</p>
+                  <a [routerLink]="exploreLinks[0].path" class="mt-3 inline-block font-semibold underline underline-offset-4">Qué ver hoy en TV</a>
+                </section>
               }
 
-              @if (content.tmdbId) {
+              @if (content.tmdbId && (content.kind === 'movie' || content.kind === 'series')) {
                 <section aria-labelledby="entity-where-title">
                   <p class="eyebrow text-[var(--portal-text-muted)]">Disponibilidad</p>
                   <h2 id="entity-where-title" class="mt-1 text-xl font-bold tracking-tight text-[var(--portal-text)]">Dónde ver</h2>
                   <div class="mt-4">
-                    <app-where-to-watch [tmdbId]="content.tmdbId" contentType="movie" [primaryPlatforms]="[]" placement="catalog-detail"
-                      [catalogId]="'tmdb:movie:' + content.tmdbId" [page]="content.canonicalPath"></app-where-to-watch>
+                    <app-where-to-watch [tmdbId]="content.tmdbId" [contentType]="content.kind === 'series' ? 'tv' : 'movie'" [primaryPlatforms]="[]" placement="catalog-detail"
+                      [catalogId]="'tmdb:' + (content.kind === 'series' ? 'tv' : 'movie') + ':' + content.tmdbId" [page]="content.canonicalPath"></app-where-to-watch>
                   </div>
                 </section>
               }
@@ -238,7 +244,7 @@ export class EntityDetailComponent implements OnInit {
     const generated = data.broadcasts?.generatedAt ? new Date(data.broadcasts.generatedAt) : null;
     this.now = this.server && generated && !Number.isNaN(generated.getTime()) ? generated : new Date();
     this.kind = kindLabel(data.kind);
-    this.runtime = formatRuntime(data.runtimeMinutes);
+    this.runtime = data.kind === 'series' ? null : formatRuntime(data.runtimeMinutes);
     this.updated = data.attribution ? new Intl.DateTimeFormat('es-ES', { timeZone: GUIDE_TIME_ZONE, day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(data.attribution.updatedAt)) : '';
     const hub = data.kind === 'series' ? { name: 'Series', url: APP_PATHS.series } : data.kind === 'movie' ? { name: 'Películas', url: APP_PATHS.movies } : { name: 'Programas', url: APP_PATHS.live };
     this.breadcrumbItems = [{ name: 'Inicio', url: '/' }, hub, { name: data.title, url: data.canonicalPath }];

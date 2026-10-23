@@ -123,7 +123,7 @@
   // in design-system/guiatv/MASTER.md). Every vertical badge/card must pair
   // its tone with a label/icon — colour alone no longer disambiguates 5 ways.
   --accent-live: var(--spotify-negative);
-  --accent-live-strong: #e0323f;
+  --accent-live-strong: #c42835;
   --accent-live-soft: color-mix(in oklch, var(--accent-live) 8%, var(--portal-card));
   --accent-discover: var(--spotify-green);
   --accent-discover-soft: color-mix(in oklch, var(--accent-discover) 8%, var(--portal-card));
@@ -302,7 +302,7 @@ html[data-theme='dark'] {
   // Same collapsed 4-color set as light, unchanged — Spotify's brand accents
   // do not invert with theme, only surfaces/text do.
   --accent-live: var(--spotify-negative);
-  --accent-live-strong: #e0323f;
+  --accent-live-strong: #c42835;
   --status-live: var(--spotify-negative);
   --accent-live-soft: color-mix(in oklch, var(--accent-live) 10%, var(--portal-card));
   --accent-discover: var(--spotify-green);
@@ -357,7 +357,7 @@ html[data-theme='dark'] {
     --assistant-badge-border: #52627a;
     --assistant-badge-text: #eef2f8;
     --accent-live: #f3727f;
-    --accent-live-strong: #e0323f;
+    --accent-live-strong: #c42835;
     --status-live: #f3727f;
     --accent-discover: #1ed760;
     --accent-streaming: #539df5;

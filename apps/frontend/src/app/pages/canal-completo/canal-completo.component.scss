@@ -16,6 +16,12 @@
   min-width: 0;
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent-discover);
+  outline-offset: 3px;
+}
+
 // ===============================================
 // LIVE PULSE DOT (hero + schedule "en directo" badges)
 // ===============================================
@@ -100,11 +106,8 @@
   background: var(--accent-live);
 }
 
-.schedule-row--past {
-  opacity: 0.55;
-}
-
-.schedule-row--past:hover,
-.schedule-row--past:focus-within {
-  opacity: 0.85;
+app-breadcrumb {
+  --hero-text: var(--portal-text);
+  --hero-text-muted: var(--portal-text-muted);
+  --hero-bg-soft: var(--portal-surface);
 }

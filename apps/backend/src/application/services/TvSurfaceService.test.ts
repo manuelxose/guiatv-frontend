@@ -198,3 +198,27 @@ test('TvSurfaceService channel surface uses canonical directory metadata', async
   assert.equal(surface.channel?.operator, 'AMC Networks');
   assert.equal(surface.channel?.quality?.resolution, 'hd');
 });
+
+test('cached channel surface refreshes both live flags without queries or changing verified destinations', async () => {
+  const now = Date.now();
+  const at = (minutes: number) => new Date(now + minutes * 60_000).toISOString();
+  const ended = buildItem('ended', 'amc', 1, 'Finalizado', { start: at(-90), end: at(-30), liveNow: true });
+  const current = { ...buildItem('current', 'amc', 1, 'En emisión', { start: at(-30), end: at(30), liveNow: false }), detailPath: '/programas/verified-programme' };
+  const next = buildItem('next', 'amc', 1, 'Después', { start: at(30), end: at(90), liveNow: false });
+  const cached = { date: '20261023', channel: current.channel, current: ended, next: current, scheduleItems: [ended, current, next], tonightItems: [], relatedChannels: [], meta: { totalItems: 3, generatedAt: at(-60) } };
+  const service = new TvSurfaceService({
+    getChannelDetail: async () => assert.fail('cached surface must not query the schedule'),
+    getChannels: async () => assert.fail('cached surface must not query channels'),
+  } as any, { get: async () => cached } as any);
+
+  const surface = await service.getChannelSurface('amc', 'today');
+  assert.equal(surface.meta.cached, true);
+  assert.equal(surface.current?.id, 'current');
+  assert.equal(surface.next?.id, 'next');
+  assert.equal(surface.scheduleItems[0].airing.liveNow, false);
+  assert.equal(surface.scheduleItems[0].timingContext.liveNow, false);
+  assert.equal(surface.scheduleItems[1].airing.liveNow, true);
+  assert.equal(surface.scheduleItems[1].timingContext.liveNow, true);
+  assert.equal(surface.current?.detailPath, '/programas/verified-programme');
+  assert.equal(cached.scheduleItems[0].airing.liveNow, true, 'do not mutate the cached snapshot');
+});

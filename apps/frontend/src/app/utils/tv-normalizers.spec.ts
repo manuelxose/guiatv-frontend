@@ -3,6 +3,10 @@ import { TvReadItemDTO } from '../api/models';
 import { computeProgress, isTvReadItem, normalizeCategory, normalizeToCard } from './tv-normalizers';
 
 describe('tv-normalizers', () => {
+  it('formats card subtitles in Madrid across the daylight-saving boundary', () => {
+    expect(normalizeToCard(makeTvItem({ start: '2026-10-25T00:30:00Z', end: '2026-10-25T02:30:00Z' })).subtitle).toContain('02:30 - 03:30');
+    expect(normalizeToCard(makeTvItem({ start: '2026-07-01T18:00:00Z', end: '2026-07-01T19:00:00Z' })).subtitle).toContain('20:00 - 21:00');
+  });
   it('detects TvRead items with the type guard', () => {
     expect(isTvReadItem(makeTvItem())).toBeTrue();
     expect(

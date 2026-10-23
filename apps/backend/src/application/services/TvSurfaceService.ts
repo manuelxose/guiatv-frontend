@@ -1,6 +1,7 @@
 import { ICacheRepository } from '@/domain/repositories/ICacheRepository';
 import {
   PRIME_TIME_WINDOW,
+  hydrateTvReadItemRuntime,
   selectCurrentTvItems,
   selectNextTvItems,
   selectPrimeTimeTvItems,
@@ -372,12 +373,18 @@ export class TvSurfaceService {
   }
 
   private hydrateChannelSurface(surface: TvChannelSurfaceDTO): TvChannelSurfaceDTO {
-    const current = selectCurrentTvItems(surface.scheduleItems)[0];
-    const next = selectNextTvItems(surface.scheduleItems, new Date())[0];
-    const tonightItems = buildChannelPrimeTimeItems(surface.scheduleItems, surface.date);
+    const reference = new Date();
+    const scheduleItems = surface.scheduleItems.map((item) => ({
+      ...hydrateTvReadItemRuntime(item, reference),
+      detailPath: item.detailPath,
+    }));
+    const current = selectCurrentTvItems(scheduleItems)[0];
+    const next = selectNextTvItems(scheduleItems, reference)[0];
+    const tonightItems = buildChannelPrimeTimeItems(scheduleItems, surface.date);
 
     return {
       ...surface,
+      scheduleItems,
       current,
       next,
       tonightItems,

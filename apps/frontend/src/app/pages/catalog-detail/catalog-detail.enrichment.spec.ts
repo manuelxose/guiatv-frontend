@@ -185,4 +185,20 @@ describe('CatalogDetailComponent: Phase 3E legacy enrichment', () => {
     expect(fixture.nativeElement.textContent).toContain('Próximas emisiones');
     fixture.destroy();
   });
+
+  it('derives programme state from its verified slot and links back to the channel', () => {
+    const fixture = render(legacy({ contentType: 'program', source: 'program', start: iso(-3), end: iso(-1), liveNow: true, channel: { id: 'la1', name: 'La 1' } }));
+    const text = fixture.nativeElement.textContent as string;
+    expect(text).toContain('Finalizada');
+    expect(text).toContain('Horario peninsular (Madrid)');
+    expect(text).not.toContain('En directo');
+    expect(fixture.nativeElement.querySelector('a[href="/canales/la1"]')?.textContent).toContain('Ver programación de La 1');
+    const component = fixture.componentInstance;
+    component.now = new Date(NOW);
+    expect(component.programmeTiming(legacy({ start: iso(-1), end: iso(1) }))?.state).toBe('live');
+    expect(component.programmeTiming(legacy({ start: iso(1), end: iso(2) }))?.state).toBe('soon');
+    expect(component.programmeTiming(legacy({ start: 'invalid', end: iso(2) }))).toBeNull();
+    expect(component.programmeTiming(legacy({ start: iso(2), end: iso(1) }))).toBeNull();
+    fixture.destroy();
+  });
 });

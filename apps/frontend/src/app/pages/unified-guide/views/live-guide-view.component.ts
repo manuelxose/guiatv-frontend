@@ -383,6 +383,7 @@ export class LiveGuideViewComponent {
 
   schedulePositionLabel(item: TvReadItemDTO, index: number): string {
     if (item.airing.liveNow) return 'En directo';
+    if (new Date(item.airing.end).getTime() <= Date.now()) return 'Finalizado';
     if (index === 0) return this.guideState.liveFilters().date === 'today' ? 'Próximo' : 'Primero';
     if (index === 1) return 'A continuación';
     return 'Más tarde';
@@ -437,7 +438,18 @@ export function selectMobileChannelSchedule(
   date: string,
   nowMs = Date.now()
 ): TvReadItemDTO[] {
-  const sorted = [...items].sort(
+  const sorted = items.filter((item) => {
+    const start = new Date(item.airing.start).getTime();
+    const end = new Date(item.airing.end).getTime();
+    return Number.isFinite(start) && Number.isFinite(end) && end > start;
+  }).map((item) => {
+    const liveNow = Date.parse(item.airing.start) <= nowMs && nowMs < Date.parse(item.airing.end);
+    return {
+      ...item,
+      airing: { ...item.airing, liveNow },
+      timingContext: item.timingContext ? { ...item.timingContext, liveNow } : undefined,
+    };
+  }).sort(
     (left, right) => new Date(left.airing.start).getTime() - new Date(right.airing.start).getTime()
   );
   if (date !== 'today') return sorted.slice(0, 4);

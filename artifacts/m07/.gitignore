@@ -1,0 +1,10 @@
+*.log
+candidate/
+before/*.png
+!before/0-375.png
+!before/0-1440.png
+!before/1-375.png
+after/*.png
+!after/0-375-light-viewport.png
+!after/0-1440-light-viewport.png
+!after/1-375-light-viewport.png

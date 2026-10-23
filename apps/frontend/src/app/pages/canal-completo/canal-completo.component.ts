@@ -29,6 +29,7 @@ import { normalizeToCard } from 'src/app/utils/tv-normalizers';
 import { normalizePublicImageUrl } from 'src/app/utils/media-url';
 import { slugify } from 'src/app/utils/utils';
 import { channelCanonicalPath } from '../../config/route-map';
+import { formatMadridHM } from '../../utils/madrid-time';
 
 type GuideQuickCategory = 'all' | 'Cine' | 'Series' | 'Deportes';
 type DayAlias = 'today' | 'tomorrow' | 'after_tomorrow';
@@ -122,6 +123,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
   public programs: ChannelProgram[] = [];
   public currentProgram: ChannelProgram | null = null;
   public nextPrograms: ChannelProgram[] = [];
+  public tonightPrograms: ChannelProgram[] = [];
   public relatedChannels: TvReadChannelSummaryDTO[] = [];
 
   /** Verified provider offer(s) for this channel — empty when no merchant alias matches, which is the common case and renders nothing. */
@@ -167,10 +169,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     if (Number.isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleTimeString('es-ES', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatMadridHM(date);
   }
 
   public formatTimeRange(program: ChannelProgram): string {
@@ -295,8 +294,12 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     return this.filterPrograms(this.nextPrograms).slice(0, 8);
   }
 
+  public get filteredTonightPrograms(): ChannelProgram[] {
+    return this.filterPrograms(this.tonightPrograms);
+  }
+
   public isPastProgram(program: ChannelProgram): boolean {
-    return !program.liveNow && new Date(program.end).getTime() < Date.now();
+    return new Date(program.end).getTime() <= Date.now();
   }
 
   /** Ambient backdrop for the hero — the current programme's artwork when available, otherwise none (falls back to the CSS gradient). */
@@ -358,8 +361,9 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     );
 
     this.programs = normalizedPrograms;
+    const apiCurrent = this.normalizeProgram(surface.current);
     this.currentProgram =
-      this.normalizeProgram(surface.current) ||
+      (apiCurrent?.liveNow ? apiCurrent : null) ||
       normalizedPrograms.find((program) => program.liveNow) ||
       null;
     // The API's own `surface.next` is a single item; the full schedule usually
@@ -371,7 +375,11 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     [...(apiNext ? [apiNext] : []), ...scheduleNext].forEach((program) => {
       nextById.set(program.id, program);
     });
-    this.nextPrograms = Array.from(nextById.values());
+    this.nextPrograms = this.buildNextPrograms(Array.from(nextById.values()));
+    this.tonightPrograms = (surface.tonightItems || [])
+      .map((program) => this.normalizeProgram(program))
+      .filter((program): program is ChannelProgram => Boolean(program))
+      .sort((left, right) => Date.parse(left.start) - Date.parse(right.start));
     this.relatedChannels = this.buildRelatedChannels(surface);
     this.setupMetaTags();
     this.resolveChannelAffiliateOffers();
@@ -443,14 +451,20 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     );
     const startDate = new Date(start);
     const endDate = new Date(end);
-    const durationMinutes =
-      !Number.isNaN(startDate.getTime()) && !Number.isNaN(endDate.getTime())
-        ? Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 60000))
-        : undefined;
+    if (!Number.isFinite(startDate.getTime()) || !Number.isFinite(endDate.getTime()) || endDate <= startDate) {
+      return null;
+    }
+    const durationMinutes = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
+    const now = Date.now();
+    const liveNow = startDate.getTime() <= now && now < endDate.getTime();
     const itemId = String(program?.id || `${slugify(title)}-${start}`);
 
     return {
-      raw: program as TvReadItemDTO,
+      raw: {
+        ...program as TvReadItemDTO,
+        airing: { ...program!.airing, liveNow },
+        timingContext: { ...program!.timingContext, liveNow },
+      },
       id: itemId,
       title,
       description: String(program?.program?.description || '').trim() || undefined,
@@ -460,7 +474,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
       image: imageUrl,
       start,
       end,
-      liveNow: Boolean(program?.airing?.liveNow),
+      liveNow,
       detailPath: normalizeToCard(program as TvReadItemDTO).detailPath,
       durationMinutes: program?.airing?.durationMinutes || durationMinutes,
     };
@@ -470,6 +484,7 @@ export class CanalCompletoComponent implements OnInit, OnDestroy {
     const now = Date.now();
     return programs
       .filter((program) => new Date(program.start).getTime() > now)
+      .sort((left, right) => Date.parse(left.start) - Date.parse(right.start))
       .slice(0, 6);
   }
 
