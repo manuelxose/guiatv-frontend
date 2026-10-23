@@ -51,7 +51,7 @@
 
 .discover-view__eyebrow {
   margin: 0;
-  color: var(--discover-accent);
+  color: var(--portal-text-muted);
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -108,7 +108,7 @@
 
 .discover-view__summary .discover-view__clear {
   background: transparent;
-  color: var(--discover-accent);
+  color: var(--portal-text);
 }
 
 .discover-view__feature-grid {
@@ -197,7 +197,7 @@
 .discover-view__directory-chip--active {
   border-color: transparent;
   background: color-mix(in srgb, var(--discover-accent) 12%, var(--guide-surface-strong));
-  color: var(--discover-accent);
+  color: var(--portal-text);
 }
 
 .discover-view__section-head {

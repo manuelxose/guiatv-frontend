@@ -1,4 +1,4 @@
-.shell { max-width: 72rem; margin: 0 auto; padding: 1rem; min-width: 0; }
+.shell { width: 100%; padding: var(--space-3) 0 var(--space-8); min-width: 0; }
 
 .head { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.75rem; }
 .head__crest {
@@ -18,7 +18,7 @@
   color: var(--portal-text-muted);
   text-transform: uppercase;
 }
-.head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--portal-text); }
+.head__title { margin: 0; font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.03em; font-weight: 900; color: var(--portal-text); overflow-wrap: anywhere; }
 .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--portal-text-muted); }
 
 .tabs {

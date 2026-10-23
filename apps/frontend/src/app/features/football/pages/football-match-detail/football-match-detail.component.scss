@@ -1,7 +1,7 @@
-.shell { max-width: 72rem; margin: 0 auto; padding: 1rem; min-width: 0; }
+.shell { width: 100%; padding: var(--space-3) 0 var(--space-8); min-width: 0; }
 
 .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
-@media (min-width: 768px) { .grid { grid-template-columns: minmax(0, 1fr) 18rem; } }
+@media (min-width: 1024px) { .grid { grid-template-columns: minmax(0, 1fr) 18rem; } }
 .grid__main { display: flex; flex-direction: column; gap: 1rem; min-width: 0; }
 .grid__aside { display: flex; flex-direction: column; gap: 0.5rem; }
 

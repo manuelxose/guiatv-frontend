@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { map, switchMap } from 'rxjs';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
 import { FootballCompetitionDetailDTO, FootballMatchDTO } from '@app/features/football/football.models';
 import { FootballNewsCardComponent } from '@app/features/football/components/football-news-card/football-news-card.component';
@@ -97,6 +97,7 @@ export class FootballCompetitionDetailComponent {
   private readonly matches = computed(() => this.detail()?.matches ?? []);
   readonly filteredMatches = computed(() => applyFootballMatchFilter(this.matches(), this.filter()));
   readonly roundGroups = computed(() => groupByRound(this.filteredMatches()));
+  readonly liveMatches = computed(() => applyFootballMatchFilter(this.matches(), 'live'));
 
   readonly upcomingPreview = computed(() =>
     this.matches()
@@ -114,6 +115,7 @@ export class FootballCompetitionDetailComponent {
   readonly standingsPreview = computed(() => (this.detail()?.standings ?? []).slice(0, 5));
 
   constructor() {
+    this.route.fragment.pipe(takeUntilDestroyed()).subscribe((fragment) => this.selectTab(fragment || 'resumen'));
     effect(() => {
       const state = this.state();
       if (state.status === 'found') {
@@ -125,7 +127,7 @@ export class FootballCompetitionDetailComponent {
   }
 
   selectTab(tab: string): void {
-    this.activeTab.set(tab as CompetitionTab);
+    this.activeTab.set(tab === 'calendario' || tab === 'clasificacion' ? tab : 'resumen');
   }
 
   onFilterChange(filter: FootballMatchFilter): void {

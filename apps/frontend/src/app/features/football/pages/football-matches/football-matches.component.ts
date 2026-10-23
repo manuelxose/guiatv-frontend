@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { combineLatest, map, shareReplay, switchMap, tap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -37,6 +37,7 @@ function todayKey(): string {
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     FootballCompetitionGroupComponent,
     FootballDateStripComponent,
     FootballFilterBarComponent,

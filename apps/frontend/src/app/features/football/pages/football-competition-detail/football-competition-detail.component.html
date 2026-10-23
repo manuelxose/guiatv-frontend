@@ -31,6 +31,12 @@
 
     <!-- RESUMEN -->
     <div *ngIf="activeTab() === 'resumen'" class="panel">
+      <section *ngIf="liveMatches().length" class="block block--live">
+        <app-football-section-header title="En directo"></app-football-section-header>
+        <div class="rows">
+          <app-football-match-row *ngFor="let match of liveMatches(); trackBy: trackByMatch" [match]="match"></app-football-match-row>
+        </div>
+      </section>
       <section *ngIf="upcomingPreview().length" class="block">
         <app-football-section-header eyebrow="Agenda" title="Próximos partidos"></app-football-section-header>
         <div class="rows">
@@ -75,7 +81,7 @@
         </div>
       </section>
 
-      <div *ngIf="!upcomingPreview().length && !resultsPreview().length && !standingsPreview().length && !data.news?.length" class="empty">
+      <div *ngIf="!liveMatches().length && !upcomingPreview().length && !resultsPreview().length && !standingsPreview().length && !data.news?.length" class="empty">
         <p class="empty__title">Sin información disponible por ahora</p>
         <p class="empty__sub">Consulta el calendario o vuelve más tarde.</p>
       </div>
@@ -98,7 +104,8 @@
       </ng-container>
       <ng-template #noMatches>
         <div class="empty">
-          <p class="empty__title">Sin partidos disponibles para esta competición</p>
+          <p class="empty__title">{{ filter() === 'all' ? 'Sin partidos disponibles para esta competición' : 'No hay partidos para este filtro' }}</p>
+          <button *ngIf="filter() !== 'all'" type="button" class="see-all" (click)="onFilterChange('all')">Ver todos los partidos</button>
         </div>
       </ng-template>
     </div>
@@ -109,7 +116,7 @@
     </div>
   </div>
 
-  <div *ngIf="loading()" class="empty" aria-hidden="true">
+  <div *ngIf="loading()" class="empty" role="status" aria-label="Cargando competición">
     <div class="empty__skeleton"></div>
   </div>
 

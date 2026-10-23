@@ -12,8 +12,8 @@
 
   <app-football-filter-bar [active]="filter()" (filterChange)="onFilterChange($event)"></app-football-filter-bar>
 
-  <main class="content">
-    <div *ngIf="loading()" class="matches__skeleton" aria-hidden="true">
+  <main class="content" [attr.aria-busy]="loading()">
+    <div *ngIf="loading()" class="matches__skeleton" role="status" aria-label="Cargando partidos">
       <div class="matches__skeleton-group" *ngFor="let group of [1, 2]">
         <div class="matches__skeleton-header"></div>
         <div class="matches__skeleton-row" *ngFor="let row of [1, 2, 3]"></div>
@@ -21,6 +21,7 @@
     </div>
 
     <ng-container *ngIf="!loading()">
+      <p *ngIf="!loadFailed()" class="results-summary" role="status">{{ filteredMatches().length }} {{ filteredMatches().length === 1 ? 'partido' : 'partidos' }}<span *ngIf="filter() === 'live'"> en directo</span></p>
       <ng-container *ngIf="grouped().length; else empty">
         <app-football-competition-group
           *ngFor="let group of grouped(); trackBy: trackByGroup"
@@ -35,7 +36,11 @@
             <p class="empty__sub">Comprueba tu conexión y vuelve a intentarlo.</p>
             <button type="button" (click)="retryLoad()">Reintentar</button>
           </ng-container>
-          <ng-template #honestEmpty><p class="empty__title">{{ emptyTitle }}</p><p class="empty__sub">{{ emptySubtitle }}</p></ng-template>
+          <ng-template #honestEmpty>
+            <p class="empty__title">{{ emptyTitle }}</p><p class="empty__sub">{{ emptySubtitle }}</p>
+            <a *ngIf="view() === 'live'; else resetFilter" routerLink="/deportes/futbol/partidos-hoy">Ver partidos de hoy</a>
+            <ng-template #resetFilter><button *ngIf="filter() !== 'all'" type="button" (click)="onFilterChange('all')">Ver todos los partidos</button></ng-template>
+          </ng-template>
         </div>
       </ng-template>
     </ng-container>
