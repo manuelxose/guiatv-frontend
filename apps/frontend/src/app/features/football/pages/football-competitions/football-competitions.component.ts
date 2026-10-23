@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FootballFacade } from '@app/features/football/football.facade';
@@ -21,7 +22,7 @@ interface CountryGroup {
 @Component({
   selector: 'app-football-competitions',
   standalone: true,
-  imports: [CommonModule, RouterModule, FootballCompetitionCardComponent, FootballSectionHeaderComponent],
+  imports: [CommonModule, FormsModule, RouterModule, FootballCompetitionCardComponent, FootballSectionHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './football-competitions.component.html',
   styleUrl: './football-competitions.component.scss',
@@ -32,14 +33,22 @@ export class FootballCompetitionsComponent implements OnInit {
 
   readonly competitions = toSignal(this.facade.getCompetitions(), { initialValue: null as FootballCompetitionDTO[] | null });
   readonly loading = computed(() => this.competitions() === null);
+  readonly query = signal('');
+  readonly filtered = computed(() => {
+    const normalize = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
+    const query = normalize(this.query().trim());
+    return (this.competitions() ?? []).filter((competition) =>
+      !query || [competition.name, competition.shortName, competition.country].some((value) =>
+        value && normalize(value).includes(query)));
+  });
 
   readonly featured = computed(() => {
-    const all = this.competitions() ?? [];
+    const all = this.filtered();
     return FEATURED_SLUGS.map((slug) => all.find((c) => c.slug === slug)).filter(Boolean) as FootballCompetitionDTO[];
   });
 
   readonly groups = computed<CountryGroup[]>(() => {
-    const all = this.competitions() ?? [];
+    const all = this.filtered();
     const featuredSlugs = new Set(this.featured().map((c) => c.slug));
     const rest = all.filter((c) => !featuredSlugs.has(c.slug));
 

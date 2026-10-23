@@ -5,11 +5,19 @@
     <p class="head__sub">Ligas, copas y torneos internacionales.</p>
   </header>
 
-  <div *ngIf="loading()" class="skeleton" aria-hidden="true">
+  <div *ngIf="loading()" class="skeleton" role="status" aria-label="Cargando competiciones">
     <div class="skeleton__row" *ngFor="let i of [1, 2, 3, 4, 5, 6]"></div>
   </div>
 
   <ng-container *ngIf="!loading()">
+    <div *ngIf="competitions()?.length" class="catalog-filter">
+      <label for="competition-filter">Filtrar competiciones</label>
+      <div class="catalog-filter__controls">
+        <input id="competition-filter" type="search" placeholder="Nombre o país" [ngModel]="query()" (ngModelChange)="query.set($event)" aria-describedby="competition-count" />
+        <button *ngIf="query()" type="button" (click)="query.set('')">Quitar filtro</button>
+      </div>
+      <p id="competition-count" role="status">{{ filtered().length }} {{ filtered().length === 1 ? 'competición' : 'competiciones' }}</p>
+    </div>
     <section *ngIf="featured().length" class="section">
       <app-football-section-header eyebrow="Destacadas" title="Las más seguidas"></app-football-section-header>
       <div class="grid">
@@ -31,8 +39,8 @@
     </section>
 
     <div *ngIf="!featured().length && !groups().length" class="empty">
-      <p class="empty__title">No hay competiciones disponibles ahora mismo</p>
-      <p class="empty__sub">Vuelve a intentarlo en unos minutos.</p>
+      <p class="empty__title">{{ query() ? 'No hay competiciones para este filtro' : 'No hay competiciones disponibles ahora mismo' }}</p>
+      <p class="empty__sub">{{ query() ? 'Prueba con otro nombre o país, o quita el filtro.' : 'Vuelve a intentarlo en unos minutos.' }}</p>
     </div>
   </ng-container>
 </div>

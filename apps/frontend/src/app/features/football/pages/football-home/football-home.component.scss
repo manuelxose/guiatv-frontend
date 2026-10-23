@@ -14,7 +14,7 @@ app-football-filter-bar { display: block; margin-bottom: 1rem; }
 .football-home__section { display: grid; min-width: 0; gap: .55rem; scroll-margin-top: calc(var(--unified-top-nav-h) + 1rem); }
 .football-home__section--live { border-top: 2px solid var(--football-live); padding-top: .8rem; }
 .football-home__filter-note { margin: 0; color: var(--football-muted); font-size: var(--text-xs); }
-.football-home__filter-note button { min-height: 44px; border: 0; background: transparent; color: var(--accent-sports); font: inherit; font-weight: 750; cursor: pointer; }
+.football-home__filter-note button { min-height: 44px; border: 0; background: transparent; color: var(--portal-text-soft); font: inherit; font-weight: 750; cursor: pointer; }
 .football-home__upcoming { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
 .football-home__news { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .65rem; }
 .football-home__news-lead { grid-column: 1 / -1; }
@@ -22,19 +22,19 @@ app-football-filter-bar { display: block; margin-bottom: 1rem; }
 .football-home__empty h2 { margin: 0; color: var(--portal-text); font-size: var(--text-md); }
 .football-home__empty p, .football-home__quiet-empty { margin: .4rem 0 0; color: var(--football-muted); font-size: var(--text-sm); line-height: 1.5; }
 .football-home__empty div { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1rem; margin-top: .65rem; }
-.football-home__empty a, .football-home__empty button { display: inline-flex; min-height: 44px; align-items: center; color: var(--accent-sports); font-size: var(--text-xs); font-weight: 750; }
+.football-home__empty a, .football-home__empty button { display: inline-flex; min-height: 44px; align-items: center; color: var(--portal-text-soft); font-size: var(--text-xs); font-weight: 750; }
 .football-home__empty button { border: 1px solid var(--football-border); border-radius: var(--radius-pill); background: var(--football-surface); padding: 0 .9rem; cursor: pointer; }
 .football-home__tv, .football-home__competitions { border: 1px solid var(--football-border); border-radius: var(--radius-md); background: var(--football-surface); padding: 1rem; }
 .football-home__rail-head { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: .65rem; }
 .football-home__rail-head h2 { margin: 0; color: var(--portal-text); font-size: var(--text-md); }
-.football-home__rail-head a { display: inline-flex; min-height: 44px; align-items: center; color: var(--accent-sports); font-size: var(--text-xs); font-weight: 750; text-decoration: none; }
+.football-home__rail-head a { display: inline-flex; min-height: 44px; align-items: center; color: var(--portal-text-soft); font-size: var(--text-xs); font-weight: 750; text-decoration: underline; text-underline-offset: .2em; }
 .football-home__tv ol { margin: 0; padding: 0; list-style: none; }
 .football-home__tv li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: .55rem; border-top: 1px solid var(--portal-divider); padding: .6rem 0; }
 .football-home__tv time { color: var(--portal-text); font-size: var(--text-xs); font-weight: 800; font-variant-numeric: tabular-nums; }
 .football-home__tv li a { min-width: 0; color: var(--portal-text); text-decoration: none; }
 .football-home__tv li strong, .football-home__tv li span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .football-home__tv li strong { font-size: var(--text-xs); }
-.football-home__tv li span { margin-top: .15rem; color: var(--football-provider); font-size: var(--text-2xs); font-weight: 700; }
+.football-home__tv li span { margin-top: .15rem; color: var(--portal-text-soft); font-size: var(--text-2xs); font-weight: 700; }
 .football-home__competitions > div:last-child { display: flex; flex-wrap: wrap; gap: .45rem; }
 .football-home__skeleton { display: grid; gap: .55rem; }
 .football-home__skeleton div { height: 3.8rem; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--portal-surface-strong) 25%, var(--portal-card) 37%, var(--portal-surface-strong) 63%); background-size: 400% 100%; animation: football-home-skeleton 1.4s ease infinite; }

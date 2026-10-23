@@ -42,7 +42,7 @@ import { FootballCompetitionDTO, FootballStandingRowDTO } from '@app/features/fo
     th:nth-child(2), td:nth-child(2) { text-align: left; }
     tbody th { max-width: 10rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; }
     thead th { color: var(--football-muted); font-size: var(--text-2xs); text-transform: uppercase; letter-spacing: 0.05em; }
-    a { display: inline-flex; min-height: 44px; align-items: center; margin-top: 0.45rem; color: var(--accent-sports); font-size: var(--text-xs); font-weight: 750; text-decoration: none; }
+    a { display: inline-flex; min-height: 44px; align-items: center; margin-top: 0.45rem; color: var(--portal-text-soft); font-size: var(--text-xs); font-weight: 750; text-decoration: underline; text-underline-offset: 0.2em; }
     a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
     a:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
   `,

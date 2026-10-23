@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { groupByRound, FootballCompetitionDetailComponent } from './football-competition-detail.component';
 import { FootballFacade } from '@app/features/football/football.facade';
 import { FootballCompetitionDetailDTO, FootballMatchDTO } from '@app/features/football/football.models';
@@ -57,20 +57,20 @@ function detail(): FootballCompetitionDetailDTO {
 describe('FootballCompetitionDetailComponent (SEO/meta regression)', () => {
   // Same bug class fixed in football-match-detail: meta must never default
   // to noindex before the real found/not-found outcome is known.
-  function setup(result: FootballCompetitionDetailDTO | null) {
+  function setup(result: FootballCompetitionDetailDTO | null, fragment = new BehaviorSubject<string | null>(null)) {
     const setMetaTags = jasmine.createSpy('setMetaTags');
     TestBed.configureTestingModule({
       imports: [FootballCompetitionDetailComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })) } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })), fragment } },
         { provide: FootballFacade, useValue: { getCompetition: () => of(result) } },
         { provide: MetaService, useValue: { setMetaTags } },
       ],
     });
     const fixture = TestBed.createComponent(FootballCompetitionDetailComponent);
     fixture.detectChanges();
-    return { setMetaTags };
+    return { setMetaTags, fixture };
   }
 
   it('a found competition never ends up noindex', () => {
@@ -85,9 +85,50 @@ describe('FootballCompetitionDetailComponent (SEO/meta regression)', () => {
     const lastCall = setMetaTags.calls.mostRecent().args[0];
     expect(lastCall.robots).toBe('noindex, follow');
   });
+
+  it('opens the linked standings tab and handles only supported fragment changes without altering canonical', () => {
+    const fragment = new BehaviorSubject<string | null>('clasificacion');
+    const { fixture, setMetaTags } = setup(detail(), fragment);
+    expect(fixture.componentInstance.activeTab()).toBe('clasificacion');
+    expect(fixture.nativeElement.querySelector('app-football-standings-table')).toBeTruthy();
+    fragment.next('calendario');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-football-filter-bar')).toBeTruthy();
+    fragment.next('unsupported');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.activeTab()).toBe('resumen');
+    expect(setMetaTags.calls.mostRecent().args[0].canonicalUrl).toBe('/deportes/futbol/competiciones/laliga');
+  });
 });
 
 describe('FootballCompetitionDetailComponent — "where to watch" is scoped to the single next match', () => {
+  it('shows live and halftime matches in the summary instead of an empty state', () => {
+    TestBed.configureTestingModule({
+      imports: [FootballCompetitionDetailComponent],
+      providers: [
+        provideRouter([]),
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })), fragment: of(null) } },
+        { provide: FootballFacade, useValue: { getCompetition: () => of({ ...detail(), matches: [
+          { ...match('live'), status: 'live' }, { ...match('halftime'), status: 'halftime' },
+        ] }) } },
+        { provide: MetaService, useValue: { setMetaTags: () => {} } },
+      ],
+    });
+    const fixture = TestBed.createComponent(FootballCompetitionDetailComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.liveMatches().map((item) => item.id)).toEqual(['live', 'halftime']);
+    expect(fixture.nativeElement.querySelector('.block--live')).toBeTruthy();
+    expect(fixture.nativeElement.textContent).not.toContain('Sin información disponible por ahora');
+    fixture.componentInstance.selectTab('calendario');
+    fixture.componentInstance.onFilterChange('finished');
+    fixture.detectChanges();
+    const reset = fixture.nativeElement.querySelector('.empty button') as HTMLButtonElement;
+    expect(reset.textContent).toContain('Ver todos');
+    reset.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('app-football-match-row').length).toBe(2);
+  });
+
   function nextMatch(): FootballMatchDTO {
     return {
       id: 'next-1',
@@ -110,7 +151,7 @@ describe('FootballCompetitionDetailComponent — "where to watch" is scoped to t
       imports: [FootballCompetitionDetailComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })) } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })), fragment: of(null) } },
         {
           provide: FootballFacade,
           useValue: { getCompetition: () => of({ ...detail(), matches: [nextMatch()] }) },
@@ -137,7 +178,7 @@ describe('FootballCompetitionDetailComponent — "where to watch" is scoped to t
       imports: [FootballCompetitionDetailComponent],
       providers: [
         provideRouter([]),
-        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })) } },
+        { provide: ActivatedRoute, useValue: { paramMap: of(convertToParamMap({ slug: 'laliga' })), fragment: of(null) } },
         { provide: FootballFacade, useValue: { getCompetition: () => of(detail()) } },
         { provide: MetaService, useValue: { setMetaTags: () => {} } },
       ],

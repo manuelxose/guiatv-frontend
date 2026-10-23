@@ -1,8 +1,16 @@
-.shell { max-width: 72rem; margin: 0 auto; padding: 1rem; min-width: 0; }
+.shell { width: 100%; padding: var(--space-3) 0 var(--space-8); min-width: 0; }
 
 .head { margin-bottom: 1rem; }
-.head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--portal-text); }
+.head__title { margin: 0; font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.03em; font-weight: 900; color: var(--portal-text); text-wrap: balance; }
 .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--portal-text-muted); }
+
+.catalog-filter { display: grid; gap: var(--space-2); margin-bottom: var(--space-6); }
+.catalog-filter label { font-size: var(--text-sm); font-weight: 750; color: var(--portal-text); }
+.catalog-filter__controls { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.catalog-filter input { flex: 1 1 16rem; min-width: 0; min-height: 44px; border: 1px solid var(--portal-border-strong); border-radius: var(--radius-md); padding: var(--space-2) var(--space-3); background: var(--portal-card); color: var(--portal-text); font: inherit; }
+.catalog-filter button { min-height: 44px; border: 1px solid var(--portal-border-strong); border-radius: var(--radius-pill); padding: var(--space-2) var(--space-4); background: var(--portal-card); color: var(--portal-text); font: inherit; font-weight: 750; cursor: pointer; }
+.catalog-filter :is(input, button):focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
+.catalog-filter p { margin: 0; font-size: var(--text-xs); color: var(--portal-text-muted); }
 
 .section { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
 

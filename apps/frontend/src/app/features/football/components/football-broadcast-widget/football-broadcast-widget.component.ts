@@ -73,14 +73,14 @@ export function summarizeFootballBroadcasts(matches: FootballMatchDTO[]): Footba
     h2, p { margin: 0; }
     h2 { color: var(--portal-text); font-size: var(--text-md); line-height: 1.25; }
     .broadcast-widget__head p { margin-top: 0.2rem; color: var(--football-muted); font-size: var(--text-xs); }
-    .broadcast-widget__head button { min-height: 44px; border: 0; background: transparent; color: var(--accent-sports); font-weight: 750; cursor: pointer; }
+    .broadcast-widget__head button { min-height: 44px; border: 0; background: transparent; color: var(--portal-text-soft); font-weight: 750; text-decoration: underline; text-underline-offset: .2em; cursor: pointer; }
     ul { display: grid; gap: 0.2rem; margin: 0; padding: 0; list-style: none; }
     li button { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; border: 1px solid transparent; border-radius: var(--radius-sm); background: transparent; color: var(--portal-text); padding: 0.5rem 0.65rem; text-align: left; cursor: pointer; }
     li button:hover, li button:focus-visible { border-color: var(--football-border); background: var(--football-surface-subtle); }
     li button:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 1px; }
     li button.is-active { background: var(--accent-sports-soft); border-color: color-mix(in srgb, var(--accent-sports) 35%, var(--football-border)); }
     li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-sm); font-weight: 700; }
-    li strong { flex: 0 0 auto; color: var(--football-provider); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
+    li strong { flex: 0 0 auto; color: var(--portal-text-soft); font-size: var(--text-xs); font-variant-numeric: tabular-nums; }
     .broadcast-widget__empty { color: var(--football-muted); font-size: var(--text-sm); line-height: 1.5; }
   `,
 })

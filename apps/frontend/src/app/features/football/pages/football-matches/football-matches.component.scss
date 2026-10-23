@@ -1,18 +1,20 @@
 .shell {
-  max-width: 72rem;
-  margin: 0 auto;
-  padding: 1rem;
+  width: 100%;
+  padding: var(--space-3) 0 var(--space-8);
   min-width: 0;
 }
 
 .head { margin-bottom: 0.75rem; }
-.head__title { margin: 0; font-size: 1.5rem; font-weight: 900; color: var(--portal-text); }
+.head__title { margin: 0; font-size: var(--text-2xl); line-height: 1.1; letter-spacing: -.03em; font-weight: 900; color: var(--portal-text); text-wrap: balance; }
 .head__sub { margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--portal-text-muted); }
 
 app-football-date-strip { display: block; margin-bottom: 0.5rem; }
 app-football-filter-bar { display: block; margin-bottom: 1rem; }
 
 .content { display: flex; flex-direction: column; gap: 0.75rem; min-width: 0; }
+.results-summary { margin: 0; color: var(--portal-text-muted); font-size: var(--text-xs); }
+.empty a { display: inline-flex; align-items: center; min-height: 44px; margin-top: var(--space-2); color: var(--accent-sports); font-weight: 750; }
+.empty :is(a, button):focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; }
 
 .empty {
   border: 1px dashed var(--portal-border-strong);
