@@ -23,10 +23,29 @@ Integrator owned shared navigation/time formatting, baseline, release and integr
 
 Available Ponytail/Serena and installed Angular/Playwright/axe tooling were used. Requested design/SEO/Context Mode equivalents were not available as session skills; no dependencies, frameworks, graphs or redundant audits were introduced. Native memory tools were unavailable; this concise delivery record is the handoff.
 
-## Release gates
+## Release gates — recorded
 
-Implementation and local checks are complete; final rebuilt browser checks, green CI, PR merge, one gated artifact deployment and post-release verification remain required. Do not interpret this record as M07 PASS until those gates are recorded below.
+Preflight (2026-10-23 14:22 CEST): API/SSR `200`, live release `20261023010043` on `cb5a860`, activation flag-name inventories empty in both `/etc/guiatv/api.env` and `/etc/guiatv/ssr.env` (only `ENABLE_CRON` set), journal for the previous 30 minutes showed only expected `NOT_FOUND` probes, load average 0.52, four retained immutable releases for rollback. No persistent-data change is involved.
 
-Preflight: API/SSR healthy, activation flag-name inventories empty in both API/SSR env files, no recent API/SSR error journal entries, previous immutable release present for rollback. No persistent-data change is involved.
+Gates, in order:
 
-Next milestone: M08 global UX/UI consistency after the M07 release is verified.
+1. Rebuilt browser checks on the merged tree: `npx playwright test -c playwright.entity.config.ts` → 32 passed, 2 project-skips (M05 + M07 + entity + legacy suites, 375/768/1280/1440, light and dark, axe WCAG AA, no horizontal overflow).
+2. CI on PR #72: `Build, test, and performance budgets` success (13m27s, backend with Mongo, frontend, lint, deploy/ops scripts, Angular budgeted build) and `SEO regression` success (3m13s).
+3. Independent review of `main...HEAD`: no significant issues; time/DST handling, live-flag rehydration (no cached-snapshot mutation), `detailPath` preservation, template null-safety and SSR/SEO invariants explicitly checked.
+4. Merge: PR #72 squash-merged as `da9ec11`.
+5. One gated artifact deployment: `deploy-artifact.yml` run `39952795817` on `main@da9ec11` → release `20261023142416`, `gitSha da9ec11`, API/SSR `active`, both health checks `200`.
+
+Post-release verification (public, read-only):
+
+- `/canales/la-1` `200`, canonical correct, confirmed-inventory notice, `Finalizado`/`Próximamente`/`En directo` states and the evening section present in SSR.
+- Surface `/v2/tv/surface/channels/la-1`: `current` = the slot covering the request instant with both live flags true, `next` = the first later slot, six evening items; no cached snapshot mutation.
+- Verified programme destination `/contenido/program:20261023_la_1_20261023103500` `200` with canonical to itself, Madrid start/end, channel-schedule link and its existing `noindex, follow`.
+- Unknown channel `404` with `noindex, nofollow`; `/programacion-tv/en-directo`, `/programacion-tv/guia-canales` and `/` `200`.
+- Browser check against production: EPG day grid channel names are `<a href="/canales/…">` for every sampled row, axe 0 violations, 0 page errors; channel page at 375 px has `scrollWidth == innerWidth`, visible keyboard focus, `aria-pressed` toggling, axe 0 violations.
+- Performance: server-side channel-surface duration 6–20 ms (one 158 ms outlier) versus 62–115 ms baseline client samples, so the hydration costs nothing measurable; `tv/read` warm p95 70–179 ms. Lab samples, not field CWV.
+
+Rollback target if a critical regression appears: repoint `current` to `20261023010043` and restart `guiatv-api` and `guiatv-ssr` (documented recovery). Not used.
+
+**M07 status: PASS** (engineering, CI, merge, deploy and post-release verification observed).
+
+Next milestone: M08 global UX/UI consistency. It is the right next step, but the milestone graph lists M06 (series/episode pages, EPG films classed as `Series`) as a dependency: either verify that M05's series-detail scope already covers M06 and close it with evidence, or run that narrower remainder first.

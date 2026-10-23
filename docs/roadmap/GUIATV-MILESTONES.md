@@ -90,10 +90,10 @@ Dependency graph: M01-A←M00 · M02-A←M00 · M01-B←M01-A,M02-A · M02-B←M
 
 | ID | Objective | Depends | Skills | Acceptance (summary) | Blockers | Go |
 |---|---|---|---|---|---|---|
-| M05 | Movie and series detail experience: separate work broadcasts from channel recommendations, safe known airing routes, responsive/a11y/SEO polish | M02-A ✔ | frontend-design, UI-UX-Pro-Max, angular-component | Backend/Angular/SSR CI green; deterministic Playwright + axe; production verification required before PASS | release and post-release evidence pending | **IN PROGRESS** (PR #66) |
-| M06 | Series and episodes pages (incl. frontend episode-titled links, EPG films classed as `Series`) | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO |
-| M07 | Programme and channel pages (now/next; fix "7-day" assumptions) | M05 | same | no copy promises more than the 3-day guide | EPG horizon | NO-GO |
-| M08 | Shared UX/UI consistency (tokens, cards, empty states) | M05, M06, M07 | web-design-guidelines, UI-UX-Pro-Max | one component set; bundle budgets hold | — | NO-GO |
+| M05 | Movie and series detail experience: separate work broadcasts from channel recommendations, safe known airing routes, responsive/a11y/SEO polish | M02-A ✔ | frontend-design, UI-UX-Pro-Max, angular-component | Backend/Angular/SSR CI green; deterministic Playwright + axe; production verification required before PASS | — | **DONE** (PR #71, release `20261023010043` @ `cb5a860`, verified) |
+| M06 | Series and episodes pages (incl. frontend episode-titled links, EPG films classed as `Series`) | M05 | same | same; episode identity rules respected | 3 days of EPG only | NO-GO (verify whether M05 series detail already closed it) |
+| M07 | Programme and channel pages (now/next; fix "7-day" assumptions) | M05 | same | no copy promises more than the 3-day guide | - | **DONE** (PR #72, release `20261023142416` @ `da9ec11`, verified — see [M07-DELIVERY.md](M07-DELIVERY.md)) |
+| M08 | Shared UX/UI consistency (tokens, cards, empty states) | M05, M06, M07 | web-design-guidelines, UI-UX-Pro-Max | one component set; bundle budgets hold | M06 still open | GO once M06 is closed or verified as covered by M05 |
 
 ## Stream C — SEO and editorial (provisional)
 
