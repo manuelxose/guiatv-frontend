@@ -92,7 +92,7 @@ type LegacyCatalogMode = 'program' | 'movie' | 'series';
           </div>
 
           <div class="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8 lg:pt-8">
-            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true" [emitSchema]="false"></app-breadcrumb>
+            <app-breadcrumb [items]="breadcrumbItems" [embedded]="true" [onHero]="true" [emitSchema]="false"></app-breadcrumb>
           </div>
 
           <div class="relative mx-auto flex min-h-[20rem] max-w-7xl flex-col gap-6 px-4 pb-10 pt-6 sm:px-6 md:flex-row md:items-end lg:px-8 lg:pt-8">

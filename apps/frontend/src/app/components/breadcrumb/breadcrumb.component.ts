@@ -18,6 +18,7 @@ export interface BreadcrumbItem {
       aria-label="Breadcrumb"
       class="breadcrumb"
       [class.breadcrumb--embedded]="embedded"
+      [class.breadcrumb--hero]="onHero"
     >
       <ol>
         <li *ngFor="let item of items; let first = first; let last = last">
@@ -94,11 +95,10 @@ export interface BreadcrumbItem {
       flex: 0 0 auto;
       color: var(--portal-text-faint);
     }
-    /* Embedded breadcrumbs sit on a constant-dark hero, so they use the hero tokens (the portal ones are for light and dark page surfaces). */
-    .breadcrumb--embedded a { color: var(--hero-text-muted); }
-    .breadcrumb--embedded a:hover { background: var(--hero-bg-soft); color: var(--hero-text); }
-    .breadcrumb--embedded .breadcrumb__current { color: var(--hero-text); }
-    .breadcrumb--embedded .breadcrumb__separator { color: var(--hero-text-muted); }
+    .breadcrumb--hero a { color: var(--hero-text-muted); }
+    .breadcrumb--hero a:hover { background: var(--hero-bg-soft); color: var(--hero-text); }
+    .breadcrumb--hero .breadcrumb__current { color: var(--hero-text); }
+    .breadcrumb--hero .breadcrumb__separator { color: var(--hero-text-muted); }
     @media (max-width: 639px) {
       .breadcrumb { font-size: .72rem; }
       .breadcrumb__current { max-width: 45vw; }
@@ -111,6 +111,7 @@ export interface BreadcrumbItem {
 export class BreadcrumbComponent implements OnChanges {
   @Input() items: BreadcrumbItem[] = [];
   @Input() embedded = false;
+  @Input() onHero = false;
   /** Set to false when the page already emits its own BreadcrumbList JSON-LD. */
   @Input() emitSchema = true;
   safeLdHtml: SafeHtml | null = null;

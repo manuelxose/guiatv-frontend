@@ -80,7 +80,14 @@
           tabindex="-1"
         ></button>
 
-        <div class="unified-top-nav__search-panel">
+        <div
+          id="portal-search-panel"
+          class="unified-top-nav__search-panel"
+          [attr.role]="mobileSearchOpen() ? 'dialog' : null"
+          [attr.aria-modal]="mobileSearchOpen() ? 'true' : null"
+          [attr.aria-label]="mobileSearchOpen() ? 'Buscar en Guía TV' : null"
+          [cdkTrapFocus]="mobileSearchOpen()"
+        >
           <div class="unified-top-nav__search-field">
             <app-unified-search
               [query]="searchQuery()"
@@ -109,6 +116,9 @@
           class="unified-top-nav__chrome-button unified-top-nav__search-trigger"
           (click)="openMobileSearch()"
           aria-label="Buscar"
+          aria-haspopup="dialog"
+          [attr.aria-controls]="mobileSearchOpen() ? 'portal-search-panel' : null"
+          [attr.aria-expanded]="mobileSearchOpen()"
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></circle>
