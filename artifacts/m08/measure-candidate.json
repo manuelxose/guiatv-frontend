@@ -1,7 +1,7 @@
 {
-  "origin": "http://127.0.0.1:4381",
-  "at": "2026-10-23T13:15:59.727Z",
-  "initialBytes": 739060,
+  "origin": "http://127.0.0.1:4382",
+  "at": "2026-10-23T13:34:42.438Z",
+  "initialBytes": 739058,
   "assets": [
     {
       "path": "styles-G5ORFOY6.css",
@@ -40,8 +40,8 @@
       "bytes": 10059
     },
     {
-      "path": "chunk-ZB5SPVBA.js",
-      "bytes": 101392
+      "path": "chunk-YT74SBPW.js",
+      "bytes": 101390
     },
     {
       "path": "chunk-RVTYRUDJ.js",
@@ -52,11 +52,11 @@
       "bytes": 34585
     },
     {
-      "path": "main-3JMAUUJY.js",
+      "path": "main-W4NXZVLS.js",
       "bytes": 189550
     },
     {
-      "path": "chunk-NCUWBHWC.js",
+      "path": "chunk-UXIMNE57.js",
       "bytes": 36432
     },
     {

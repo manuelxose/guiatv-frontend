@@ -29,7 +29,7 @@ try {
       await response.text();
       ssrMs.push(Math.round(performance.now() - start));
     }
-    const response = await page.goto(`${origin}${path}`, { waitUntil: 'networkidle', timeout: 60000 });
+    const response = await page.goto(`${origin}${path}`, { waitUntil: 'load', timeout: 60000 });
     await page.locator('app-root').waitFor();
     const row = { path, status: response.status(), ssrMs, errors, serverErrors, matrix: [] };
     row.seo = await page.evaluate(() => ({ title: document.title, canonical: [...document.querySelectorAll('link[rel="canonical"]')].map(x => x.href), robots: document.querySelector('meta[name="robots"]')?.content, headings: [...document.querySelectorAll('h1')].map(x => x.textContent.trim()) }));
@@ -37,7 +37,7 @@ try {
       await page.setViewportSize({ width, height: 900 });
       for (const theme of ['light', 'dark']) {
         await page.evaluate(value => localStorage.setItem('guiatv-theme', value), theme);
-        await page.reload({ waitUntil: 'networkidle', timeout: 60000 });
+        await page.reload({ waitUntil: 'load', timeout: 60000 });
         assert.equal(await page.locator('html').getAttribute('data-theme'), theme);
         const violations = (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations;
         row.matrix.push({ width, theme, overflow: await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), violations: violations.map(v => ({ id: v.id, impact: v.impact, nodes: v.nodes.map(n => ({ target: n.target, summary: n.failureSummary })) })) });
