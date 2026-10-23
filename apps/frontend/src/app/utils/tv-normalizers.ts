@@ -2,6 +2,7 @@ import { CatalogItem } from '../services/catalog.service';
 import { TvReadItemDTO } from '../api/models';
 import { buildDetailPath, CatalogContentType, slugifyTitle } from './catalog';
 import { APP_PATHS, channelPath } from '../config/route-map';
+import { formatMadridHM } from './madrid-time';
 
 // The five verticals the design system's accent tokens key off
 // (--accent-live/discover/streaming/sports/editorial). See
@@ -237,8 +238,5 @@ function formatTime(value?: string | null): string {
   if (Number.isNaN(date.getTime())) {
     return '';
   }
-  return date.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatMadridHM(date);
 }

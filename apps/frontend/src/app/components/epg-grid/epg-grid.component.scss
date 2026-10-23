@@ -146,6 +146,11 @@
   white-space: nowrap;
 }
 
+.epg-grid__channel-name:focus-visible {
+  outline: 2px solid var(--portal-text);
+  outline-offset: 2px;
+}
+
 .epg-grid__track {
   position: relative;
   flex: 0 0 auto;

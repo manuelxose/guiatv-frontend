@@ -1,0 +1,383 @@
+{
+  "origin": "https://guiaprogramaciontv.com",
+  "at": "2026-10-23T09:47:59.973Z",
+  "results": [
+    {
+      "path": "/canales/la-1",
+      "status": 200,
+      "ssrMs": [
+        133,
+        85,
+        72
+      ],
+      "errors": [],
+      "widths": [
+        {
+          "width": 375,
+          "overflow": false
+        },
+        {
+          "width": 768,
+          "overflow": false
+        },
+        {
+          "width": 1280,
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "overflow": false
+        }
+      ],
+      "seo": {
+        "title": "Programación de LA 1 hoy — Guía TV",
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "canonical": [
+          "https://guiaprogramaciontv.com/canales/la-1"
+        ],
+        "jsonld": [
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Inicio",
+                "item": "https://guiaprogramaciontv.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Canales",
+                "item": "https://guiaprogramaciontv.com/canales"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "LA 1",
+                "item": "https://guiaprogramaciontv.com/canales/la-1"
+              }
+            ]
+          }
+        ],
+        "headings": [
+          "LA 1",
+          "LA 1",
+          "Lo que viene después",
+          "Programación de hoy",
+          "Canales relacionados"
+        ]
+      },
+      "axe": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            [
+              ".tracking-\\[0\\.16em\\]"
+            ],
+            [
+              ".text-\\[var\\(--accent-live\\)\\]"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__title"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(1) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__title"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(2) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24 h\"] > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24 h\"] > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24 h\"] > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24 h\"] > .program-card__body > .program-card__title"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24 h\"] > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(3) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24H\"] > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24H\"] > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24H\"] > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24H\"] > .program-card__body > .program-card__title"
+            ],
+            [
+              "a[aria-label=\"Abrir emisión: Noticias 24H\"] > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(4) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__title"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(5) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .program-card__channel > span"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(3)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__eyebrow > .ng-star-inserted:nth-child(5)"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__title"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .min-w-0.flex-1[_ngcontent-ng-c3531599095=\"\"] > app-unified-program-card[variant=\"epg-row\"] > .program-card--epg.program-card > .program-card__tap > .program-card__body > .program-card__meta-strip > .program-card__meta-pill"
+            ],
+            [
+              ".schedule-row--past.schedule-row.py-2\\.5:nth-child(6) > .flex-col.gap-1\\.5.items-end > .px-3.justify-center.inline-flex"
+            ],
+            [
+              ".program-card--epg.program-card > .program-card__tap[aria-label=\"Abrir emisión: Mañaneros 360\"] > .program-card__body > .program-card__meta-strip > .program-card__meta-pill--live.program-card__meta-pill"
+            ],
+            [
+              ".gap-1"
+            ],
+            [
+              ".w-\\[260px\\].sm\\:w-\\[280px\\][role=\"listitem\"]:nth-child(1) > app-channel-card > .channel-card > .channel-card__schedule[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme--live.channel-card__programme[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme-meta[_ngcontent-ng-c1728375027=\"\"]"
+            ],
+            [
+              ".w-\\[260px\\].sm\\:w-\\[280px\\][role=\"listitem\"]:nth-child(2) > app-channel-card > .channel-card > .channel-card__schedule[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme--live.channel-card__programme[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme-meta[_ngcontent-ng-c1728375027=\"\"]"
+            ],
+            [
+              ".w-\\[260px\\].sm\\:w-\\[280px\\][role=\"listitem\"]:nth-child(3) > app-channel-card > .channel-card > .channel-card__schedule[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme--live.channel-card__programme[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme-meta[_ngcontent-ng-c1728375027=\"\"]"
+            ],
+            [
+              ".w-\\[260px\\].sm\\:w-\\[280px\\][role=\"listitem\"]:nth-child(4) > app-channel-card > .channel-card > .channel-card__schedule[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme--live.channel-card__programme[_ngcontent-ng-c1728375027=\"\"] > .channel-card__programme-meta[_ngcontent-ng-c1728375027=\"\"]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/contenido/program:20261023_la_1_20261023103500",
+      "status": 200,
+      "ssrMs": [
+        547,
+        996,
+        498
+      ],
+      "errors": [],
+      "widths": [
+        {
+          "width": 375,
+          "overflow": false
+        },
+        {
+          "width": 768,
+          "overflow": false
+        },
+        {
+          "width": 1280,
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "overflow": false
+        }
+      ],
+      "seo": {
+        "title": "Mañaneros 360: cuándo ver en TV | Guía TV",
+        "robots": "noindex, follow",
+        "canonical": [
+          "https://guiaprogramaciontv.com/contenido/program:20261023_la_1_20261023103500"
+        ],
+        "jsonld": [
+          [
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "name": "Inicio",
+                  "item": "https://guiaprogramaciontv.com/"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 2,
+                  "name": "Programas",
+                  "item": "https://guiaprogramaciontv.com/programacion-tv/en-directo"
+                },
+                {
+                  "@type": "ListItem",
+                  "position": 3,
+                  "name": "Mañaneros 360",
+                  "item": "https://guiaprogramaciontv.com/contenido/program:20261023_la_1_20261023103500"
+                }
+              ]
+            }
+          ]
+        ],
+        "headings": [
+          "Mañaneros 360",
+          "Próximas emisiones",
+          "También en este canal",
+          "Sigue explorando"
+        ]
+      },
+      "axe": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            [
+              ".tracking-\\[0\\.28em\\]"
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/programacion-tv/en-directo",
+      "status": 200,
+      "ssrMs": [
+        884,
+        81,
+        77
+      ],
+      "errors": [],
+      "widths": [
+        {
+          "width": 375,
+          "overflow": false
+        },
+        {
+          "width": 768,
+          "overflow": false
+        },
+        {
+          "width": 1280,
+          "overflow": false
+        },
+        {
+          "width": 1440,
+          "overflow": false
+        }
+      ],
+      "seo": {
+        "title": "TV en directo: qué emiten ahora los canales de España | Guía TV",
+        "robots": "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
+        "canonical": [
+          "https://guiaprogramaciontv.com/programacion-tv/en-directo"
+        ],
+        "jsonld": [
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Inicio",
+                "item": "https://guiaprogramaciontv.com/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "TV",
+                "item": "https://guiaprogramaciontv.com/programacion-tv/en-directo"
+              },
+              {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "En emisión",
+                "item": "https://guiaprogramaciontv.comundefined"
+              }
+            ]
+          }
+        ],
+        "headings": [
+          "En emisión ahora",
+          "Elige una señal",
+          "Otras emisiones disponibles"
+        ]
+      },
+      "axe": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            [
+              ".live-view__masthead-copy > .live-view__eyebrow"
+            ],
+            [
+              ".live-view__clear"
+            ],
+            [
+              ".chip-bar__item--active > .chip-bar__label[_ngcontent-ng-c3424447909=\"\"]"
+            ],
+            [
+              ".live-view__channels > .live-view__section-head > div[_ngcontent-ng-c2956715930=\"\"] > .live-view__eyebrow"
+            ],
+            [
+              ".live-view__section > .live-view__section-head > div[_ngcontent-ng-c2956715930=\"\"] > .live-view__eyebrow"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

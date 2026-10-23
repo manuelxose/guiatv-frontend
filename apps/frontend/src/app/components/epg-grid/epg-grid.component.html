@@ -32,7 +32,7 @@
           <div class="epg-grid__channel-cell" role="rowheader">
             <!-- impeccable-disable-next-line broken-image: Angular only renders the dynamic icon when row.channelIcon exists. -->
             <img *ngIf="row.channelIcon" [src]="row.channelIcon" alt="" width="48" height="48" loading="lazy" />
-            <span class="epg-grid__channel-name">{{ row.channelName }}</span>
+            <a class="epg-grid__channel-name" [routerLink]="row.cells[0].card.channelPath" [attr.aria-label]="'Ver programación de ' + row.channelName">{{ row.channelName }}</a>
           </div>
 
           <div class="epg-grid__track" role="presentation" [style.width.px]="timelineWidthPx()">

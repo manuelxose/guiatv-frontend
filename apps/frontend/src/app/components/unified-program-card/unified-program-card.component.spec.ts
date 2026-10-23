@@ -72,6 +72,12 @@ describe('UnifiedProgramCardComponent — affiliate opt-in', () => {
     expect(fixture.componentInstance.affiliateOffer()).toBeNull();
   });
 
+  it('formats broadcast times in Madrid through the autumn clock change', () => {
+    const fixture = TestBed.createComponent(UnifiedProgramCardComponent);
+    fixture.componentInstance.item = { ...testItem, start: '2026-10-25T00:30:00Z', end: '2026-10-25T02:30:00Z' };
+    expect(fixture.componentInstance.timeLabel).toBe('02:30 - 03:30');
+  });
+
   it('resolves a single offer scoped to this card\'s content when a caller opts in', () => {
     resolveSpy.and.returnValue(of(buildOffer()));
     const fixture = TestBed.createComponent(UnifiedProgramCardComponent);

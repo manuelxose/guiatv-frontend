@@ -1,0 +1,22 @@
+[
+  {
+    "path": "/v2/tv/read?view=now&date=today&group=tdt&limit=36",
+    "ms": [
+      437,
+      64,
+      56,
+      79,
+      73
+    ]
+  },
+  {
+    "path": "/v2/tv/surface/channels/la-1?date=today",
+    "ms": [
+      115,
+      75,
+      90,
+      62,
+      80
+    ]
+  }
+]

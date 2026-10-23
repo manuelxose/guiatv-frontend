@@ -7,7 +7,7 @@ import { MetaService } from '../../services/meta.service';
 import { ApiConfigService } from '../../api/api-config.service';
 import { AffiliateService } from '../../services/affiliate.service';
 import { AffiliateResolvedOffer } from '../../interfaces/affiliate.interface';
-import { TvChannelSurfaceDTO } from '../../api/models';
+import { TvChannelSurfaceDTO, TvReadItemDTO } from '../../api/models';
 
 function buildOffer(): AffiliateResolvedOffer {
   return {
@@ -108,5 +108,61 @@ describe('CanalCompletoComponent — channel-page affiliate CTA', () => {
       robots: 'noindex, follow',
       httpStatus: 404,
     }));
+  });
+
+  function airing(id: string, start: string, end: string, liveNow = false): TvReadItemDTO {
+    return {
+      id,
+      program: { title: id, editorialCategory: 'Cine' },
+      airing: { start, end, liveNow },
+      channel: { id: 'movistar-cine', name: 'Movistar Cine' },
+      availability: {},
+      assets: {},
+      timingContext: { liveNow },
+    } as unknown as TvReadItemDTO;
+  }
+
+  it('uses Spanish peninsular time across daylight saving changes independently of the host timezone', () => {
+    configure(buildSurface());
+    const component = TestBed.createComponent(CanalCompletoComponent).componentInstance;
+    expect(component.formatTime('2026-10-24T20:00:00Z')).toBe('22:00');
+    expect(component.formatTime('2026-10-25T20:00:00Z')).toBe('21:00');
+    expect(component.formatTime('invalid')).toBe('');
+  });
+
+  it('rejects invalid intervals and derives current and next from verified chronological times', () => {
+    spyOn(Date, 'now').and.returnValue(Date.parse('2026-10-23T12:00:00Z'));
+    const surface = buildSurface();
+    const past = airing('past', '2026-10-23T10:00:00Z', '2026-10-23T11:00:00Z', true);
+    const current = airing('current', '2026-10-23T11:00:00Z', '2026-10-23T13:00:00Z');
+    const first = airing('first', '2026-10-23T13:00:00Z', '2026-10-23T14:00:00Z');
+    const later = airing('later', '2026-10-23T14:00:00Z', '2026-10-23T15:00:00Z');
+    surface.current = past;
+    surface.next = later;
+    surface.scheduleItems = [later, past, first, current,
+      airing('invalid', 'invalid', '2026-10-23T15:00:00Z'),
+      airing('backwards', '2026-10-23T16:00:00Z', '2026-10-23T15:00:00Z')];
+    configure(surface);
+    const component = TestBed.createComponent(CanalCompletoComponent).componentInstance;
+    component.ngOnInit();
+
+    expect(component.programs.map((program) => program.id)).toEqual(['past', 'current', 'first', 'later']);
+    expect(component.currentProgram?.id).toBe('current');
+    expect(component.currentProgram?.raw.airing.liveNow).toBeTrue();
+    expect(component.programs[0].liveNow).toBeFalse();
+    expect(component.programs[0].raw.timingContext.liveNow).toBeFalse();
+    expect(component.nextPrograms.map((program) => program.id)).toEqual(['first', 'later']);
+  });
+
+  it('shows only the supplied evening schedule and applies the existing category filter', () => {
+    const surface = buildSurface();
+    surface.tonightItems = [airing('evening', '2026-10-23T20:00:00Z', '2026-10-23T21:00:00Z')];
+    configure(surface);
+    const component = TestBed.createComponent(CanalCompletoComponent).componentInstance;
+    component.ngOnInit();
+    expect(component.filteredTonightPrograms.map((program) => program.id)).toEqual(['evening']);
+    component.selectCategory('Deportes');
+    expect(component.filteredTonightPrograms).toEqual([]);
+    expect(component.programs).toEqual([]);
   });
 });

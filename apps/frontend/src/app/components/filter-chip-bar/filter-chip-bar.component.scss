@@ -62,7 +62,7 @@
 .chip-bar__item--active {
   border-color: var(--guide-accent, var(--accent-live));
   background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
-  color: var(--guide-accent, var(--accent-live));
+  color: var(--portal-text);
 }
 
 .chip-bar__count {
@@ -94,7 +94,7 @@
 .chip-bar--shelf .chip-bar__item--active {
   border-color: var(--guide-accent, var(--accent-live));
   background: color-mix(in srgb, var(--guide-accent, var(--accent-live)) 8%, var(--portal-surface));
-  color: var(--guide-accent, var(--accent-live));
+  color: var(--portal-text);
 }
 
 @media (prefers-reduced-motion: reduce) {

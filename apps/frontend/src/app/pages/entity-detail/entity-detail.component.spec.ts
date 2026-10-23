@@ -180,5 +180,20 @@ describe('EntityDetailComponent', () => {
       expect(TestBed.inject(Meta).getTag('name="description"')?.content).not.toContain('Próxima emisión');
       fixture.destroy();
     });
+
+    it('offers guide discovery for programmes without a verified schedule or a media identity', () => {
+      const fixture = open({ entityId: 'ce_show', kind: 'show', title: 'Magazine', canonicalPath: '/programas/magazine', tmdbId: 123 });
+      expect(fixture.nativeElement.textContent).toContain('No disponemos de un horario verificado');
+      expect(fixture.nativeElement.querySelector('a[href="/programacion-tv/que-ver-hoy"]')).not.toBeNull();
+      expect(fixture.debugElement.query(By.directive(WhereToWatchComponent))).toBeNull();
+      fixture.destroy();
+    });
+
+    it('uses TV availability for verified series and omits slot runtime', () => {
+      const fixture = open(movie({ kind: 'series', canonicalPath: '/series/test-series' }));
+      expect(fixture.debugElement.query(By.directive(WhereToWatchComponent)).componentInstance.contentType).toBe('tv');
+      expect(fixture.componentInstance.runtime).toBeNull();
+      fixture.destroy();
+    });
   });
 });

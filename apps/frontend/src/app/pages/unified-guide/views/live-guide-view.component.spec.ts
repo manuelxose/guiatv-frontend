@@ -28,6 +28,25 @@ describe('selectMobileChannelSchedule', () => {
       'second',
     ]);
   });
+
+  it('recomputes cached live flags and excludes invalid intervals without mutating responses', () => {
+    const past = makeItem('past', '2026-08-25T18:00:00+02:00', '2026-08-25T19:00:00+02:00', true);
+    const live = makeItem('live', '2026-08-25T19:30:00+02:00', '2026-08-25T20:30:00+02:00');
+    const next = makeItem('next', '2026-08-25T20:30:00+02:00', '2026-08-25T21:30:00+02:00', true);
+    next.timingContext = { start: next.airing.start, end: next.airing.end, liveNow: true, window: 'today' };
+    const invalid = makeItem('invalid', 'invalid', 'invalid');
+    const reversed = makeItem('reversed', '2026-08-25T22:00:00+02:00', '2026-08-25T21:00:00+02:00');
+    const result = selectMobileChannelSchedule([past, next, invalid, reversed, live], 'today', now);
+    expect(result.map((item) => [item.id, item.airing.liveNow])).toEqual([['live', true], ['next', false]]);
+    expect(result[1].timingContext?.liveNow).toBeFalse();
+    expect(past.airing.liveNow).toBeTrue();
+    expect(live.airing.liveNow).toBeFalse();
+  });
+
+  it('treats the end boundary as finished', () => {
+    const finished = makeItem('finished', '2026-08-25T19:00:00+02:00', '2026-08-25T20:00:00+02:00', true);
+    expect(selectMobileChannelSchedule([finished], 'today', now)[0].airing.liveNow).toBeFalse();
+  });
 });
 
 function makeItem(id: string, start: string, end: string, liveNow = false): TvReadItemDTO {

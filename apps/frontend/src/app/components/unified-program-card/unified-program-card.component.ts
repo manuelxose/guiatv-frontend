@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterModule } from '@angular/router';
+import { formatMadridHM } from '../../utils/madrid-time';
 import { TvReadItemDTO } from '../../api/models';
 import { CatalogItem } from '../../services/catalog.service';
 import { UserService } from '../../services/user.service';
@@ -226,8 +227,5 @@ function formatTime(value?: string): string {
   if (Number.isNaN(date.getTime())) {
     return '';
   }
-  return date.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return formatMadridHM(date);
 }
