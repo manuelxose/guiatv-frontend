@@ -52,4 +52,24 @@ describe('FootballCompetitionsComponent', () => {
     const component = setup([{ id: 'x', slug: 'x', name: 'Mystery Cup', type: 'other', providerIds: {}, lastUpdatedAt: '' }]);
     expect(component.groups().map((g) => g.country)).toEqual(['Otras']);
   });
+
+  it('filters real names, short names and countries without case or accent sensitivity', () => {
+    const component = setup([
+      { ...competition('primera-division', 'Primera División', 'España'), shortName: 'LaLiga' },
+      competition('serie-a', 'Serie A', 'Italy'),
+    ]);
+    for (const query of ['  DIVISION ', 'espana', 'laliga']) {
+      component.query.set(query);
+      expect(component.filtered().map((item) => item.slug)).toEqual(['primera-division']);
+      expect(component.groups()).toEqual([]);
+    }
+  });
+
+  it('recovers the complete catalog after an unmatched filter is cleared', () => {
+    const component = setup([competition('serie-a', 'Serie A', 'Italy')]);
+    component.query.set('missing');
+    expect(component.filtered()).toEqual([]);
+    component.query.set('');
+    expect(component.groups()[0].competitions.length).toBe(1);
+  });
 });

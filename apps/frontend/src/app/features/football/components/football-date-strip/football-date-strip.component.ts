@@ -96,8 +96,14 @@ function fromKey(key: string): Date | null {
       scrollbar-width: none;
       // A real basis: on a phone the native date picker wraps to its own row instead of squeezing the days to ~70px.
       flex: 1 1 14rem;
+      min-width: 0;
     }
     .strip__days::-webkit-scrollbar { display: none; }
+    @media (max-width: 640px) {
+      .strip { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; }
+      .strip__picker { grid-column: 1 / -1; }
+      .strip__picker input { width: 100%; }
+    }
 
     .strip__day {
       flex: 0 0 auto;

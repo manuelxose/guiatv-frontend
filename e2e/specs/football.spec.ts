@@ -33,12 +33,12 @@ test.describe('Football Home', () => {
     await assertNotBlankScreen(page);
     const menu = page.getByRole('navigation', { name: 'Secciones de Fútbol' });
     await expect(page.locator('app-portal-context-nav app-breadcrumb')).toBeVisible();
-    await expect(menu.getByRole('link')).toHaveCount(7);
+    await expect(menu.getByRole('link')).toHaveCount(5);
     const destinations = [
-      { label: 'En directo', url: /\/deportes\/futbol\/en-directo/ },
-      { label: 'Partidos de hoy', url: /\/deportes\/futbol\/partidos-hoy/ },
-      { label: 'Calendario', url: /\/deportes\/futbol\/calendario/ },
+      { label: 'Portada', url: /\/deportes\/futbol$/ },
+      { label: 'Partidos', url: /\/deportes\/futbol\/partidos-hoy/ },
       { label: 'Competiciones', url: /\/deportes\/futbol\/competiciones/ },
+      { label: 'Dónde ver', url: /\/deportes\/futbol#donde-ver$/ },
       { label: 'Noticias', url: /\/deportes\/futbol\/noticias/ },
     ] as const;
 
@@ -134,13 +134,17 @@ test.describe('Football Matches -> Match Centre', () => {
     test.setTimeout(90_000);
     await page.goto('/deportes/futbol/partidos-hoy?filter=live');
     await assertNotBlankScreen(page);
-    // A dedicated live view is expected to show either real live matches or
-    // the page's own honest empty state — never a stuck loading indicator.
-    // The live feed is EPG-derived and the shared backend can take a while
-    // under parallel load, so poll rather than wait once.
-    const hasEmptyState = await page.getByText('No hay partidos en directo ahora mismo').isVisible({ timeout: 30_000 }).catch(() => false);
-    const hasRows = await page.locator('.row').first().isVisible({ timeout: 30_000 }).catch(() => false);
-    expect(hasEmptyState || hasRows).toBeTruthy();
+    await expect(page.getByRole('group', { name: 'Filtrar partidos' }).getByRole('button', { name: 'En directo', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('main.content')).toHaveAttribute('aria-busy', 'false');
+    const rows = page.locator('app-football-match-row .row');
+    if (await rows.count()) {
+      await expect(page.locator('app-football-match-row .row:not(.row--live)')).toHaveCount(0);
+    } else {
+      await expect(page.getByText('No hay partidos para este filtro', { exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Ver todos los partidos', exact: true }).click();
+      await expect(page.getByRole('group', { name: 'Filtrar partidos' }).getByRole('button', { name: 'Todos', exact: true })).toHaveAttribute('aria-pressed', 'true');
+      await expect(page).not.toHaveURL(/filter=live/);
+    }
   });
 
   test('Calendario: the date strip actually changes which day is loaded (regression)', async ({ page }) => {
@@ -173,6 +177,23 @@ test.describe('Football Matches -> Match Centre', () => {
 });
 
 test.describe('Competitions', () => {
+  test('filters the catalog and recovers from no results on mobile without a second menu', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto('/deportes/futbol/competiciones');
+    const firstCompetition = page.locator('.competition').first();
+    await expect(firstCompetition).toBeVisible({ timeout: 30_000 });
+    const initialCount = await page.locator('.competition').count();
+    const input = page.getByRole('searchbox', { name: 'Filtrar competiciones' });
+    await input.fill('competition-that-does-not-exist');
+    await expect(page.getByText('No hay competiciones para este filtro')).toBeVisible();
+    await expect(page.locator('#competition-count')).toHaveText('0 competiciones');
+    await page.getByRole('button', { name: 'Quitar filtro', exact: true }).click();
+    await expect(page.locator('.competition')).toHaveCount(initialCount);
+    await expect(input).toHaveValue('');
+    await expect(page.getByRole('navigation', { name: 'Secciones de Fútbol' })).toHaveCount(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+  });
+
   test('the hub lists real competitions grouped by country/featured', async ({ page }) => {
     await page.goto('/deportes/futbol/competiciones');
     await assertNotBlankScreen(page);
@@ -195,7 +216,8 @@ test.describe('Competitions', () => {
     const tabs = page.getByRole('group', { name: 'Secciones de la competición' });
     await expect(tabs.getByRole('button')).toHaveCount(3);
 
-    await tabs.getByRole('button', { name: 'Clasificación', exact: true }).click();
+    await page.goto(`${page.url()}#clasificacion`);
+    await expect(tabs.getByRole('button', { name: 'Clasificación', exact: true })).toHaveAttribute('aria-pressed', 'true');
     // Either a real standings table renders, or the table's own honest
     // "not available" message does — never a blank/broken panel.
     const hasTable = await page.locator('.standings__row').first().isVisible({ timeout: 20_000 }).catch(() => false);

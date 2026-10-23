@@ -22,9 +22,9 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
       <div class="standings__head" role="row">
         <span class="standings__pos" role="columnheader">#</span>
         <span class="standings__team" role="columnheader">Equipo</span>
-        <span class="standings__cell" role="columnheader">PJ</span>
-        <span class="standings__cell" role="columnheader">DG</span>
-        <span class="standings__cell standings__pts" role="columnheader">Pts</span>
+        <span class="standings__cell" role="columnheader" aria-label="Partidos jugados">PJ</span>
+        <span class="standings__cell" role="columnheader" aria-label="Diferencia de goles">DG</span>
+        <span class="standings__cell standings__pts" role="columnheader" aria-label="Puntos">Pts</span>
       </div>
       <div
         *ngFor="let row of visibleRows; trackBy: trackByPosition"
@@ -55,7 +55,7 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
     }
     .standings__head, .standings__row {
       display: grid;
-      grid-template-columns: 2rem 1fr 2.25rem 2.25rem 2.5rem;
+      grid-template-columns: 2rem minmax(0, 1fr) 2.25rem 2.25rem 2.5rem;
       align-items: center;
       gap: 0.25rem;
       padding: 0.5rem 0.75rem;
@@ -86,7 +86,9 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
       min-width: 0;
     }
     .standings__name {
-      display: inline-block;
+      display: block;
+      padding: 0.65rem 0;
+      min-height: 44px;
       max-width: 100%;
       font-weight: 650;
       color: inherit;
@@ -102,7 +104,7 @@ import { FootballStandingRowDTO } from '@app/features/football/football.models';
       letter-spacing: 0.08em;
       color: var(--portal-text-muted);
     }
-    .standings__cell { text-align: center; font-variant-numeric: tabular-nums; }
+    .standings__cell, .standings__pos { text-align: center; font-variant-numeric: tabular-nums; }
     .standings__pts { font-weight: 850; color: var(--accent-sports); }
     .standings__empty { padding: 1.25rem; text-align: center; color: var(--portal-text-muted); font-size: 0.875rem; }
   `,

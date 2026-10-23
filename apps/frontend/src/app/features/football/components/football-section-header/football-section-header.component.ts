@@ -25,6 +25,7 @@ import { RouterModule } from '@angular/router';
   styles: `
     .header {
       display: flex;
+      flex-wrap: wrap;
       align-items: flex-end;
       justify-content: space-between;
       gap: 0.75rem;
@@ -40,7 +41,7 @@ import { RouterModule } from '@angular/router';
     }
     .header__title {
       margin: 0;
-      font-size: 1.125rem;
+      font-size: var(--text-lg);
       font-weight: 850;
       letter-spacing: -0.01em;
       color: var(--portal-text);
@@ -48,6 +49,7 @@ import { RouterModule } from '@angular/router';
     .header__link {
       flex: 0 0 auto;
       display: inline-flex;
+      min-height: 44px;
       align-items: center;
       gap: 0.25rem;
       font-size: 0.8125rem;
@@ -57,6 +59,7 @@ import { RouterModule } from '@angular/router';
       white-space: nowrap;
     }
     .header__link:hover { color: var(--accent-sports); }
+    .header__link:focus-visible { outline: 2px solid var(--accent-sports); outline-offset: 2px; border-radius: var(--radius-sm); }
   `,
 })
 export class FootballSectionHeaderComponent {
